@@ -31,19 +31,19 @@ const pulseKeyframes = `
 
 const styles = {
   wrapper: {
-    background: "rgba(30,10,60,0.8)",
-    border: "1px solid rgba(160,100,255,0.3)",
+    background: "rgba(8,16,28,0.8)",
+    border: "1px solid rgba(200,160,30,0.3)",
     borderRadius: 20,
     padding: 28,
     fontFamily: "Georgia, serif",
-    color: "#e8d5ff",
+    color: "#f5e4b0",
     maxWidth: 680,
     margin: "0 auto",
   },
   heading: {
     margin: "0 0 24px 0",
     fontSize: 22,
-    color: "#c490ff",
+    color: "#e8b840",
     textAlign: "center",
     fontFamily: "Georgia, serif",
   },
@@ -51,16 +51,16 @@ const styles = {
     display: "block",
     marginBottom: 6,
     fontSize: 14,
-    color: "#c490ff",
+    color: "#e8b840",
     fontFamily: "Georgia, serif",
   },
   input: {
     width: "100%",
     padding: "10px 14px",
-    background: "rgba(20,5,40,0.9)",
-    border: "1px solid rgba(160,100,255,0.3)",
+    background: "rgba(5,10,18,0.9)",
+    border: "1px solid rgba(200,160,30,0.3)",
     borderRadius: 10,
-    color: "#e8d5ff",
+    color: "#f5e4b0",
     fontSize: 15,
     fontFamily: "Georgia, serif",
     outline: "none",
@@ -69,10 +69,10 @@ const styles = {
   textarea: {
     width: "100%",
     padding: "10px 14px",
-    background: "rgba(20,5,40,0.9)",
-    border: "1px solid rgba(160,100,255,0.3)",
+    background: "rgba(5,10,18,0.9)",
+    border: "1px solid rgba(200,160,30,0.3)",
     borderRadius: 10,
-    color: "#e8d5ff",
+    color: "#f5e4b0",
     fontSize: 15,
     fontFamily: "Georgia, serif",
     outline: "none",
@@ -94,16 +94,16 @@ const styles = {
     alignItems: "center",
     gap: 6,
     background: "rgba(120,60,220,0.3)",
-    border: "1px solid rgba(160,100,255,0.4)",
+    border: "1px solid rgba(200,160,30,0.4)",
     borderRadius: 20,
     padding: "4px 12px",
     fontSize: 13,
-    color: "#e8d5ff",
+    color: "#f5e4b0",
     fontFamily: "Georgia, serif",
   },
   chipX: {
     cursor: "pointer",
-    color: "#c490ff",
+    color: "#e8b840",
     fontWeight: "bold",
     fontSize: 14,
     background: "none",
@@ -117,11 +117,11 @@ const styles = {
     borderRadius: 12,
     border: active
       ? "1px solid rgba(200,150,255,0.7)"
-      : "1px solid rgba(160,100,255,0.25)",
+      : "1px solid rgba(200,160,30,0.25)",
     background: active
       ? "linear-gradient(135deg, rgba(120,60,220,0.6), rgba(80,30,180,0.6))"
-      : "rgba(30,10,60,0.5)",
-    color: active ? "#fff" : "#7060aa",
+      : "rgba(8,16,28,0.5)",
+    color: active ? "#fff" : "#8a7540",
     cursor: "pointer",
     fontSize: 13,
     fontFamily: "Georgia, serif",
@@ -145,7 +145,7 @@ const styles = {
     background: on
       ? "linear-gradient(135deg,#7c3aed,#a855f7)"
       : "rgba(60,30,100,0.6)",
-    border: "1px solid rgba(160,100,255,0.3)",
+    border: "1px solid rgba(200,160,30,0.3)",
     cursor: "pointer",
     position: "relative",
     transition: "background 0.2s",
@@ -158,7 +158,7 @@ const styles = {
     width: 18,
     height: 18,
     borderRadius: "50%",
-    background: "#e8d5ff",
+    background: "#f5e4b0",
     transition: "left 0.2s",
   }),
   slider: {
@@ -171,7 +171,7 @@ const styles = {
     border: "none",
     fontSize: 24,
     cursor: "pointer",
-    color: active ? "#f5c842" : "#7060aa",
+    color: active ? "#f5c842" : "#8a7540",
     transition: "color 0.15s",
     padding: "0 2px",
   }),
@@ -197,9 +197,9 @@ const styles = {
     borderRadius: 10,
     border: recording
       ? "1px solid rgba(255,80,80,0.5)"
-      : "1px solid rgba(160,100,255,0.3)",
-    background: recording ? "rgba(180,30,30,0.3)" : "rgba(30,10,60,0.5)",
-    color: recording ? "#ff8888" : "#c490ff",
+      : "1px solid rgba(200,160,30,0.3)",
+    background: recording ? "rgba(180,30,30,0.3)" : "rgba(8,16,28,0.5)",
+    color: recording ? "#ff8888" : "#e8b840",
     cursor: "pointer",
     fontSize: 13,
     fontFamily: "Georgia, serif",
@@ -216,10 +216,10 @@ const styles = {
   },
   timeInput: {
     padding: "8px 12px",
-    background: "rgba(20,5,40,0.9)",
-    border: "1px solid rgba(160,100,255,0.3)",
+    background: "rgba(5,10,18,0.9)",
+    border: "1px solid rgba(200,160,30,0.3)",
     borderRadius: 10,
-    color: "#e8d5ff",
+    color: "#f5e4b0",
     fontSize: 14,
     fontFamily: "Georgia, serif",
     outline: "none",
@@ -543,7 +543,7 @@ export default function DreamForm({
         <div style={{ ...styles.row, marginBottom: 12 }}>
           <div style={{ flex: 1, minWidth: 140 }}>
             <label
-              style={{ ...styles.label, fontSize: 12, color: "#7060aa" }}
+              style={{ ...styles.label, fontSize: 12, color: "#8a7540" }}
             >
               Bed Time
             </label>
@@ -556,7 +556,7 @@ export default function DreamForm({
           </div>
           <div style={{ flex: 1, minWidth: 140 }}>
             <label
-              style={{ ...styles.label, fontSize: 12, color: "#7060aa" }}
+              style={{ ...styles.label, fontSize: 12, color: "#8a7540" }}
             >
               Wake Time
             </label>
@@ -570,7 +570,7 @@ export default function DreamForm({
         </div>
         <div>
           <label
-            style={{ ...styles.label, fontSize: 12, color: "#7060aa" }}
+            style={{ ...styles.label, fontSize: 12, color: "#8a7540" }}
           >
             Sleep Quality
           </label>
@@ -630,7 +630,7 @@ export default function DreamForm({
           style={{
             textAlign: "center",
             fontSize: 12,
-            color: "#7060aa",
+            color: "#8a7540",
             marginTop: 10,
             marginBottom: 0,
             fontFamily: "Georgia, serif",

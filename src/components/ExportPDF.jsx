@@ -12,7 +12,7 @@ export default function ExportPDF({ dreams }) {
     // Title page
     doc.setFontSize(28);
     doc.setTextColor(100, 50, 180);
-    doc.text("Dreamscape", pageWidth / 2, 60, { align: "center" });
+    doc.text("Dream Shepherd", pageWidth / 2, 60, { align: "center" });
 
     doc.setFontSize(14);
     doc.setTextColor(120, 100, 160);
@@ -106,7 +106,7 @@ export default function ExportPDF({ dreams }) {
       y += 10;
     }
 
-    doc.save("dreamscape-journal.pdf");
+    doc.save("dream-shepherd-journal.pdf");
   };
 
   return (
@@ -114,11 +114,11 @@ export default function ExportPDF({ dreams }) {
       onClick={generatePDF}
       disabled={dreams.length === 0}
       style={{
-        background: dreams.length === 0 ? "rgba(100,50,180,0.2)" : "linear-gradient(135deg, #6020cc, #9040ee)",
-        border: "none", color: dreams.length === 0 ? "#6050a0" : "white",
+        background: dreams.length === 0 ? "rgba(140,90,5,0.2)" : "linear-gradient(135deg, #7a5200, #c89020)",
+        border: "none", color: dreams.length === 0 ? "#6b5c30" : "white",
         padding: "10px 22px", borderRadius: 40, fontSize: 13,
         cursor: dreams.length === 0 ? "not-allowed" : "pointer",
-        letterSpacing: 0.5, boxShadow: dreams.length > 0 ? "0 4px 20px rgba(120,40,220,0.3)" : "none"
+        letterSpacing: 0.5, boxShadow: dreams.length > 0 ? "0 4px 20px rgba(160,100,5,0.3)" : "none"
       }}
     >
       Export PDF

@@ -51,7 +51,7 @@ self.addEventListener("fetch", (event) => {
 self.addEventListener("push", (event) => {
   const data = event.data?.json() || {};
   event.waitUntil(
-    self.registration.showNotification(data.title || "Dreamscape", {
+    self.registration.showNotification(data.title || "Dream Shepherd", {
       body: data.body || "Time to record tonight's dream 🌙",
       icon: "/icon-192.png",
       badge: "/icon-192.png",

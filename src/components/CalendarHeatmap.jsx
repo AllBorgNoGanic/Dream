@@ -13,9 +13,9 @@ const DAY_LABELS = ["", "Mon", "", "Wed", "", "Fri", ""];
 const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 const COLORS = {
-  0: "rgba(160,100,255,0.06)",
-  1: "rgba(160,100,255,0.25)",
-  2: "rgba(160,100,255,0.50)",
+  0: "rgba(200,160,30,0.06)",
+  1: "rgba(200,160,30,0.25)",
+  2: "rgba(200,160,30,0.50)",
   3: "rgba(168,85,247,0.80)",
 };
 
@@ -36,8 +36,8 @@ function formatDisplayDate(dateStr) {
 }
 
 const cardBase = {
-  background: "rgba(20,8,50,0.7)",
-  border: "1px solid rgba(160,100,255,0.15)",
+  background: "rgba(6,12,22,0.7)",
+  border: "1px solid rgba(200,160,30,0.15)",
   borderRadius: 18,
   padding: "22px 24px",
   fontFamily: "Georgia, serif",
@@ -47,7 +47,7 @@ const cardBase = {
 const sectionTitle = {
   fontFamily: "Georgia, serif",
   fontSize: 20,
-  color: "#e8d5ff",
+  color: "#f5e4b0",
   margin: "0 0 18px 0",
   letterSpacing: 0.3,
 };
@@ -154,7 +154,7 @@ export default function CalendarHeatmap({ dreams }) {
                 style={{
                   position: "absolute",
                   left: 40 + m.weekIndex * (CELL_SIZE + CELL_GAP),
-                  color: "#6050a0",
+                  color: "#6b5c30",
                   fontSize: 11,
                   fontFamily: "Georgia, serif",
                 }}
@@ -184,7 +184,7 @@ export default function CalendarHeatmap({ dreams }) {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "flex-end",
-                    color: "#6050a0",
+                    color: "#6b5c30",
                     fontSize: 10,
                     fontFamily: "Georgia, serif",
                   }}
@@ -229,8 +229,8 @@ export default function CalendarHeatmap({ dreams }) {
                           borderRadius: 3,
                           background: day.future ? "transparent" : getColor(day.count),
                           border: day.future
-                            ? "1px solid rgba(160,100,255,0.05)"
-                            : "1px solid rgba(160,100,255,0.08)",
+                            ? "1px solid rgba(200,160,30,0.05)"
+                            : "1px solid rgba(200,160,30,0.08)",
                           cursor: "default",
                           transition: "background 0.15s ease",
                         }}
@@ -251,10 +251,10 @@ export default function CalendarHeatmap({ dreams }) {
                 top: tooltip.y,
                 transform: "translate(-50%, -100%)",
                 background: "rgba(30,15,60,0.95)",
-                border: "1px solid rgba(160,100,255,0.3)",
+                border: "1px solid rgba(200,160,30,0.3)",
                 borderRadius: 8,
                 padding: "6px 12px",
-                color: "#e8d5ff",
+                color: "#f5e4b0",
                 fontSize: 12,
                 fontFamily: "Georgia, serif",
                 whiteSpace: "nowrap",
@@ -265,7 +265,7 @@ export default function CalendarHeatmap({ dreams }) {
               <div style={{ fontWeight: "bold", marginBottom: 2 }}>
                 {formatDisplayDate(tooltip.date)}
               </div>
-              <div style={{ color: "#c490ff" }}>
+              <div style={{ color: "#e8b840" }}>
                 {tooltip.count === 0
                   ? "No dreams recorded"
                   : `${tooltip.count} dream${tooltip.count > 1 ? "s" : ""} recorded`}
@@ -284,7 +284,7 @@ export default function CalendarHeatmap({ dreams }) {
             justifyContent: "flex-end",
           }}
         >
-          <span style={{ color: "#6050a0", fontSize: 11, fontFamily: "Georgia, serif" }}>Less</span>
+          <span style={{ color: "#6b5c30", fontSize: 11, fontFamily: "Georgia, serif" }}>Less</span>
           {[0, 1, 2, 3].map((level) => (
             <div
               key={level}
@@ -293,11 +293,11 @@ export default function CalendarHeatmap({ dreams }) {
                 height: CELL_SIZE,
                 borderRadius: 3,
                 background: COLORS[level],
-                border: "1px solid rgba(160,100,255,0.08)",
+                border: "1px solid rgba(200,160,30,0.08)",
               }}
             />
           ))}
-          <span style={{ color: "#6050a0", fontSize: 11, fontFamily: "Georgia, serif" }}>More</span>
+          <span style={{ color: "#6b5c30", fontSize: 11, fontFamily: "Georgia, serif" }}>More</span>
         </div>
       </div>
 
@@ -330,7 +330,7 @@ export default function CalendarHeatmap({ dreams }) {
               >
                 <span
                   style={{
-                    color: "#c490ff",
+                    color: "#e8b840",
                     fontSize: 11,
                     fontFamily: "Georgia, serif",
                     marginBottom: 4,
@@ -349,7 +349,7 @@ export default function CalendarHeatmap({ dreams }) {
                 />
                 <span
                   style={{
-                    color: "#6050a0",
+                    color: "#6b5c30",
                     fontSize: 10,
                     fontFamily: "Georgia, serif",
                     marginTop: 6,

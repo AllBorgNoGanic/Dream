@@ -41,22 +41,22 @@ export default function DictionaryTab() {
         value={search}
         onChange={e => setSearch(e.target.value)}
         style={{
-          width: "100%", background: "rgba(20,8,50,0.7)", border: "1px solid rgba(160,100,255,0.2)",
-          borderRadius: 40, padding: "13px 22px", color: "#e8d5ff", fontSize: 14,
+          width: "100%", background: "rgba(6,12,22,0.7)", border: "1px solid rgba(200,160,30,0.2)",
+          borderRadius: 40, padding: "13px 22px", color: "#f5e4b0", fontSize: 14,
           marginBottom: 24, boxSizing: "border-box", outline: "none", fontFamily: "Georgia, serif"
         }}
       />
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
         {filtered.map(([key, val]) => (
           <div key={key} className="dict-card" style={{
-            background: "rgba(20,8,50,0.7)", border: "1px solid rgba(160,100,255,0.12)",
+            background: "rgba(6,12,22,0.7)", border: "1px solid rgba(200,160,30,0.12)",
             borderRadius: 16, padding: "18px 20px", cursor: "default"
           }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
               <span style={{ fontSize: 22 }}>{val.symbol}</span>
-              <span style={{ fontSize: 15, color: "#c490ff", textTransform: "capitalize" }}>{key}</span>
+              <span style={{ fontSize: 15, color: "#e8b840", textTransform: "capitalize" }}>{key}</span>
             </div>
-            <p style={{ fontSize: 12, color: "#8070aa", lineHeight: 1.6, margin: 0 }}>{val.meaning}</p>
+            <p style={{ fontSize: 12, color: "#7a6a40", lineHeight: 1.6, margin: 0 }}>{val.meaning}</p>
           </div>
         ))}
       </div>

@@ -24,7 +24,7 @@ export default async function handler(req, res) {
             currency: 'usd',
             recurring: { interval: 'month' },
             product_data: {
-              name: 'Dreamscape Pro',
+              name: 'Dream Shepherd Pro',
               description: 'Unlimited AI Dream Interpretations',
             },
             unit_amount: 599,

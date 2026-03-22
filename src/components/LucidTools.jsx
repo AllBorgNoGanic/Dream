@@ -198,8 +198,8 @@ export default function LucidTools({ dreams }) {
   };
 
   const cardStyle = {
-    background: "rgba(20,8,50,0.7)",
-    border: "1px solid rgba(160,100,255,0.15)",
+    background: "rgba(6,12,22,0.7)",
+    border: "1px solid rgba(200,160,30,0.15)",
     borderRadius: 18,
     padding: 24,
     marginBottom: 20,
@@ -217,9 +217,9 @@ export default function LucidTools({ dreams }) {
   return (
     <div style={{ animation: "fadeIn 0.4s ease" }}>
       <style>{`
-        .rc-btn:hover { background: rgba(160,100,255,0.35) !important; border-color: rgba(160,100,255,0.6) !important; }
-        .step-card:hover { border-color: rgba(160,100,255,0.4) !important; background: rgba(30,12,60,0.9) !important; }
-        .sign-row:hover { background: rgba(160,100,255,0.1) !important; }
+        .rc-btn:hover { background: rgba(200,160,30,0.35) !important; border-color: rgba(200,160,30,0.6) !important; }
+        .step-card:hover { border-color: rgba(200,160,30,0.4) !important; background: rgba(30,12,60,0.9) !important; }
+        .sign-row:hover { background: rgba(200,160,30,0.1) !important; }
         .practice-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(4,0,26,0.96); display: flex; flex-direction: column; align-items: center; justify-content: center; animation: fadeIn 0.3s ease; }
       `}</style>
 
@@ -230,7 +230,7 @@ export default function LucidTools({ dreams }) {
           <div
             style={{
               fontSize: 28,
-              color: "#e8d5ff",
+              color: "#f5e4b0",
               marginBottom: 12,
               textAlign: "center",
               padding: "0 20px",
@@ -242,7 +242,7 @@ export default function LucidTools({ dreams }) {
           <div
             style={{
               fontSize: 15,
-              color: "#9080bb",
+              color: "#8a7a50",
               maxWidth: 440,
               textAlign: "center",
               lineHeight: 1.7,
@@ -256,7 +256,7 @@ export default function LucidTools({ dreams }) {
           <div
             style={{
               fontSize: 48,
-              color: "#c490ff",
+              color: "#e8b840",
               fontFamily: "monospace",
               marginBottom: 40,
               letterSpacing: 4,
@@ -267,7 +267,7 @@ export default function LucidTools({ dreams }) {
           <button
             onClick={stopPractice}
             style={{
-              background: "linear-gradient(135deg, #6020cc, #9040ee)",
+              background: "linear-gradient(135deg, #7a5200, #c89020)",
               border: "none",
               color: "white",
               padding: "14px 48px",
@@ -276,7 +276,7 @@ export default function LucidTools({ dreams }) {
               cursor: "pointer",
               letterSpacing: 0.5,
               fontFamily: "'Georgia', serif",
-              boxShadow: "0 4px 20px rgba(120,40,220,0.4)",
+              boxShadow: "0 4px 20px rgba(160,100,5,0.4)",
             }}
           >
             Complete Check
@@ -290,7 +290,7 @@ export default function LucidTools({ dreams }) {
         <div
           style={{
             fontSize: 13,
-            color: "#7060aa",
+            color: "#8a7540",
             marginBottom: 20,
             lineHeight: 1.6,
           }}
@@ -305,15 +305,15 @@ export default function LucidTools({ dreams }) {
             gap: 12,
             marginBottom: 20,
             padding: "12px 16px",
-            background: "rgba(100,40,180,0.15)",
-            border: "1px solid rgba(160,100,255,0.2)",
+            background: "rgba(140,90,5,0.15)",
+            border: "1px solid rgba(200,160,30,0.2)",
             borderRadius: 12,
           }}
         >
           <span style={{ fontSize: 22 }}>🎯</span>
-          <span style={{ fontSize: 14, color: "#c490ff" }}>
+          <span style={{ fontSize: 14, color: "#e8b840" }}>
             Reality checks today:{" "}
-            <span style={{ color: "#e8d5ff", fontWeight: 600 }}>{checksToday}</span>
+            <span style={{ color: "#f5e4b0", fontWeight: 600 }}>{checksToday}</span>
           </span>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
@@ -322,7 +322,7 @@ export default function LucidTools({ dreams }) {
               key={check.name}
               style={{
                 background: "rgba(30,12,60,0.6)",
-                border: "1px solid rgba(160,100,255,0.12)",
+                border: "1px solid rgba(200,160,30,0.12)",
                 borderRadius: 16,
                 padding: "16px 18px",
                 transition: "all 0.2s",
@@ -337,12 +337,12 @@ export default function LucidTools({ dreams }) {
                 }}
               >
                 <span style={{ fontSize: 22 }}>{check.icon}</span>
-                <span style={{ fontSize: 14, color: "#ddc8ff" }}>{check.name}</span>
+                <span style={{ fontSize: 14, color: "#f0d890" }}>{check.name}</span>
               </div>
               <p
                 style={{
                   fontSize: 12,
-                  color: "#7060aa",
+                  color: "#8a7540",
                   lineHeight: 1.6,
                   margin: "0 0 12px",
                 }}
@@ -353,9 +353,9 @@ export default function LucidTools({ dreams }) {
                 className="rc-btn"
                 onClick={() => startPractice(check)}
                 style={{
-                  background: "rgba(160,100,255,0.2)",
-                  border: "1px solid rgba(160,100,255,0.3)",
-                  color: "#c490ff",
+                  background: "rgba(200,160,30,0.2)",
+                  border: "1px solid rgba(200,160,30,0.3)",
+                  color: "#e8b840",
                   padding: "7px 16px",
                   borderRadius: 20,
                   fontSize: 12,
@@ -374,13 +374,13 @@ export default function LucidTools({ dreams }) {
       {/* ========== MILD TECHNIQUE GUIDE ========== */}
       <div style={cardStyle}>
         <div style={sectionTitle}>MILD Technique</div>
-        <div style={{ fontSize: 15, color: "#c490ff", marginBottom: 6 }}>
+        <div style={{ fontSize: 15, color: "#e8b840", marginBottom: 6 }}>
           Mnemonic Induction of Lucid Dreams
         </div>
         <div
           style={{
             fontSize: 13,
-            color: "#7060aa",
+            color: "#8a7540",
             marginBottom: 20,
             lineHeight: 1.6,
           }}
@@ -398,7 +398,7 @@ export default function LucidTools({ dreams }) {
                 gap: 16,
                 alignItems: "flex-start",
                 background: "rgba(30,12,60,0.5)",
-                border: "1px solid rgba(160,100,255,0.1)",
+                border: "1px solid rgba(200,160,30,0.1)",
                 borderRadius: 16,
                 padding: "16px 20px",
                 transition: "all 0.2s",
@@ -409,7 +409,7 @@ export default function LucidTools({ dreams }) {
                   minWidth: 36,
                   height: 36,
                   borderRadius: "50%",
-                  background: "linear-gradient(135deg, #6020cc, #9040ee)",
+                  background: "linear-gradient(135deg, #7a5200, #c89020)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -423,10 +423,10 @@ export default function LucidTools({ dreams }) {
                 {i + 1}
               </div>
               <div>
-                <div style={{ fontSize: 15, color: "#ddc8ff", marginBottom: 4 }}>
+                <div style={{ fontSize: 15, color: "#f0d890", marginBottom: 4 }}>
                   {step.title}
                 </div>
-                <div style={{ fontSize: 13, color: "#7060aa", lineHeight: 1.6 }}>
+                <div style={{ fontSize: 13, color: "#8a7540", lineHeight: 1.6 }}>
                   {step.detail}
                 </div>
               </div>
@@ -438,7 +438,7 @@ export default function LucidTools({ dreams }) {
       {/* ========== WILD TECHNIQUE GUIDE ========== */}
       <div style={cardStyle}>
         <div style={sectionTitle}>WILD Technique</div>
-        <div style={{ fontSize: 15, color: "#c490ff", marginBottom: 6 }}>
+        <div style={{ fontSize: 15, color: "#e8b840", marginBottom: 6 }}>
           Wake Initiated Lucid Dream
         </div>
         <div
@@ -462,7 +462,7 @@ export default function LucidTools({ dreams }) {
         <div
           style={{
             fontSize: 13,
-            color: "#7060aa",
+            color: "#8a7540",
             marginBottom: 20,
             lineHeight: 1.6,
           }}
@@ -480,7 +480,7 @@ export default function LucidTools({ dreams }) {
                 gap: 16,
                 alignItems: "flex-start",
                 background: "rgba(30,12,60,0.5)",
-                border: "1px solid rgba(160,100,255,0.1)",
+                border: "1px solid rgba(200,160,30,0.1)",
                 borderRadius: 16,
                 padding: "16px 20px",
                 transition: "all 0.2s",
@@ -505,10 +505,10 @@ export default function LucidTools({ dreams }) {
                 {i + 1}
               </div>
               <div>
-                <div style={{ fontSize: 15, color: "#ddc8ff", marginBottom: 4 }}>
+                <div style={{ fontSize: 15, color: "#f0d890", marginBottom: 4 }}>
                   {step.title}
                 </div>
-                <div style={{ fontSize: 13, color: "#7060aa", lineHeight: 1.6 }}>
+                <div style={{ fontSize: 13, color: "#8a7540", lineHeight: 1.6 }}>
                   {step.detail}
                 </div>
               </div>
@@ -549,7 +549,7 @@ export default function LucidTools({ dreams }) {
               key={stat.label}
               style={{
                 background: "rgba(30,12,60,0.6)",
-                border: "1px solid rgba(160,100,255,0.12)",
+                border: "1px solid rgba(200,160,30,0.12)",
                 borderRadius: 16,
                 padding: "18px 16px",
                 textAlign: "center",
@@ -557,12 +557,12 @@ export default function LucidTools({ dreams }) {
             >
               <div style={{ fontSize: 24, marginBottom: 6 }}>{stat.icon}</div>
               <div
-                style={{ fontSize: 22, color: "#c490ff", fontWeight: 400 }}
+                style={{ fontSize: 22, color: "#e8b840", fontWeight: 400 }}
               >
                 {stat.value}
               </div>
               <div
-                style={{ fontSize: 11, color: "#6050a0", marginTop: 4 }}
+                style={{ fontSize: 11, color: "#6b5c30", marginTop: 4 }}
               >
                 {stat.label}
               </div>
@@ -576,7 +576,7 @@ export default function LucidTools({ dreams }) {
             <div
               style={{
                 fontSize: 12,
-                color: "#7060aa",
+                color: "#8a7540",
                 marginBottom: 10,
                 letterSpacing: 1,
               }}
@@ -588,16 +588,16 @@ export default function LucidTools({ dreams }) {
                 <span
                   key={theme}
                   style={{
-                    background: "rgba(120,50,200,0.2)",
-                    border: "1px solid rgba(160,100,255,0.2)",
+                    background: "rgba(160,110,5,0.2)",
+                    border: "1px solid rgba(200,160,30,0.2)",
                     borderRadius: 20,
                     padding: "5px 14px",
                     fontSize: 12,
-                    color: "#b090e0",
+                    color: "#d4a840",
                   }}
                 >
                   {theme}{" "}
-                  <span style={{ color: "#7060aa" }}>({count})</span>
+                  <span style={{ color: "#8a7540" }}>({count})</span>
                 </span>
               ))}
             </div>
@@ -609,7 +609,7 @@ export default function LucidTools({ dreams }) {
           <div
             style={{
               fontSize: 12,
-              color: "#7060aa",
+              color: "#8a7540",
               marginBottom: 12,
               letterSpacing: 1,
             }}
@@ -651,10 +651,10 @@ export default function LucidTools({ dreams }) {
                         height: 8,
                         borderRadius: "50%",
                         background:
-                          "linear-gradient(135deg, #9040ee, #c060ff)",
+                          "linear-gradient(135deg, #c89020, #c060ff)",
                         marginBottom:
                           (day.count / maxCount) * 50,
-                        boxShadow: "0 0 8px rgba(160,100,255,0.5)",
+                        boxShadow: "0 0 8px rgba(200,160,30,0.5)",
                         transition: "all 0.3s",
                       }}
                     />
@@ -665,8 +665,8 @@ export default function LucidTools({ dreams }) {
                       height: 1,
                       background:
                         i % 7 === 0
-                          ? "rgba(160,100,255,0.15)"
-                          : "rgba(160,100,255,0.05)",
+                          ? "rgba(200,160,30,0.15)"
+                          : "rgba(200,160,30,0.05)",
                     }}
                   />
                 </div>
@@ -691,7 +691,7 @@ export default function LucidTools({ dreams }) {
               textAlign: "center",
               padding: "16px 0 0",
               fontSize: 13,
-              color: "#6050a0",
+              color: "#6b5c30",
               lineHeight: 1.6,
             }}
           >
@@ -707,7 +707,7 @@ export default function LucidTools({ dreams }) {
         <div
           style={{
             fontSize: 13,
-            color: "#7060aa",
+            color: "#8a7540",
             marginBottom: 20,
             lineHeight: 1.6,
           }}
@@ -737,12 +737,12 @@ export default function LucidTools({ dreams }) {
                       minWidth: 28,
                       height: 28,
                       borderRadius: "50%",
-                      background: "rgba(100,40,180,0.3)",
+                      background: "rgba(140,90,5,0.3)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                       fontSize: 12,
-                      color: "#b090e0",
+                      color: "#d4a840",
                       fontFamily: "sans-serif",
                       fontWeight: 600,
                     }}
@@ -753,14 +753,14 @@ export default function LucidTools({ dreams }) {
                     <span
                       style={{
                         fontSize: 15,
-                        color: "#ddc8ff",
+                        color: "#f0d890",
                         textTransform: "capitalize",
                       }}
                     >
                       {word}
                     </span>
                   </div>
-                  <div style={{ fontSize: 13, color: "#7060aa" }}>
+                  <div style={{ fontSize: 13, color: "#8a7540" }}>
                     {count} dream{count !== 1 ? "s" : ""}
                   </div>
                   <div
@@ -777,7 +777,7 @@ export default function LucidTools({ dreams }) {
                         height: "100%",
                         width: `${(count / (dreamSigns[0]?.[1] || 1)) * 100}%`,
                         background:
-                          "linear-gradient(90deg, #6020cc, #c060ff)",
+                          "linear-gradient(90deg, #7a5200, #c060ff)",
                         borderRadius: 2,
                       }}
                     />
@@ -789,11 +789,11 @@ export default function LucidTools({ dreams }) {
               style={{
                 marginTop: 20,
                 padding: "14px 18px",
-                background: "rgba(100,40,180,0.12)",
-                border: "1px solid rgba(160,100,255,0.15)",
+                background: "rgba(140,90,5,0.12)",
+                border: "1px solid rgba(200,160,30,0.15)",
                 borderRadius: 14,
                 fontSize: 13,
-                color: "#9080bb",
+                color: "#8a7a50",
                 lineHeight: 1.6,
                 textAlign: "center",
               }}
@@ -808,7 +808,7 @@ export default function LucidTools({ dreams }) {
               textAlign: "center",
               padding: "20px 0",
               fontSize: 13,
-              color: "#6050a0",
+              color: "#6b5c30",
               lineHeight: 1.6,
             }}
           >

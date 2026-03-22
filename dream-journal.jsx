@@ -165,7 +165,7 @@ export default function DreamJournal() {
         <div style={{ textAlign: "center", padding: "48px 0 32px" }}>
           <div style={{ fontSize: 14, letterSpacing: 6, color: "#a070cc", textTransform: "uppercase", marginBottom: 12 }}>Your Subconscious</div>
           <h1 style={{ fontSize: 42, fontWeight: 400, margin: 0, background: "linear-gradient(135deg, #e8d5ff, #c490ff, #8040cc)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", letterSpacing: 1 }}>
-            Dreamscape
+            Dream Shepherd
           </h1>
           <div style={{ width: 60, height: 1, background: "linear-gradient(90deg, transparent, #a070cc, transparent)", margin: "16px auto 0" }} />
         </div>

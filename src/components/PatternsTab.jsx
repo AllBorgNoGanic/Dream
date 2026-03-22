@@ -29,8 +29,8 @@ const fadeIn = `
 `;
 
 const cardBase = {
-  background: "rgba(20,8,50,0.7)",
-  border: "1px solid rgba(160,100,255,0.15)",
+  background: "rgba(6,12,22,0.7)",
+  border: "1px solid rgba(200,160,30,0.15)",
   borderRadius: 18,
   padding: "22px 24px",
   fontFamily: "Georgia, serif",
@@ -40,14 +40,14 @@ const cardBase = {
 const sectionTitle = {
   fontFamily: "Georgia, serif",
   fontSize: 20,
-  color: "#e8d5ff",
+  color: "#f5e4b0",
   margin: "0 0 18px 0",
   letterSpacing: 0.3,
 };
 
 const subText = {
   fontFamily: "Georgia, serif",
-  color: "#7060aa",
+  color: "#8a7540",
   fontSize: 13,
 };
 
@@ -148,10 +148,10 @@ function HorizontalBar({ label, value, maxValue, color, emoji }) {
           marginBottom: 4,
         }}
       >
-        <span style={{ color: "#e8d5ff", fontFamily: "Georgia, serif", fontSize: 14 }}>
+        <span style={{ color: "#f5e4b0", fontFamily: "Georgia, serif", fontSize: 14 }}>
           {emoji ? `${emoji} ` : ""}{label}
         </span>
-        <span style={{ color: "#c490ff", fontFamily: "Georgia, serif", fontSize: 13 }}>
+        <span style={{ color: "#e8b840", fontFamily: "Georgia, serif", fontSize: 13 }}>
           {value} ({pct.toFixed(0)}%)
         </span>
       </div>
@@ -159,7 +159,7 @@ function HorizontalBar({ label, value, maxValue, color, emoji }) {
         style={{
           height: 10,
           borderRadius: 5,
-          background: "rgba(160,100,255,0.1)",
+          background: "rgba(200,160,30,0.1)",
           overflow: "hidden",
         }}
       >
@@ -193,7 +193,7 @@ function StatCard({ label, value, icon, delay }) {
         style={{
           fontFamily: "Georgia, serif",
           fontSize: 22,
-          color: "#e8d5ff",
+          color: "#f5e4b0",
           fontWeight: "bold",
           marginBottom: 2,
         }}
@@ -413,16 +413,16 @@ export default function PatternsTab({ dreams, userSettings }) {
                     alignItems: "center",
                     gap: 14,
                     padding: "10px 14px",
-                    background: "rgba(160,100,255,0.06)",
+                    background: "rgba(200,160,30,0.06)",
                     borderRadius: 12,
-                    border: "1px solid rgba(160,100,255,0.1)",
+                    border: "1px solid rgba(200,160,30,0.1)",
                   }}
                 >
                   <span style={{ fontSize: 24 }}>{entry?.symbol || "?"}</span>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div
                       style={{
-                        color: "#e8d5ff",
+                        color: "#f5e4b0",
                         fontFamily: "Georgia, serif",
                         fontSize: 15,
                         textTransform: "capitalize",
@@ -435,10 +435,10 @@ export default function PatternsTab({ dreams, userSettings }) {
                   </div>
                   <div
                     style={{
-                      background: "rgba(160,100,255,0.15)",
+                      background: "rgba(200,160,30,0.15)",
                       padding: "4px 12px",
                       borderRadius: 20,
-                      color: "#c490ff",
+                      color: "#e8b840",
                       fontFamily: "Georgia, serif",
                       fontSize: 13,
                       fontWeight: "bold",
@@ -468,9 +468,9 @@ export default function PatternsTab({ dreams, userSettings }) {
                   alignItems: "center",
                   justifyContent: "space-between",
                   padding: "8px 14px",
-                  background: "rgba(160,100,255,0.06)",
+                  background: "rgba(200,160,30,0.06)",
                   borderRadius: 10,
-                  border: "1px solid rgba(160,100,255,0.08)",
+                  border: "1px solid rgba(200,160,30,0.08)",
                 }}
               >
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -494,7 +494,7 @@ export default function PatternsTab({ dreams, userSettings }) {
                   </span>
                   <span
                     style={{
-                      color: "#e8d5ff",
+                      color: "#f5e4b0",
                       fontFamily: "Georgia, serif",
                       fontSize: 14,
                       textTransform: "capitalize",
@@ -505,7 +505,7 @@ export default function PatternsTab({ dreams, userSettings }) {
                 </div>
                 <span
                   style={{
-                    color: "#c490ff",
+                    color: "#e8b840",
                     fontFamily: "Georgia, serif",
                     fontSize: 13,
                   }}
@@ -534,11 +534,11 @@ export default function PatternsTab({ dreams, userSettings }) {
                   padding: "12px 16px",
                   background:
                     hoveredInsight === i
-                      ? "rgba(160,100,255,0.12)"
-                      : "rgba(160,100,255,0.05)",
+                      ? "rgba(200,160,30,0.12)"
+                      : "rgba(200,160,30,0.05)",
                   borderRadius: 12,
-                  border: "1px solid rgba(160,100,255,0.12)",
-                  color: "#e8d5ff",
+                  border: "1px solid rgba(200,160,30,0.12)",
+                  color: "#f5e4b0",
                   fontFamily: "Georgia, serif",
                   fontSize: 14,
                   lineHeight: 1.5,
@@ -573,9 +573,9 @@ export default function PatternsTab({ dreams, userSettings }) {
                     alignItems: "center",
                     gap: 14,
                     padding: "10px 14px",
-                    background: "rgba(160,100,255,0.05)",
+                    background: "rgba(200,160,30,0.05)",
                     borderRadius: 10,
-                    border: "1px solid rgba(160,100,255,0.08)",
+                    border: "1px solid rgba(200,160,30,0.08)",
                   }}
                 >
                   <div
@@ -589,7 +589,7 @@ export default function PatternsTab({ dreams, userSettings }) {
                       <span
                         key={star}
                         style={{
-                          color: star <= q ? "#a855f7" : "rgba(160,100,255,0.2)",
+                          color: star <= q ? "#a855f7" : "rgba(200,160,30,0.2)",
                           fontSize: 14,
                         }}
                       >
@@ -599,10 +599,10 @@ export default function PatternsTab({ dreams, userSettings }) {
                   </div>
                   {data ? (
                     <div style={{ flex: 1, display: "flex", justifyContent: "space-between" }}>
-                      <span style={{ color: "#e8d5ff", fontFamily: "Georgia, serif", fontSize: 13 }}>
+                      <span style={{ color: "#f5e4b0", fontFamily: "Georgia, serif", fontSize: 13 }}>
                         Top mood: {data.topMood}
                       </span>
-                      <span style={{ color: "#7060aa", fontFamily: "Georgia, serif", fontSize: 12 }}>
+                      <span style={{ color: "#8a7540", fontFamily: "Georgia, serif", fontSize: 12 }}>
                         {data.count} {data.count === 1 ? "dream" : "dreams"}
                       </span>
                     </div>
@@ -657,10 +657,10 @@ export default function PatternsTab({ dreams, userSettings }) {
                     }}
                   />
                 </div>
-                <div style={{ color: "#c490ff", fontFamily: "Georgia, serif", fontSize: 12 }}>
+                <div style={{ color: "#e8b840", fontFamily: "Georgia, serif", fontSize: 12 }}>
                   {count}
                 </div>
-                <div style={{ color: "#6050a0", fontFamily: "Georgia, serif", fontSize: 11 }}>
+                <div style={{ color: "#6b5c30", fontFamily: "Georgia, serif", fontSize: 11 }}>
                   {day}
                 </div>
               </div>
