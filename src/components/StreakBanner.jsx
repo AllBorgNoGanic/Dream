@@ -12,8 +12,8 @@ export default function StreakBanner({ streak, longestStreak, lastDreamDate }) {
         ? "linear-gradient(135deg, rgba(200,100,50,0.15), rgba(200,50,50,0.1))"
         : loggedToday
           ? "linear-gradient(135deg, rgba(50,180,100,0.15), rgba(80,200,120,0.1))"
-          : "linear-gradient(135deg, rgba(100,60,200,0.15), rgba(160,100,255,0.1))",
-      border: `1px solid ${atRisk ? "rgba(200,100,50,0.3)" : loggedToday ? "rgba(80,200,120,0.3)" : "rgba(160,100,255,0.2)"}`,
+          : "linear-gradient(135deg, rgba(100,60,200,0.15), rgba(200,160,30,0.1))",
+      border: `1px solid ${atRisk ? "rgba(200,100,50,0.3)" : loggedToday ? "rgba(80,200,120,0.3)" : "rgba(200,160,30,0.2)"}`,
       borderRadius: 16, padding: "14px 20px", marginBottom: 20,
       display: "flex", justifyContent: "space-between", alignItems: "center",
       animation: "fadeIn 0.4s ease"
@@ -23,20 +23,20 @@ export default function StreakBanner({ streak, longestStreak, lastDreamDate }) {
           {atRisk ? "⚠️" : loggedToday ? "✅" : "🔥"}
         </span>
         <div>
-          <div style={{ fontSize: 15, color: "#e8d5ff", fontWeight: 400 }}>
+          <div style={{ fontSize: 15, color: "#f5e4b0", fontWeight: 400 }}>
             {streak} day streak{streak > 1 ? "" : ""}
             {atRisk && " — log a dream to keep it!"}
             {loggedToday && " — nice work!"}
           </div>
-          <div style={{ fontSize: 12, color: "#7060aa", marginTop: 2 }}>
+          <div style={{ fontSize: 12, color: "#8a7540", marginTop: 2 }}>
             Longest: {longestStreak} days
           </div>
         </div>
       </div>
       {!loggedToday && (
         <div style={{
-          background: "rgba(160,100,255,0.2)", borderRadius: 20,
-          padding: "4px 12px", fontSize: 11, color: "#c490ff"
+          background: "rgba(200,160,30,0.2)", borderRadius: 20,
+          padding: "4px 12px", fontSize: 11, color: "#e8b840"
         }}>
           Dream today!
         </div>

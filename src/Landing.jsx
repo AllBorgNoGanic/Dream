@@ -23,17 +23,17 @@ export default function Landing() {
   return (
     <div style={{
       minHeight: "100vh",
-      background: "linear-gradient(135deg, #04001a 0%, #0a0028 40%, #120038 70%, #04001a 100%)",
+      background: "linear-gradient(135deg, #020c18 0%, #0a0028 40%, #081830 70%, #020c18 100%)",
       fontFamily: "'Georgia', serif",
-      color: "#e8d5ff",
+      color: "#f5e4b0",
       position: "relative",
       overflow: "hidden",
     }}>
       <style>{`
         @keyframes twinkle { from { opacity: 0.1; } to { opacity: 0.9; } }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
-        .cta-btn:hover { transform: scale(1.04); box-shadow: 0 8px 40px rgba(120,40,220,0.6) !important; }
-        .feature-card:hover { background: rgba(40,15,80,0.8) !important; border-color: rgba(160,100,255,0.35) !important; }
+        .cta-btn:hover { transform: scale(1.04); box-shadow: 0 8px 40px rgba(160,100,5,0.6) !important; }
+        .feature-card:hover { background: rgba(40,15,80,0.8) !important; border-color: rgba(200,160,30,0.35) !important; }
         .feature-card { transition: all 0.25s; }
         .cta-btn { transition: all 0.2s; }
         @media (max-width: 600px) {
@@ -59,27 +59,27 @@ export default function Landing() {
 
         {/* Hero */}
         <div style={{ textAlign: "center", padding: "100px 0 64px", animation: "fadeUp 0.6s ease" }}>
-          <div style={{ fontSize: 13, letterSpacing: 6, color: "#a070cc", textTransform: "uppercase", marginBottom: 16 }}>
+          <div style={{ fontSize: 13, letterSpacing: 6, color: "#c8a030", textTransform: "uppercase", marginBottom: 16 }}>
             Your Subconscious
           </div>
           <h1 className="hero-title" style={{
             fontSize: 56, fontWeight: 400, margin: "0 0 24px",
-            background: "linear-gradient(135deg, #e8d5ff, #c490ff, #8040cc)",
+            background: "linear-gradient(135deg, #f5e4b0, #e8b840, #a07010)",
             WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", letterSpacing: 1,
           }}>
-            Dreamscape
+            Dream Shepherd
           </h1>
           <p className="hero-subtitle" style={{
-            fontSize: 18, color: "#9080bb", lineHeight: 1.7, maxWidth: 480,
+            fontSize: 18, color: "#8a7a50", lineHeight: 1.7, maxWidth: 480,
             margin: "0 auto 40px",
           }}>
             An AI-powered dream journal that helps you record, interpret, and understand the language of your subconscious.
           </p>
           <button className="cta-btn" onClick={() => window.location.href = "/app"} style={{
-            background: "linear-gradient(135deg, #6020cc, #9040ee)",
+            background: "linear-gradient(135deg, #7a5200, #c89020)",
             border: "none", color: "white", padding: "16px 40px",
             borderRadius: 50, fontSize: 16, cursor: "pointer", letterSpacing: 0.5,
-            boxShadow: "0 4px 30px rgba(120,40,220,0.45)",
+            boxShadow: "0 4px 30px rgba(160,100,5,0.45)",
           }}>
             Start Journaling Free
           </button>
@@ -89,17 +89,17 @@ export default function Landing() {
         </div>
 
         {/* Divider */}
-        <div style={{ width: 60, height: 1, background: "linear-gradient(90deg, transparent, #a070cc, transparent)", margin: "0 auto 64px" }} />
+        <div style={{ width: 60, height: 1, background: "linear-gradient(90deg, transparent, #c8a030, transparent)", margin: "0 auto 64px" }} />
 
         {/* Features */}
         <div className="features-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 20 }}>
           {FEATURES.map(f => (
             <div key={f.title} className="feature-card" style={{
-              background: "rgba(25,10,55,0.7)", border: "1px solid rgba(160,100,255,0.15)",
+              background: "rgba(25,10,55,0.7)", border: "1px solid rgba(200,160,30,0.15)",
               borderRadius: 20, padding: "28px 24px",
             }}>
               <div style={{ fontSize: 32, marginBottom: 14 }}>{f.icon}</div>
-              <div style={{ fontSize: 15, color: "#ddc8ff", marginBottom: 10 }}>{f.title}</div>
+              <div style={{ fontSize: 15, color: "#f0d890", marginBottom: 10 }}>{f.title}</div>
               <p style={{ fontSize: 13, color: "#7060a0", lineHeight: 1.65, margin: 0 }}>{f.desc}</p>
             </div>
           ))}
@@ -107,12 +107,12 @@ export default function Landing() {
 
         {/* Bottom CTA */}
         <div style={{ textAlign: "center", marginTop: 72 }}>
-          <div style={{ fontSize: 13, color: "#6050a0", marginBottom: 20 }}>
+          <div style={{ fontSize: 13, color: "#6b5c30", marginBottom: 20 }}>
             Ready to explore your inner world?
           </div>
           <button className="cta-btn" onClick={() => window.location.href = "/app"} style={{
-            background: "none", border: "1px solid rgba(160,100,255,0.4)",
-            color: "#c490ff", padding: "13px 36px",
+            background: "none", border: "1px solid rgba(200,160,30,0.4)",
+            color: "#e8b840", padding: "13px 36px",
             borderRadius: 50, fontSize: 14, cursor: "pointer", letterSpacing: 0.5,
           }}>
             Open Dream Journal →

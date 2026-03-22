@@ -14,17 +14,17 @@ export default function SearchBar({ searchQuery, setSearchQuery, filters, setFil
           value={searchQuery}
           onChange={e => setSearchQuery(e.target.value)}
           style={{
-            flex: 1, background: "rgba(20,8,50,0.7)", border: "1px solid rgba(160,100,255,0.2)",
-            borderRadius: 40, padding: "12px 20px", color: "#e8d5ff", fontSize: 14,
+            flex: 1, background: "rgba(6,12,22,0.7)", border: "1px solid rgba(200,160,30,0.2)",
+            borderRadius: 40, padding: "12px 20px", color: "#f5e4b0", fontSize: 14,
             outline: "none", fontFamily: "Georgia, serif"
           }}
         />
         <button
           onClick={() => setShowFilters(!showFilters)}
           style={{
-            background: showFilters ? "rgba(160,100,255,0.25)" : "rgba(255,255,255,0.04)",
-            border: `1px solid ${showFilters ? "rgba(160,100,255,0.6)" : "rgba(255,255,255,0.1)"}`,
-            color: showFilters ? "#d4aaff" : "#8070aa",
+            background: showFilters ? "rgba(200,160,30,0.25)" : "rgba(255,255,255,0.04)",
+            border: `1px solid ${showFilters ? "rgba(200,160,30,0.6)" : "rgba(255,255,255,0.1)"}`,
+            color: showFilters ? "#f0c840" : "#7a6a40",
             padding: "10px 18px", borderRadius: 40, fontSize: 13, cursor: "pointer"
           }}
         >
@@ -41,8 +41,8 @@ export default function SearchBar({ searchQuery, setSearchQuery, filters, setFil
             value={filters.mood || ""}
             onChange={e => setFilters(f => ({ ...f, mood: e.target.value }))}
             style={{
-              background: "rgba(20,5,50,0.9)", border: "1px solid rgba(160,100,255,0.2)",
-              borderRadius: 10, padding: "9px 14px", color: filters.mood ? "#e8d5ff" : "#7060aa",
+              background: "rgba(5,10,20,0.9)", border: "1px solid rgba(200,160,30,0.2)",
+              borderRadius: 10, padding: "9px 14px", color: filters.mood ? "#f5e4b0" : "#8a7540",
               fontSize: 13, outline: "none"
             }}
           >
@@ -54,8 +54,8 @@ export default function SearchBar({ searchQuery, setSearchQuery, filters, setFil
             value={filters.theme || ""}
             onChange={e => setFilters(f => ({ ...f, theme: e.target.value }))}
             style={{
-              background: "rgba(20,5,50,0.9)", border: "1px solid rgba(160,100,255,0.2)",
-              borderRadius: 10, padding: "9px 14px", color: filters.theme ? "#e8d5ff" : "#7060aa",
+              background: "rgba(5,10,20,0.9)", border: "1px solid rgba(200,160,30,0.2)",
+              borderRadius: 10, padding: "9px 14px", color: filters.theme ? "#f5e4b0" : "#8a7540",
               fontSize: 13, outline: "none"
             }}
           >
@@ -64,13 +64,13 @@ export default function SearchBar({ searchQuery, setSearchQuery, filters, setFil
           </select>
 
           <label style={{
-            display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#8070aa", cursor: "pointer"
+            display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#7a6a40", cursor: "pointer"
           }}>
             <input
               type="checkbox"
               checked={filters.lucidOnly || false}
               onChange={e => setFilters(f => ({ ...f, lucidOnly: e.target.checked }))}
-              style={{ accentColor: "#9040ee" }}
+              style={{ accentColor: "#c89020" }}
             />
             Lucid only
           </label>

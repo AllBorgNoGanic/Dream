@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { supabase } from "./lib/supabase";
 
 // Components
@@ -68,9 +68,9 @@ const defaultForm = {
 // ─── Shared Styles ──────────────────────────────────────────────────────────
 const sharedBackground = {
   minHeight: "100vh",
-  background: "linear-gradient(160deg, #04001a 0%, #0d0030 50%, #04001a 100%)",
+  background: "linear-gradient(160deg, #020c18 0%, #0a1428 50%, #020c18 100%)",
   fontFamily: "Georgia, serif",
-  color: "#e8d5ff",
+  color: "#f5e4b0",
   position: "relative",
   overflowX: "hidden",
 };
@@ -79,13 +79,14 @@ const globalStyles = (
   <style>{`
     @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes twinkle { 0%,100% { opacity: 0.3; } 50% { opacity: 0.9; } }
+    @keyframes bethlehem-pulse { 0%,100% { opacity: 0.88; filter: brightness(1) drop-shadow(0 0 6px rgba(160,215,255,0.7)); } 50% { opacity: 1; filter: brightness(1.3) drop-shadow(0 0 18px rgba(160,215,255,1)); } }
     * { box-sizing: border-box; }
     ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(160,100,255,0.3); border-radius: 2px; }
-    .nav-tab:hover { background: rgba(160,100,255,0.15) !important; }
-    .dream-card:hover { border-color: rgba(160,100,255,0.35) !important; transform: translateY(-1px); transition: all 0.2s; }
-    .logout-btn:hover { background: rgba(255,255,255,0.08) !important; color: #c490ff !important; }
+    ::-webkit-scrollbar-thumb { background: rgba(200,160,30,0.3); border-radius: 2px; }
+    .nav-tab:hover { background: rgba(200,160,30,0.15) !important; }
+    .dream-card:hover { border-color: rgba(200,160,30,0.35) !important; transform: translateY(-1px); transition: all 0.2s; }
+    .logout-btn:hover { background: rgba(255,255,255,0.08) !important; color: #e8b840 !important; }
     input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(0.8); }
     @media (max-width: 600px) {
       .main-nav { gap: 4px !important; }
@@ -115,6 +116,7 @@ export default function DreamJournal() {
   const [loading, setLoading] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showQuiz, setShowQuiz] = useState(false);
+  const onboardingChecked = useRef(false); // flipped to true after first check — quiz never re-evaluated
   const [stars, setStars] = useState([]);
 
   // Search & filters
@@ -127,7 +129,7 @@ export default function DreamJournal() {
   // ── Stars ──────────────────────────────────────────────────────────────────
   useEffect(() => {
     setStars(
-      Array.from({ length: 80 }, (_, i) => ({
+      Array.from({ length: 220 }, (_, i) => ({
         id: i,
         x: Math.random() * 100,
         y: Math.random() * 100,
@@ -140,12 +142,19 @@ export default function DreamJournal() {
 
   // ── Session ────────────────────────────────────────────────────────────────
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      setSessionLoading(false);
-    });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
-      setUser(session?.user ?? null);
+    // Use onAuthStateChange only — avoids the dual-fire problem where
+    // getSession() + INITIAL_SESSION both set user, triggering loadUserSettings twice.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "INITIAL_SESSION") {
+        setUser(session?.user ?? null);
+        setSessionLoading(false);
+      } else if (event === "SIGNED_IN" || event === "USER_UPDATED") {
+        setUser(session?.user ?? null);
+      } else if (event === "SIGNED_OUT") {
+        setUser(null);
+        onboardingChecked.current = false; // reset so next login re-checks
+      }
+      // TOKEN_REFRESHED intentionally ignored — no state change needed
     });
     return () => subscription.unsubscribe();
   }, []);
@@ -153,10 +162,14 @@ export default function DreamJournal() {
   useEffect(() => {
     if (user) {
       loadDreams();
-      loadUserSettings();
+      // Only load settings once per unique user ID, not on every re-render
+      if (!userSettings || userSettings.user_id !== user.id) {
+        loadUserSettings();
+      }
     } else {
       setDreams([]);
       setUserSettings(null);
+      setShowQuiz(false);
     }
   }, [user]); // eslint-disable-line
 
@@ -173,10 +186,15 @@ export default function DreamJournal() {
     }
   }, [user]); // eslint-disable-line
 
-  // PWA service worker
+  // PWA service worker — only register in production to avoid dev caching issues
   useEffect(() => {
-    if ("serviceWorker" in navigator) {
+    if ("serviceWorker" in navigator && import.meta.env.PROD) {
       navigator.serviceWorker.register("/sw.js").catch(() => {});
+    } else if ("serviceWorker" in navigator && import.meta.env.DEV) {
+      // Unregister any old SW in dev so changes always show immediately
+      navigator.serviceWorker.getRegistrations().then(regs => {
+        regs.forEach(r => r.unregister());
+      });
     }
   }, []);
 
@@ -196,17 +214,26 @@ export default function DreamJournal() {
       .select("*")
       .eq("user_id", user.id)
       .single();
+
+    let settings = data;
     if (error && error.code === "PGRST116") {
+      // No row yet — create one
       const { data: newSettings } = await supabase
         .from("user_settings")
         .insert({ user_id: user.id, interpretation_count: 0, is_pro: false })
         .select()
         .single();
-      setUserSettings(newSettings);
-      setShowQuiz(true);
-    } else if (data) {
-      setUserSettings(data);
-      if (!data.onboarding_completed) setShowQuiz(true);
+      settings = newSettings;
+    }
+
+    if (settings) setUserSettings(settings);
+
+    // Only evaluate the quiz once per login session
+    if (!onboardingChecked.current) {
+      onboardingChecked.current = true;
+      const done = localStorage.getItem(`onboarding_done_${user.id}`);
+      const completed = settings?.onboarding_completed ?? false;
+      if (!completed && !done) setShowQuiz(true);
     }
   };
 
@@ -237,13 +264,17 @@ export default function DreamJournal() {
 
   // ── Archetype quiz ─────────────────────────────────────────────────────────
   const handleQuizComplete = async ({ archetype, archetypeData }) => {
+    setShowQuiz(false);
+    localStorage.setItem(`onboarding_done_${user.id}`, "1");
+    // Upsert so it works whether the settings row exists or not
     const { data } = await supabase
       .from("user_settings")
-      .update({ archetype, archetype_data: archetypeData, onboarding_completed: true })
-      .eq("user_id", user.id)
+      .upsert(
+        { user_id: user.id, archetype, archetype_data: archetypeData, onboarding_completed: true },
+        { onConflict: "user_id" }
+      )
       .select()
       .single();
-    setShowQuiz(false);
     if (data) setUserSettings(data);
   };
 
@@ -388,15 +419,70 @@ export default function DreamJournal() {
   // ── Stars layer ────────────────────────────────────────────────────────────
   const starsLayer = (
     <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 0 }}>
+      {/* Regular stars */}
       {stars.map((s) => (
         <div key={s.id} style={{
           position: "absolute", left: `${s.x}%`, top: `${s.y}%`,
           width: s.size, height: s.size, borderRadius: "50%",
-          background: "white", opacity: s.opacity,
+          background: "rgba(255,245,200,1)", opacity: s.opacity,
           animation: `twinkle ${2 + s.delay}s ease-in-out infinite`,
           animationDelay: `${s.delay}s`,
         }} />
       ))}
+
+      {/* Star of Bethlehem — upper left, pale blue 4-pointed */}
+      <div style={{
+        position: "absolute", left: "6%", top: "4%",
+        width: 60, height: 60,
+        animation: "bethlehem-pulse 3s ease-in-out infinite",
+      }}>
+        {/* Outer glow halo */}
+        <div style={{
+          position: "absolute", inset: -32,
+          borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(160,215,255,0.22) 0%, rgba(120,190,255,0.08) 55%, transparent 75%)",
+        }} />
+        {/* Vertical ray — dramatically elongated to match reference image */}
+        <div style={{
+          position: "absolute", left: "50%", top: "50%",
+          width: 8, height: 320,
+          background: "radial-gradient(ellipse at center, rgba(255,255,255,1) 0%, rgba(200,235,255,0.9) 12%, rgba(160,215,255,0.5) 40%, rgba(120,190,255,0.15) 65%, transparent 82%)",
+          transform: "translate(-50%, -50%)",
+          borderRadius: "50%",
+        }} />
+        {/* Horizontal ray — shorter than vertical, as in reference */}
+        <div style={{
+          position: "absolute", left: "50%", top: "50%",
+          width: 90, height: 6,
+          background: "radial-gradient(ellipse at center, rgba(255,255,255,1) 0%, rgba(200,235,255,0.85) 15%, rgba(160,215,255,0.4) 50%, transparent 80%)",
+          transform: "translate(-50%, -50%)",
+          borderRadius: "50%",
+        }} />
+        {/* Diagonal ray NE–SW — subtle */}
+        <div style={{
+          position: "absolute", left: "50%", top: "50%",
+          width: 3, height: 60,
+          background: "radial-gradient(ellipse at center, rgba(220,240,255,0.6) 0%, rgba(160,215,255,0.25) 45%, transparent 75%)",
+          transform: "translate(-50%, -50%) rotate(45deg)",
+          borderRadius: "50%",
+        }} />
+        {/* Diagonal ray NW–SE — subtle */}
+        <div style={{
+          position: "absolute", left: "50%", top: "50%",
+          width: 3, height: 60,
+          background: "radial-gradient(ellipse at center, rgba(220,240,255,0.6) 0%, rgba(160,215,255,0.25) 45%, transparent 75%)",
+          transform: "translate(-50%, -50%) rotate(-45deg)",
+          borderRadius: "50%",
+        }} />
+        {/* Center bright core */}
+        <div style={{
+          position: "absolute", left: "50%", top: "50%",
+          width: 14, height: 14, borderRadius: "50%",
+          background: "radial-gradient(circle, #ffffff 0%, #ddf0ff 40%, rgba(140,210,255,0) 100%)",
+          transform: "translate(-50%, -50%)",
+          boxShadow: "0 0 16px 7px rgba(160,215,255,0.95), 0 0 36px 14px rgba(100,180,255,0.4)",
+        }} />
+      </div>
     </div>
   );
 
@@ -405,9 +491,9 @@ export default function DreamJournal() {
     return (
       <div style={{ ...sharedBackground, display: "flex", alignItems: "center", justifyContent: "center" }}>
         {globalStyles}
-        <div style={{ textAlign: "center", color: "#8060cc" }}>
-          <div style={{ fontSize: 36, marginBottom: 16 }}>🌙</div>
-          <div style={{ fontSize: 13, letterSpacing: 4, textTransform: "uppercase" }}>Entering the dreamscape...</div>
+        <div style={{ textAlign: "center", color: "#8a7010" }}>
+          <div style={{ fontSize: 36, marginBottom: 16 }}>🐑</div>
+          <div style={{ fontSize: 13, letterSpacing: 4, textTransform: "uppercase" }}>The shepherd watches over your dreams...</div>
         </div>
       </div>
     );
@@ -421,44 +507,44 @@ export default function DreamJournal() {
         {globalStyles}
         <div style={{ position: "relative", zIndex: 1, width: "100%", maxWidth: 400, padding: "0 24px" }}>
           <div style={{ textAlign: "center", marginBottom: 40 }}>
-            <div style={{ fontSize: 52, marginBottom: 12 }}>🌙</div>
-            <h1 style={{ fontSize: 36, fontWeight: 400, margin: "0 0 8px", background: "linear-gradient(135deg, #e8d5ff, #c490ff, #8040cc)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-              Dreamscape
+            <div style={{ fontSize: 52, marginBottom: 12 }}>🐑</div>
+            <h1 style={{ fontSize: 36, fontWeight: 400, margin: "0 0 8px", background: "linear-gradient(135deg, #f5e4b0, #e8b840, #a07010)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+              Dream Shepherd
             </h1>
-            <p style={{ fontSize: 14, color: "#7060aa", margin: 0 }}>Your AI-powered dream journal</p>
+            <p style={{ fontSize: 14, color: "#8a7540", margin: 0 }}>Tend to your dreams like a shepherd</p>
           </div>
-          <div style={{ background: "rgba(20,8,50,0.85)", border: "1px solid rgba(160,100,255,0.2)", borderRadius: 20, padding: 32, backdropFilter: "blur(10px)" }}>
-            <div style={{ fontSize: 15, color: "#c490ff", textAlign: "center", marginBottom: 24 }}>
+          <div style={{ background: "rgba(6,12,22,0.85)", border: "1px solid rgba(200,160,30,0.2)", borderRadius: 20, padding: 32, backdropFilter: "blur(10px)" }}>
+            <div style={{ fontSize: 15, color: "#e8b840", textAlign: "center", marginBottom: 24 }}>
               {authMode === "login" ? "Welcome back" : "Begin your journey"}
             </div>
             <input
               type="email" placeholder="Email address" value={authForm.email}
               onChange={(e) => setAuthForm((f) => ({ ...f, email: e.target.value }))}
               onKeyDown={(e) => e.key === "Enter" && handleAuth()}
-              style={{ width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(160,100,255,0.2)", borderRadius: 10, padding: "12px 16px", color: "#e8d5ff", fontSize: 14, marginBottom: 12, outline: "none" }}
+              style={{ width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(200,160,30,0.2)", borderRadius: 10, padding: "12px 16px", color: "#f5e4b0", fontSize: 14, marginBottom: 12, outline: "none" }}
             />
             <input
               type="password" placeholder="Password" value={authForm.password}
               onChange={(e) => setAuthForm((f) => ({ ...f, password: e.target.value }))}
               onKeyDown={(e) => e.key === "Enter" && handleAuth()}
-              style={{ width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(160,100,255,0.2)", borderRadius: 10, padding: "12px 16px", color: "#e8d5ff", fontSize: 14, marginBottom: 16, outline: "none" }}
+              style={{ width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(200,160,30,0.2)", borderRadius: 10, padding: "12px 16px", color: "#f5e4b0", fontSize: 14, marginBottom: 16, outline: "none" }}
             />
             {authError && (
               <div style={{ fontSize: 12, color: "#ff9999", marginBottom: 12, textAlign: "center" }}>{authError}</div>
             )}
             <button onClick={handleAuth} disabled={authLoading} style={{
-              width: "100%", background: authLoading ? "rgba(100,50,180,0.4)" : "linear-gradient(135deg, #6020cc, #9040ee)",
+              width: "100%", background: authLoading ? "rgba(140,90,5,0.4)" : "linear-gradient(135deg, #7a5200, #c89020)",
               border: "none", color: "white", padding: "13px", borderRadius: 12,
               fontSize: 14, cursor: authLoading ? "not-allowed" : "pointer", letterSpacing: 0.5,
             }}>
               {authLoading ? "..." : authMode === "login" ? "Sign In" : "Create Account"}
             </button>
             <div style={{ textAlign: "center", marginTop: 20 }}>
-              <span style={{ fontSize: 13, color: "#7060aa" }}>
+              <span style={{ fontSize: 13, color: "#8a7540" }}>
                 {authMode === "login" ? "No account? " : "Already have an account? "}
               </span>
               <button onClick={() => { setAuthMode(authMode === "login" ? "signup" : "login"); setAuthError(""); }} style={{
-                background: "none", border: "none", color: "#c490ff", fontSize: 13, cursor: "pointer", textDecoration: "underline", padding: 0,
+                background: "none", border: "none", color: "#e8b840", fontSize: 13, cursor: "pointer", textDecoration: "underline", padding: 0,
               }}>
                 {authMode === "login" ? "Sign up free" : "Sign in"}
               </button>
@@ -482,7 +568,7 @@ export default function DreamJournal() {
 
   // ── Nav config ─────────────────────────────────────────────────────────────
   const tabs = [
-    { id: "journal",    label: "🌙 Journal" },
+    { id: "journal",    label: "🐑 Journal" },
     { id: "patterns",   label: "✦ Patterns" },
     { id: "lucid",      label: "⚡ Lucid" },
     { id: "community",  label: "👥 Community" },
@@ -500,15 +586,15 @@ export default function DreamJournal() {
 
         {/* Header */}
         <div style={{ textAlign: "center", padding: "40px 0 28px", position: "relative" }}>
-          <div style={{ fontSize: 12, letterSpacing: 6, color: "#a070cc", textTransform: "uppercase", marginBottom: 10 }}>
-            Your Subconscious
+          <div style={{ fontSize: 12, letterSpacing: 6, color: "#c8a030", textTransform: "uppercase", marginBottom: 10 }}>
+            Shepherd of Dreams
           </div>
           <h1 style={{
             fontSize: 38, fontWeight: 400, margin: 0,
-            background: "linear-gradient(135deg, #e8d5ff, #c490ff, #8040cc)",
+            background: "linear-gradient(135deg, #f5e4b0, #e8b840, #a07010)",
             WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", letterSpacing: 1, display: "inline"
           }}>
-            Dreamscape
+            Dream Shepherd
           </h1>
           {userSettings?.is_pro && (
             <span style={{
@@ -520,15 +606,15 @@ export default function DreamJournal() {
             </span>
           )}
           {userSettings?.archetype && (
-            <div style={{ fontSize: 12, color: "#7060aa", marginTop: 6 }}>
+            <div style={{ fontSize: 12, color: "#8a7540", marginTop: 6 }}>
               {userSettings.archetype} Dreamer
             </div>
           )}
-          <div style={{ width: 60, height: 1, background: "linear-gradient(90deg, transparent, #a070cc, transparent)", margin: "14px auto 0" }} />
+          <div style={{ width: 60, height: 1, background: "linear-gradient(90deg, transparent, #c8a030, transparent)", margin: "14px auto 0" }} />
           <button className="logout-btn" onClick={handleLogout} style={{
             position: "absolute", top: 40, right: 0,
             background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)",
-            color: "#8070aa", padding: "7px 16px", borderRadius: 40, fontSize: 12, cursor: "pointer",
+            color: "#7a6a40", padding: "7px 16px", borderRadius: 40, fontSize: 12, cursor: "pointer",
           }}>
             Sign Out
           </button>
@@ -538,9 +624,9 @@ export default function DreamJournal() {
         <div className="main-nav" style={{ display: "flex", justifyContent: "center", gap: 6, marginBottom: 32, flexWrap: "wrap" }}>
           {tabs.map((t) => (
             <button key={t.id} className="nav-tab" onClick={() => setTab(t.id)} style={{
-              background: tab === t.id ? "rgba(160,100,255,0.25)" : "rgba(255,255,255,0.04)",
-              border: `1px solid ${tab === t.id ? "rgba(160,100,255,0.6)" : "rgba(255,255,255,0.08)"}`,
-              color: tab === t.id ? "#d4aaff" : "#8070aa",
+              background: tab === t.id ? "rgba(200,160,30,0.25)" : "rgba(255,255,255,0.04)",
+              border: `1px solid ${tab === t.id ? "rgba(200,160,30,0.6)" : "rgba(255,255,255,0.08)"}`,
+              color: tab === t.id ? "#f0c840" : "#7a6a40",
               padding: "9px 18px", borderRadius: 40, fontSize: 12, cursor: "pointer",
               letterSpacing: 0.3, transition: "all 0.2s",
             }}>
@@ -559,7 +645,7 @@ export default function DreamJournal() {
             />
 
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
-              <div style={{ fontSize: 13, color: "#7060aa" }}>
+              <div style={{ fontSize: 13, color: "#8a7540" }}>
                 {dreams.length} dream{dreams.length !== 1 ? "s" : ""} recorded
               </div>
               <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
@@ -567,11 +653,11 @@ export default function DreamJournal() {
                 <button
                   onClick={() => { setShowForm(!showForm); if (!showForm) setForm(defaultForm); }}
                   style={{
-                    background: showForm ? "rgba(255,255,255,0.06)" : "linear-gradient(135deg, #6020cc, #9040ee)",
+                    background: showForm ? "rgba(255,255,255,0.06)" : "linear-gradient(135deg, #7a5200, #c89020)",
                     border: showForm ? "1px solid rgba(255,255,255,0.12)" : "none",
-                    color: showForm ? "#8070aa" : "white",
+                    color: showForm ? "#7a6a40" : "white",
                     padding: "10px 22px", borderRadius: 40, fontSize: 13, cursor: "pointer",
-                    boxShadow: showForm ? "none" : "0 4px 20px rgba(120,40,220,0.4)", letterSpacing: 0.4,
+                    boxShadow: showForm ? "none" : "0 4px 20px rgba(160,100,5,0.4)", letterSpacing: 0.4,
                   }}
                 >
                   {showForm ? "✕ Cancel" : "+ Record Dream"}
@@ -603,15 +689,15 @@ export default function DreamJournal() {
             )}
 
             {dreams.length === 0 && !showForm && (
-              <div style={{ textAlign: "center", padding: "60px 0", color: "#6050a0" }}>
-                <div style={{ fontSize: 48, marginBottom: 16 }}>🌙</div>
-                <div style={{ fontSize: 16, color: "#8070aa", marginBottom: 8 }}>Your dream journal awaits</div>
+              <div style={{ textAlign: "center", padding: "60px 0", color: "#6b5c30" }}>
+                <div style={{ fontSize: 48, marginBottom: 16 }}>🐑</div>
+                <div style={{ fontSize: 16, color: "#7a6a40", marginBottom: 8 }}>Your dream journal awaits</div>
                 <div style={{ fontSize: 13 }}>Tap "+ Record Dream" to begin capturing your subconscious</div>
               </div>
             )}
 
             {dreams.length > 0 && filteredDreams.length === 0 && (
-              <div style={{ textAlign: "center", padding: "40px 0", color: "#6050a0", fontSize: 13 }}>
+              <div style={{ textAlign: "center", padding: "40px 0", color: "#6b5c30", fontSize: 13 }}>
                 No dreams match your search
               </div>
             )}
@@ -688,12 +774,12 @@ export default function DreamJournal() {
             style={{
               background: "rgba(16,4,40,0.97)", border: "1px solid rgba(200,160,50,0.4)",
               borderRadius: 24, padding: 36, maxWidth: 400, width: "90%",
-              boxShadow: "0 16px 60px rgba(80,20,160,0.5)", animation: "fadeIn 0.3s ease", textAlign: "center",
+              boxShadow: "0 16px 60px rgba(110,70,5,0.5)", animation: "fadeIn 0.3s ease", textAlign: "center",
             }}
           >
             <div style={{ fontSize: 40, marginBottom: 16 }}>🔮</div>
-            <div style={{ fontSize: 20, color: "#e8d5ff", marginBottom: 8 }}>Unlock Unlimited Interpretations</div>
-            <div style={{ fontSize: 14, color: "#8070aa", marginBottom: 24, lineHeight: 1.6 }}>
+            <div style={{ fontSize: 20, color: "#f5e4b0", marginBottom: 8 }}>Unlock Unlimited Interpretations</div>
+            <div style={{ fontSize: 14, color: "#7a6a40", marginBottom: 24, lineHeight: 1.6 }}>
               You've used all {FREE_INTERPRETATIONS} free AI interpretations.<br />
               Upgrade to Pro for unlimited dream analysis + all premium features.
             </div>
@@ -714,7 +800,7 @@ export default function DreamJournal() {
               Upgrade Now
             </button>
             <button onClick={() => setShowUpgradeModal(false)} style={{
-              background: "none", border: "none", color: "#6050a0", fontSize: 13, cursor: "pointer", padding: "8px",
+              background: "none", border: "none", color: "#6b5c30", fontSize: 13, cursor: "pointer", padding: "8px",
             }}>
               Maybe Later
             </button>

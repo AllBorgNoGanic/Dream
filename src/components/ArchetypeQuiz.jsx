@@ -169,7 +169,7 @@ export default function ArchetypeQuiz({ onComplete }) {
       position: "fixed",
       inset: 0,
       zIndex: 9999,
-      background: "linear-gradient(135deg, #04001a 0%, #120038 50%, #0a0025 100%)",
+      background: "linear-gradient(135deg, #020c18 0%, #081830 50%, #0a0025 100%)",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
@@ -185,13 +185,13 @@ export default function ArchetypeQuiz({ onComplete }) {
     title: {
       fontSize: 36,
       fontWeight: "bold",
-      color: "#e8d5ff",
+      color: "#f5e4b0",
       margin: "0 0 12px 0",
       letterSpacing: 1,
     },
     subtitle: {
       fontSize: 18,
-      color: "#c490ff",
+      color: "#e8b840",
       margin: "0 0 40px 0",
       lineHeight: 1.6,
       fontStyle: "italic",
@@ -224,14 +224,14 @@ export default function ArchetypeQuiz({ onComplete }) {
       transition: "width 0.4s ease",
     },
     progressText: {
-      color: "#c490ff",
+      color: "#e8b840",
       fontSize: 14,
       marginBottom: 8,
       textAlign: "right",
     },
     questionText: {
       fontSize: 22,
-      color: "#e8d5ff",
+      color: "#f5e4b0",
       margin: "0 0 32px 0",
       lineHeight: 1.5,
       opacity: fadeIn ? 1 : 0,
@@ -249,7 +249,7 @@ export default function ArchetypeQuiz({ onComplete }) {
         ? "1px solid rgba(168, 85, 247, 0.6)"
         : "1px solid rgba(255, 255, 255, 0.1)",
       borderRadius: 12,
-      color: "#e8d5ff",
+      color: "#f5e4b0",
       fontSize: 16,
       fontFamily: "Georgia, 'Times New Roman', serif",
       cursor: "pointer",
@@ -276,7 +276,7 @@ export default function ArchetypeQuiz({ onComplete }) {
     },
     revealText: {
       fontSize: 16,
-      color: "#c490ff",
+      color: "#e8b840",
       letterSpacing: 3,
       textTransform: "uppercase",
       marginBottom: 8,
@@ -297,12 +297,12 @@ export default function ArchetypeQuiz({ onComplete }) {
     resultName: {
       fontSize: 32,
       fontWeight: "bold",
-      color: "#e8d5ff",
+      color: "#f5e4b0",
       margin: "0 0 20px 0",
     },
     resultDescription: {
       fontSize: 16,
-      color: "#c490ff",
+      color: "#e8b840",
       lineHeight: 1.7,
       margin: "0 0 28px 0",
     },
@@ -364,7 +364,7 @@ export default function ArchetypeQuiz({ onComplete }) {
             <p style={styles.subtitle}>
               Every dreamer is unique. Answer seven questions to unveil the
               archetype that shapes your dreamworld and unlock a personalized
-              Dreamscape experience.
+              Dream Shepherd experience.
             </p>
             <button
               style={styles.button}
@@ -462,7 +462,7 @@ export default function ArchetypeQuiz({ onComplete }) {
                     "0 0 30px rgba(168, 85, 247, 0.4)";
                 }}
               >
-                Enter Dreamscape
+                Enter Dream Shepherd
               </button>
             </div>
           </div>

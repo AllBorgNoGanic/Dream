@@ -14,7 +14,7 @@ const styles = {
   heading: {
     fontSize: 28,
     fontWeight: 700,
-    color: "#e8d5ff",
+    color: "#f5e4b0",
     marginBottom: 20,
     textAlign: "center",
     letterSpacing: 1,
@@ -30,9 +30,9 @@ const styles = {
     minWidth: 180,
     padding: "10px 16px",
     borderRadius: 16,
-    border: "1px solid rgba(160,100,255,0.15)",
-    background: "rgba(20,8,50,0.7)",
-    color: "#e8d5ff",
+    border: "1px solid rgba(200,160,30,0.15)",
+    background: "rgba(6,12,22,0.7)",
+    color: "#f5e4b0",
     fontFamily: "Georgia, serif",
     fontSize: 15,
     outline: "none",
@@ -40,9 +40,9 @@ const styles = {
   select: {
     padding: "10px 14px",
     borderRadius: 16,
-    border: "1px solid rgba(160,100,255,0.15)",
-    background: "rgba(20,8,50,0.7)",
-    color: "#c490ff",
+    border: "1px solid rgba(200,160,30,0.15)",
+    background: "rgba(6,12,22,0.7)",
+    color: "#e8b840",
     fontFamily: "Georgia, serif",
     fontSize: 14,
     outline: "none",
@@ -50,8 +50,8 @@ const styles = {
     minWidth: 120,
   },
   card: {
-    background: "rgba(20,8,50,0.7)",
-    border: "1px solid rgba(160,100,255,0.15)",
+    background: "rgba(6,12,22,0.7)",
+    border: "1px solid rgba(200,160,30,0.15)",
     borderRadius: 18,
     padding: "20px 22px",
     marginBottom: 18,
@@ -64,22 +64,22 @@ const styles = {
     marginBottom: 8,
   },
   displayName: {
-    color: "#c490ff",
+    color: "#e8b840",
     fontSize: 13,
     fontStyle: "italic",
   },
   date: {
-    color: "#7060aa",
+    color: "#8a7540",
     fontSize: 12,
   },
   title: {
-    color: "#e8d5ff",
+    color: "#f5e4b0",
     fontSize: 20,
     fontWeight: 600,
     margin: "6px 0 8px",
   },
   description: {
-    color: "#c490ff",
+    color: "#e8b840",
     fontSize: 14,
     lineHeight: 1.6,
     display: "-webkit-box",
@@ -100,9 +100,9 @@ const styles = {
     padding: "3px 10px",
     borderRadius: 12,
     fontSize: 12,
-    background: "rgba(160,100,255,0.12)",
-    color: "#c490ff",
-    border: "1px solid rgba(160,100,255,0.15)",
+    background: "rgba(200,160,30,0.12)",
+    color: "#e8b840",
+    border: "1px solid rgba(200,160,30,0.15)",
   },
   tag: {
     display: "inline-block",
@@ -110,7 +110,7 @@ const styles = {
     borderRadius: 10,
     fontSize: 11,
     background: "rgba(100,60,200,0.15)",
-    color: "#c490ff",
+    color: "#e8b840",
     marginRight: 6,
     marginBottom: 4,
   },
@@ -120,7 +120,7 @@ const styles = {
     alignItems: "center",
     marginTop: 10,
     paddingTop: 10,
-    borderTop: "1px solid rgba(160,100,255,0.08)",
+    borderTop: "1px solid rgba(200,160,30,0.08)",
   },
   actionBtn: {
     background: "none",
@@ -140,21 +140,21 @@ const styles = {
     padding: "12px 14px",
     background: "rgba(10,4,30,0.5)",
     borderRadius: 14,
-    border: "1px solid rgba(160,100,255,0.08)",
+    border: "1px solid rgba(200,160,30,0.08)",
   },
   commentItem: {
     marginBottom: 10,
     paddingBottom: 8,
-    borderBottom: "1px solid rgba(160,100,255,0.06)",
+    borderBottom: "1px solid rgba(200,160,30,0.06)",
   },
   commentAuthor: {
-    color: "#c490ff",
+    color: "#e8b840",
     fontSize: 12,
     fontStyle: "italic",
     marginBottom: 2,
   },
   commentContent: {
-    color: "#e8d5ff",
+    color: "#f5e4b0",
     fontSize: 13,
     lineHeight: 1.5,
   },
@@ -167,9 +167,9 @@ const styles = {
     flex: 1,
     padding: "8px 12px",
     borderRadius: 12,
-    border: "1px solid rgba(160,100,255,0.15)",
-    background: "rgba(20,8,50,0.7)",
-    color: "#e8d5ff",
+    border: "1px solid rgba(200,160,30,0.15)",
+    background: "rgba(6,12,22,0.7)",
+    color: "#f5e4b0",
     fontFamily: "Georgia, serif",
     fontSize: 13,
     outline: "none",
@@ -187,14 +187,14 @@ const styles = {
   },
   emptyState: {
     textAlign: "center",
-    color: "#7060aa",
+    color: "#8a7540",
     padding: "40px 20px",
     fontSize: 16,
     fontStyle: "italic",
   },
   loading: {
     textAlign: "center",
-    color: "#7060aa",
+    color: "#8a7540",
     padding: "40px 20px",
     fontSize: 15,
   },
@@ -330,7 +330,7 @@ function DreamCard({ dream, displayName, user }) {
           onClick={toggleLike}
           style={{
             ...styles.actionBtn,
-            color: liked ? "#f472b6" : "#7060aa",
+            color: liked ? "#f472b6" : "#8a7540",
           }}
           title={user ? (liked ? "Unlike" : "Like") : "Sign in to like"}
         >
@@ -341,7 +341,7 @@ function DreamCard({ dream, displayName, user }) {
           onClick={toggleComments}
           style={{
             ...styles.actionBtn,
-            color: showComments ? "#c490ff" : "#7060aa",
+            color: showComments ? "#e8b840" : "#8a7540",
           }}
           title="Comments"
         >
@@ -352,9 +352,9 @@ function DreamCard({ dream, displayName, user }) {
       {showComments && (
         <div style={styles.commentSection}>
           {loadingComments ? (
-            <div style={{ color: "#7060aa", fontSize: 13 }}>Loading comments...</div>
+            <div style={{ color: "#8a7540", fontSize: 13 }}>Loading comments...</div>
           ) : comments.length === 0 ? (
-            <div style={{ color: "#7060aa", fontSize: 13, fontStyle: "italic" }}>
+            <div style={{ color: "#8a7540", fontSize: 13, fontStyle: "italic" }}>
               No comments yet. Be the first to share your thoughts.
             </div>
           ) : (
