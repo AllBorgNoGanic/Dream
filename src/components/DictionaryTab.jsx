@@ -164,18 +164,18 @@ export default function DictionaryTab() {
         <div style={{ marginBottom: 28 }}>
           <div style={{
             display: "flex", alignItems: "center", gap: 10,
-            marginBottom: 16,
+            marginBottom: 14,
           }}>
-            <span style={{ fontSize: 24 }}>💡</span>
+            <span style={{ fontSize: 22 }}>💡</span>
             <h3 style={{
-              fontSize: 20, fontWeight: 400, color: "#e8b840",
+              fontSize: 18, fontWeight: 400, color: "#e8b840",
               margin: 0, fontFamily: "Georgia, serif",
             }}>
               Possible meaning
             </h3>
           </div>
           <p style={{
-            fontSize: 17, color: "#c8a870", lineHeight: 1.85, margin: 0,
+            fontSize: 15, color: "#c8a870", lineHeight: 1.75, margin: 0,
             fontFamily: "Georgia, serif",
           }}>
             {selectedTheme.meaning}
@@ -186,23 +186,23 @@ export default function DictionaryTab() {
         <div style={{
           background: "rgba(255,255,255,0.03)",
           border: "1px solid rgba(168,85,247,0.2)",
-          borderRadius: 20, padding: "26px 24px",
+          borderRadius: 20, padding: "24px 22px",
           boxShadow: "0 0 30px rgba(168,85,247,0.06)",
         }}>
           <div style={{
             display: "flex", alignItems: "center", gap: 10,
-            marginBottom: 16,
+            marginBottom: 14,
           }}>
-            <span style={{ fontSize: 24 }}>🧭</span>
+            <span style={{ fontSize: 22 }}>🧭</span>
             <h3 style={{
-              fontSize: 20, fontWeight: 400, color: "#e8b840",
+              fontSize: 18, fontWeight: 400, color: "#e8b840",
               margin: 0, fontFamily: "Georgia, serif",
             }}>
               Guidance
             </h3>
           </div>
           <p style={{
-            fontSize: 17, color: "#c8a870", lineHeight: 1.85, margin: 0,
+            fontSize: 15, color: "#c8a870", lineHeight: 1.75, margin: 0,
             fontFamily: "Georgia, serif",
           }}>
             {selectedTheme.guidance}
