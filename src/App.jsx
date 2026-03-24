@@ -117,6 +117,7 @@ export default function DreamJournal() {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showQuiz, setShowQuiz] = useState(false);
   const onboardingChecked = useRef(false); // flipped to true after first check — quiz never re-evaluated
+  const quizDoneRef = useRef(false);       // prevents quiz re-showing after completion
   const [stars, setStars] = useState([]);
 
   // Search & filters
@@ -263,14 +264,28 @@ export default function DreamJournal() {
   };
 
   // ── Archetype quiz ─────────────────────────────────────────────────────────
-  const handleQuizComplete = async ({ archetype, archetypeData }) => {
+  const handleQuizComplete = async ({ displayName, profile, sleep, emotional, recurringThemes, recentDream, interpretation, aiThemes }) => {
+    quizDoneRef.current = true;
     setShowQuiz(false);
     localStorage.setItem(`onboarding_done_${user.id}`, "1");
     // Upsert so it works whether the settings row exists or not
     const { data } = await supabase
       .from("user_settings")
       .upsert(
-        { user_id: user.id, archetype, archetype_data: archetypeData, onboarding_completed: true },
+        {
+          user_id: user.id,
+          display_name: displayName || null,
+          archetype_data: {
+            profile,
+            sleep,
+            emotional,
+            recurringThemes,
+            recentDream,
+            interpretation,
+            aiThemes,
+          },
+          onboarding_completed: true,
+        },
         { onConflict: "user_id" }
       )
       .select()
@@ -281,17 +296,19 @@ export default function DreamJournal() {
   // ── AI Interpretation ──────────────────────────────────────────────────────
   const interpretDream = async (dream) => {
     try {
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/interpret-dream`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+        },
         body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1000,
           system: "You are a wise, empathetic dream interpreter drawing from Jungian psychology, symbolism, and spiritual traditions. Give warm, insightful 2-3 sentence interpretations. Be poetic but grounded. Never be alarming.",
           messages: [{
             role: "user",
             content: `Interpret this dream. Title: "${dream.title}". Mood: ${dream.mood}. Theme: ${dream.theme}. ${dream.is_lucid ? "This was a lucid dream." : ""} Dream: "${dream.description}"`,
           }],
+          max_tokens: 1000,
         }),
       });
       const data = await response.json();
@@ -572,7 +589,7 @@ export default function DreamJournal() {
     { id: "patterns",   label: "✦ Patterns" },
     { id: "lucid",      label: "⚡ Lucid" },
     { id: "community",  label: "👥 Community" },
-    { id: "dictionary", label: "📖 Dict" },
+    { id: "dictionary", label: "📖 Library" },
     { id: "profile",    label: "◉ Profile" },
   ];
 
@@ -587,7 +604,7 @@ export default function DreamJournal() {
         {/* Header */}
         <div style={{ textAlign: "center", padding: "40px 0 28px", position: "relative" }}>
           <div style={{ fontSize: 12, letterSpacing: 6, color: "#c8a030", textTransform: "uppercase", marginBottom: 10 }}>
-            Shepherd of Dreams
+            Guide Your Dreams
           </div>
           <h1 style={{
             fontSize: 38, fontWeight: 400, margin: 0,
@@ -605,9 +622,9 @@ export default function DreamJournal() {
               ✦ Pro
             </span>
           )}
-          {userSettings?.archetype && (
+          {(userSettings?.display_name || userSettings?.archetype) && (
             <div style={{ fontSize: 12, color: "#8a7540", marginTop: 6 }}>
-              {userSettings.archetype} Dreamer
+              {userSettings.display_name ? `Welcome, ${userSettings.display_name}` : `${userSettings.archetype} Dreamer`}
             </div>
           )}
           <div style={{ width: 60, height: 1, background: "linear-gradient(90deg, transparent, #c8a030, transparent)", margin: "14px auto 0" }} />
