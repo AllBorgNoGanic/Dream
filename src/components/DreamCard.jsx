@@ -14,7 +14,7 @@ const formatDate = (iso) => {
 
 const getMoodEmoji = (mood) => mood?.split(" ")[0] || "💭";
 
-export default function DreamCard({ dream, isSelected, onSelect, onDelete }) {
+export default function DreamCard({ dream, isSelected, onSelect, onDelete, onInterpret, interpreting }) {
   return (
     <div
       className="dream-card"
@@ -114,6 +114,27 @@ export default function DreamCard({ dream, isSelected, onSelect, onDelete }) {
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {isSelected && !dream.interpretation && onInterpret && (
+        <div style={{ marginTop: 12 }}>
+          <button
+            onClick={(e) => { e.stopPropagation(); onInterpret(dream); }}
+            disabled={interpreting}
+            style={{
+              width: "100%", padding: "10px 0",
+              background: interpreting
+                ? "rgba(120,60,220,0.2)"
+                : "linear-gradient(135deg, rgba(120,60,220,0.4), rgba(168,85,247,0.4))",
+              border: "1px solid rgba(168,85,247,0.4)",
+              borderRadius: 12, color: interpreting ? "#8a7540" : "#d4b0ff",
+              fontSize: 13, cursor: interpreting ? "not-allowed" : "pointer",
+              letterSpacing: 0.5, transition: "all 0.2s",
+            }}
+          >
+            {interpreting ? "✦ Interpreting..." : "✦ Interpret Dream"}
+          </button>
         </div>
       )}
 
