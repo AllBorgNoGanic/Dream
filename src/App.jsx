@@ -320,6 +320,25 @@ export default function DreamJournal() {
   };
 
   // ── Dream CRUD ─────────────────────────────────────────────────────────────
+  const [interpretingId, setInterpretingId] = useState(null);
+
+  const handleInterpretDream = async (dream) => {
+    if (!canInterpret) { setShowUpgradeModal(true); return; }
+    setInterpretingId(dream.id);
+    try {
+      const interpretation = await interpretDream(dream);
+      await supabase.from("dreams").update({ interpretation }).eq("id", dream.id);
+      setDreams((prev) => prev.map((d) => d.id === dream.id ? { ...d, interpretation } : d));
+      if (!userSettings?.is_pro) {
+        const newCount = (userSettings?.interpretation_count ?? 0) + 1;
+        await supabase.from("user_settings").update({ interpretation_count: newCount }).eq("user_id", user.id);
+        setUserSettings((s) => ({ ...s, interpretation_count: newCount }));
+      }
+    } finally {
+      setInterpretingId(null);
+    }
+  };
+
   const canInterpret =
     userSettings?.is_pro || (userSettings?.interpretation_count ?? 0) < FREE_INTERPRETATIONS;
 
@@ -726,6 +745,8 @@ export default function DreamJournal() {
                 isSelected={selectedDream?.id === dream.id}
                 onSelect={(d) => setSelectedDream(selectedDream?.id === d.id ? null : d)}
                 onDelete={handleDeleteDream}
+                onInterpret={handleInterpretDream}
+                interpreting={interpretingId === dream.id}
               />
             ))}
           </div>
