@@ -93,48 +93,115 @@ export default function DreamCard({ dream, isSelected, onSelect, onDelete, onInt
 
       {isSelected && dream.interpretation && (
         <div style={{
-          background: "rgba(140,90,5,0.15)", border: "1px solid rgba(200,160,30,0.2)",
-          borderRadius: 12, padding: 16, marginTop: 12, animation: "fadeIn 0.3s ease"
+          marginTop: 16, borderRadius: 16, overflow: "hidden",
+          border: "1px solid rgba(168,85,247,0.35)",
+          boxShadow: "0 0 40px rgba(120,60,220,0.12), 0 8px 32px rgba(0,0,0,0.4)",
+          animation: "fadeIn 0.5s ease",
         }}>
-          <div style={{ fontSize: 11, letterSpacing: 3, color: "#c8a030", textTransform: "uppercase", marginBottom: 8 }}>
-            AI Interpretation
-          </div>
-          <p style={{ fontSize: 14, color: "#e8c870", lineHeight: 1.7, margin: 0 }}>
-            {dream.interpretation}
-          </p>
-          {dream.symbols?.length > 0 && (
-            <div style={{ marginTop: 12, display: "flex", gap: 8, flexWrap: "wrap" }}>
-              {dream.symbols.map(s => (
-                <span key={s} style={{
-                  background: "rgba(160,110,5,0.2)", border: "1px solid rgba(200,160,30,0.2)",
-                  borderRadius: 20, padding: "3px 10px", fontSize: 11, color: "#d4a840"
-                }}>
-                  {DREAM_DICTIONARY[s]?.symbol} {s}
-                </span>
-              ))}
+          {/* Top shimmer bar */}
+          <div style={{
+            height: 2,
+            background: "linear-gradient(90deg, transparent, #7c3aed, #e8b840, #a855f7, transparent)",
+          }} />
+
+          <div style={{
+            background: "linear-gradient(160deg, rgba(28,8,58,0.97) 0%, rgba(10,4,24,0.98) 100%)",
+            padding: "18px 20px 16px",
+          }}>
+            {/* Header row */}
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+              <span style={{ fontSize: 18, lineHeight: 1 }}>🌙</span>
+              <span style={{
+                fontSize: 9, letterSpacing: 4, color: "#a855f7",
+                textTransform: "uppercase", fontFamily: "Georgia, serif", fontWeight: 400,
+              }}>
+                The Shepherd's Reading
+              </span>
+              <div style={{
+                flex: 1, height: 1,
+                background: "linear-gradient(90deg, rgba(168,85,247,0.5), transparent)",
+              }} />
             </div>
-          )}
+
+            {/* Interpretation body */}
+            <p style={{
+              fontSize: 15, color: "#f0dfa0", lineHeight: 1.85,
+              margin: "0 0 0", fontFamily: "Georgia, serif", fontStyle: "italic",
+              textShadow: "0 1px 8px rgba(200,160,30,0.15)",
+            }}>
+              {dream.interpretation}
+            </p>
+
+            {/* Symbols */}
+            {dream.symbols?.length > 0 && (
+              <>
+                <div style={{
+                  height: 1, margin: "14px 0 12px",
+                  background: "linear-gradient(90deg, transparent, rgba(168,85,247,0.35), transparent)",
+                }} />
+                <div style={{
+                  fontSize: 9, letterSpacing: 3, color: "#6b4da0",
+                  textTransform: "uppercase", marginBottom: 9,
+                }}>
+                  Symbols Detected
+                </div>
+                <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
+                  {dream.symbols.map(s => (
+                    <span key={s} style={{
+                      display: "inline-flex", alignItems: "center", gap: 4,
+                      background: "rgba(120,60,220,0.18)",
+                      border: "1px solid rgba(168,85,247,0.32)",
+                      borderRadius: 20, padding: "4px 12px",
+                      fontSize: 11, color: "#c4a0ff",
+                      boxShadow: "0 0 10px rgba(120,60,220,0.18)",
+                    }}>
+                      {DREAM_DICTIONARY[s]?.symbol} {s}
+                    </span>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Bottom shimmer bar */}
+          <div style={{
+            height: 1,
+            background: "linear-gradient(90deg, transparent, rgba(168,85,247,0.3), rgba(232,184,64,0.2), transparent)",
+          }} />
         </div>
       )}
 
       {isSelected && !dream.interpretation && onInterpret && (
-        <div style={{ marginTop: 12 }}>
+        <div style={{ marginTop: 14 }}>
           <button
             onClick={(e) => { e.stopPropagation(); onInterpret(dream); }}
             disabled={interpreting}
             style={{
-              width: "100%", padding: "10px 0",
+              width: "100%", padding: "13px 0",
               background: interpreting
-                ? "rgba(120,60,220,0.2)"
-                : "linear-gradient(135deg, rgba(120,60,220,0.4), rgba(168,85,247,0.4))",
-              border: "1px solid rgba(168,85,247,0.4)",
-              borderRadius: 12, color: interpreting ? "#8a7540" : "#d4b0ff",
-              fontSize: 13, cursor: interpreting ? "not-allowed" : "pointer",
-              letterSpacing: 0.5, transition: "all 0.2s",
+                ? "rgba(60,20,100,0.3)"
+                : "linear-gradient(135deg, rgba(90,30,180,0.5), rgba(140,50,220,0.5))",
+              border: interpreting
+                ? "1px solid rgba(120,60,220,0.25)"
+                : "1px solid rgba(168,85,247,0.55)",
+              borderRadius: 14,
+              color: interpreting ? "#6b4da0" : "#d4b0ff",
+              fontSize: 13, fontFamily: "Georgia, serif",
+              cursor: interpreting ? "not-allowed" : "pointer",
+              letterSpacing: 1, transition: "all 0.25s",
+              boxShadow: interpreting ? "none" : "0 0 20px rgba(120,60,220,0.2)",
             }}
           >
-            {interpreting ? "✦ Interpreting..." : "✦ Interpret Dream"}
+            {interpreting ? "🌙 Reading your dream..." : "✦ Unlock the Meaning"}
           </button>
+          {!interpreting && (
+            <div style={{
+              textAlign: "center", marginTop: 6,
+              fontSize: 10, color: "#4a3570", letterSpacing: 1,
+            }}>
+              Powered by AI
+            </div>
+          )}
         </div>
       )}
 
