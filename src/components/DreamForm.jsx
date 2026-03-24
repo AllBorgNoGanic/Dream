@@ -583,7 +583,7 @@ export default function DreamForm({
                 style={styles.starBtn(star <= (form.sleep_quality || 0))}
                 aria-label={`${star} star`}
               >
-                \u2605
+                ★
               </button>
             ))}
           </div>
