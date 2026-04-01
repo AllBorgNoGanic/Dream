@@ -20,7 +20,7 @@ const formatDate = (iso) => {
 
 const getMoodEmoji = (mood) => mood?.split(" ")[0] || "💭";
 
-export default function DreamCard({ dream, isSelected, onSelect, onDelete, onInterpret, interpreting, onViewReading }) {
+export default function DreamCard({ dream, isSelected, onSelect, onDelete, onTogglePublic, onInterpret, interpreting, onViewReading }) {
   const needsInterpretation = !dream.interpretation && onInterpret;
 
   return (
@@ -236,10 +236,19 @@ export default function DreamCard({ dream, isSelected, onSelect, onDelete, onInt
 
       {isSelected && (
         <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 12, gap: 8 }}>
-          {dream.is_public && (
-            <span style={{ fontSize: 11, color: "#6b5c30", padding: "6px 12px" }}>
-              Shared with community
-            </span>
+          {onTogglePublic && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onTogglePublic(dream.id); }}
+              style={{
+                background: dream.is_public ? "rgba(100,200,120,0.1)" : "rgba(144,102,212,0.1)",
+                border: dream.is_public ? "1px solid rgba(100,200,120,0.25)" : "1px solid rgba(144,102,212,0.25)",
+                color: dream.is_public ? "#7ac88a" : "#b08aee",
+                padding: "6px 14px", borderRadius: 20, fontSize: 11,
+                cursor: "pointer", fontFamily: "Georgia, serif",
+              }}
+            >
+              {dream.is_public ? "Shared with Community" : "Share to Community"}
+            </button>
           )}
           {onDelete && (
             <button

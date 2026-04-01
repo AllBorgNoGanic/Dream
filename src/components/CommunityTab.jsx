@@ -323,6 +323,15 @@ function DreamCard({ dream, displayName, user, canInterpret, onInterpretDream })
         <span style={styles.date}>{formattedDate}</span>
       </div>
       <div style={styles.title}>{dream.title || "Untitled Dream"}</div>
+      {dream.dream_image_url && (
+        <div style={{ marginBottom: 12, borderRadius: 14, overflow: "hidden" }}>
+          <img
+            src={dream.dream_image_url}
+            alt={dream.title || "Dream visualization"}
+            style={{ width: "100%", display: "block", borderRadius: 14 }}
+          />
+        </div>
+      )}
       <div style={styles.description}>{dream.description}</div>
       <div style={styles.metaRow}>
         {dream.mood && <span style={styles.badge}>{dream.mood}</span>}
