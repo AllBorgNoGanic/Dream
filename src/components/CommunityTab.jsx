@@ -367,7 +367,7 @@ function DreamCard({ dream, displayName, user, canInterpret, onInterpretDream })
           <span style={{ fontSize: 16 }}>{showComments ? "\uD83D\uDCAC" : "\uD83D\uDCAC"}</span>
           <span>{showComments ? "Hide" : "Comments"}</span>
         </button>
-        {user && onInterpretDream && !communityInterpretation && (
+        {user && onInterpretDream && !communityInterpretation && dream.user_id !== user.id && (
           <button
             onClick={handleInterpret}
             disabled={interpreting}
