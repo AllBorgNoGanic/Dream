@@ -465,17 +465,11 @@ export default function DreamJournal() {
     }
   };
 
-  // Community interpretation — uses the same token pool but result is shown inline only (not saved to the dream)
+  // Community interpretation — free for other users' dreams, blocked for your own
   const handleCommunityInterpretDream = async (dream) => {
-    if (!canInterpret) { setShowUpgradeModal(true); return null; }
+    if (dream.user_id === user?.id) return null;
     try {
-      const interpretation = await interpretDream(dream, userSettings);
-      if (interpretation && !userSettings?.is_pro) {
-        const newCount = (userSettings?.interpretation_count ?? 0) + 1;
-        await supabase.from("user_settings").update({ interpretation_count: newCount }).eq("user_id", user.id);
-        setUserSettings((s) => ({ ...s, interpretation_count: newCount }));
-      }
-      return interpretation;
+      return await interpretDream(dream, userSettings);
     } catch {
       return null;
     }
