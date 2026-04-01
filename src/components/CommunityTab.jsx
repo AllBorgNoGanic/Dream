@@ -178,7 +178,7 @@ const styles = {
     padding: "8px 16px",
     borderRadius: 12,
     border: "none",
-    background: "linear-gradient(135deg, #7c3aed, #a855f7)",
+    background: "linear-gradient(135deg, #6847c0, #9066d4)",
     color: "#fff",
     fontFamily: "Georgia, serif",
     fontSize: 13,
@@ -200,7 +200,7 @@ const styles = {
   },
 };
 
-function DreamCard({ dream, displayName, user }) {
+function DreamCard({ dream, displayName, user, canInterpret, onInterpretDream }) {
   const [likes, setLikes] = useState([]);
   const [liked, setLiked] = useState(false);
   const [showComments, setShowComments] = useState(false);
@@ -208,6 +208,8 @@ function DreamCard({ dream, displayName, user }) {
   const [commentText, setCommentText] = useState("");
   const [commentAuthors, setCommentAuthors] = useState({});
   const [loadingComments, setLoadingComments] = useState(false);
+  const [communityInterpretation, setCommunityInterpretation] = useState(null);
+  const [interpreting, setInterpreting] = useState(false);
 
   useEffect(() => {
     loadLikes();
@@ -292,6 +294,14 @@ function DreamCard({ dream, displayName, user }) {
     }
   };
 
+  const handleInterpret = async () => {
+    if (!onInterpretDream) return;
+    setInterpreting(true);
+    const result = await onInterpretDream(dream);
+    if (result) setCommunityInterpretation(result);
+    setInterpreting(false);
+  };
+
   const tags = dream.tags
     ? Array.isArray(dream.tags)
       ? dream.tags
@@ -348,7 +358,42 @@ function DreamCard({ dream, displayName, user }) {
           <span style={{ fontSize: 16 }}>{showComments ? "\uD83D\uDCAC" : "\uD83D\uDCAC"}</span>
           <span>{showComments ? "Hide" : "Comments"}</span>
         </button>
+        {user && onInterpretDream && !communityInterpretation && (
+          <button
+            onClick={handleInterpret}
+            disabled={interpreting}
+            style={{
+              ...styles.actionBtn,
+              marginLeft: "auto",
+              color: interpreting ? "#8a7540" : "#e8b840",
+              border: "1px solid rgba(200,160,30,0.25)",
+              padding: "4px 12px",
+              fontStyle: "italic",
+              letterSpacing: 0.5,
+              opacity: interpreting ? 0.7 : 1,
+            }}
+            title={canInterpret ? "Use a reflection to interpret this dream" : "No reflections remaining - upgrade to Pro"}
+          >
+            {interpreting ? "Reflecting..." : "✦ Seek Guidance"}
+          </button>
+        )}
       </div>
+      {communityInterpretation && (
+        <div style={{
+          marginTop: 14,
+          padding: "14px 16px",
+          background: "linear-gradient(135deg, rgba(10,4,30,0.9) 0%, rgba(20,8,50,0.85) 100%)",
+          borderRadius: 14,
+          border: "1px solid rgba(200,160,30,0.2)",
+        }}>
+          <div style={{ fontSize: 11, color: "#8a7540", letterSpacing: 1, marginBottom: 8, textTransform: "uppercase" }}>
+            The Shepherd's Reflection
+          </div>
+          <div style={{ color: "#f5e4b0", fontSize: 14, lineHeight: 1.7, fontStyle: "italic" }}>
+            {communityInterpretation}
+          </div>
+        </div>
+      )}
       {showComments && (
         <div style={styles.commentSection}>
           {loadingComments ? (
@@ -388,7 +433,7 @@ function DreamCard({ dream, displayName, user }) {
   );
 }
 
-export default function CommunityTab({ user, supabase: _sb }) {
+export default function CommunityTab({ user, supabase: _sb, canInterpret, onInterpretDream }) {
   const [dreams, setDreams] = useState([]);
   const [displayNames, setDisplayNames] = useState({});
   const [loading, setLoading] = useState(true);
@@ -493,6 +538,8 @@ export default function CommunityTab({ user, supabase: _sb }) {
             dream={dream}
             displayName={displayNames[dream.user_id]}
             user={user}
+            canInterpret={canInterpret}
+            onInterpretDream={onInterpretDream}
           />
         ))
       )}

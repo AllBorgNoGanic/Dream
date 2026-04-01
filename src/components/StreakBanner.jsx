@@ -24,9 +24,9 @@ export default function StreakBanner({ streak, longestStreak, lastDreamDate }) {
         </span>
         <div>
           <div style={{ fontSize: 15, color: "#f5e4b0", fontWeight: 400 }}>
-            {streak} day streak{streak > 1 ? "" : ""}
-            {atRisk && " — log a dream to keep it!"}
-            {loggedToday && " — nice work!"}
+            {streak} day journey{streak > 1 ? "" : ""}
+            {atRisk && " -- record tonight's dream to continue"}
+            {loggedToday && " -- faithful and consistent!"}
           </div>
           <div style={{ fontSize: 12, color: "#8a7540", marginTop: 2 }}>
             Longest: {longestStreak} days
@@ -38,7 +38,7 @@ export default function StreakBanner({ streak, longestStreak, lastDreamDate }) {
           background: "rgba(200,160,30,0.2)", borderRadius: 20,
           padding: "4px 12px", fontSize: 11, color: "#e8b840"
         }}>
-          Dream today!
+          Rest well tonight
         </div>
       )}
     </div>

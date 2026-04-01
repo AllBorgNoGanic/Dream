@@ -342,7 +342,7 @@ export default function CalendarHeatmap({ dreams }) {
                   style={{
                     width: 22,
                     height: Math.max(barHeight, 3),
-                    background: "linear-gradient(180deg, #a855f7, #6d28d9)",
+                    background: "linear-gradient(180deg, #9066d4, #5a3aa0)",
                     borderRadius: "4px 4px 2px 2px",
                     transition: "height 0.5s ease",
                   }}

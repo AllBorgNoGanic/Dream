@@ -1,43 +1,14 @@
 import { useState } from "react";
 import { supabase } from "../lib/supabase";
+import ShareButton from "./ShareButton";
+import { ARCHETYPES } from "../constants/archetypes";
 
-const ARCHETYPES = {
-  Explorer: {
-    emoji: "🧭",
-    color: "#60c8ff",
-    border: "rgba(96,200,255,0.3)",
-    bg: "rgba(96,200,255,0.08)",
-    traits: ["Adventurous", "Curious", "Boundary-pushing"],
-    description: "Your dreams are journeys into the unknown. You seek freedom and new experiences, often dreaming of vast landscapes, exploration, and discovery.",
-  },
-  Empath: {
-    emoji: "💜",
-    color: "#e060ff",
-    border: "rgba(224,96,255,0.3)",
-    bg: "rgba(224,96,255,0.08)",
-    traits: ["Sensitive", "Connected", "Compassionate"],
-    description: "Your dreams are rich with emotion and relationships. You feel deeply, often dreaming of people you love and moments of profound human connection.",
-  },
-  Oracle: {
-    emoji: "🔮",
-    color: "#e8b840",
-    border: "rgba(196,144,255,0.3)",
-    bg: "rgba(196,144,255,0.08)",
-    traits: ["Intuitive", "Visionary", "Symbolic"],
-    description: "Your dreams carry deep symbolic meaning. You are drawn to the mystical, often receiving prophetic imagery and profound insights from your subconscious.",
-  },
-  Warrior: {
-    emoji: "⚡",
-    color: "#ffca60",
-    border: "rgba(255,202,96,0.3)",
-    bg: "rgba(255,202,96,0.08)",
-    traits: ["Determined", "Courageous", "Purposeful"],
-    description: "Your dreams are battles and triumphs. You face challenges head-on, often dreaming of conflict, victory, and proving your strength to the world.",
-  },
-};
+const FREE_INTERPRETATIONS = 5;
+const MAX_SHARE_BONUS = 3;
 
 export default function ProfileTab({ user, userSettings, onSettingsUpdate, dreams, onUpgrade, onRetakeQuiz }) {
   const [displayName, setDisplayName] = useState(userSettings?.display_name || "");
+  const [age, setAge] = useState(userSettings?.age || "");
   const [wakeTime, setWakeTime] = useState(userSettings?.wake_time || "07:00");
   const [reminderEnabled, setReminderEnabled] = useState(userSettings?.reminder_enabled || false);
   const [saving, setSaving] = useState(false);
@@ -55,7 +26,7 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
     setSaving(true);
     const { data } = await supabase
       .from("user_settings")
-      .update({ display_name: displayName.trim() || null, wake_time: wakeTime, reminder_enabled: reminderEnabled })
+      .update({ display_name: displayName.trim() || null, age: age ? parseInt(age) : null, wake_time: wakeTime, reminder_enabled: reminderEnabled })
       .eq("user_id", user.id)
       .select()
       .single();
@@ -76,7 +47,7 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
   return (
     <div style={{ animation: "fadeIn 0.4s ease" }}>
       {/* Archetype card */}
-      {archetype && archetypeData && (
+      {archetype && archetypeData ? (
         <div style={{ ...card, border: `1px solid ${archetypeData.border}`, background: archetypeData.bg, marginBottom: 20 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 16 }}>
             <div style={{ fontSize: 48 }}>{archetypeData.emoji}</div>
@@ -100,6 +71,22 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
             cursor: "pointer", letterSpacing: 0.5
           }}>
             Retake Quiz
+          </button>
+        </div>
+      ) : (
+        <div style={{ ...card, border: "1px solid rgba(168,85,247,0.25)", background: "rgba(124,58,237,0.06)", marginBottom: 20, textAlign: "center" }}>
+          <div style={{ fontSize: 40, marginBottom: 12 }}>🐑</div>
+          <div style={{ fontSize: 16, color: "#f5e4b0", marginBottom: 6 }}>Complete Your Dream Profile</div>
+          <p style={{ fontSize: 13, color: "#9a8050", lineHeight: 1.6, margin: "0 0 16px" }}>
+            Take the dream quiz to unlock personalized insights and more accurate interpretations.
+          </p>
+          <button onClick={onRetakeQuiz} style={{
+            background: "linear-gradient(135deg, #6847c0, #9066d4)",
+            border: "none", color: "#fff", padding: "10px 24px", borderRadius: 14,
+            fontSize: 14, cursor: "pointer", fontFamily: "Georgia, serif", fontWeight: 600,
+            boxShadow: "0 0 20px rgba(168,85,247,0.3)",
+          }}>
+            Take the Quiz
           </button>
         </div>
       )}
@@ -129,7 +116,7 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
             <div style={{ fontSize: 12, color: "#6b5c30" }}>
               {userSettings?.is_pro
                 ? "Unlimited AI interpretations · All features"
-                : `${Math.max(0, 5 - (userSettings?.interpretation_count || 0))} free interpretations remaining`}
+                : `${Math.max(0, FREE_INTERPRETATIONS + Math.min(userSettings?.share_bonus_count ?? 0, MAX_SHARE_BONUS) - (userSettings?.interpretation_count || 0))} free interpretations remaining`}
             </div>
           </div>
           {!userSettings?.is_pro && (
@@ -145,6 +132,19 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
         </div>
       </div>
 
+      {/* Share and Earn */}
+      {!userSettings?.is_pro && (
+        <ShareButton
+          userId={user?.id}
+          shareBonusCount={userSettings?.share_bonus_count ?? 0}
+          maxBonus={MAX_SHARE_BONUS}
+          variant="card"
+          onBonusEarned={(newCount) => {
+            onSettingsUpdate((s) => ({ ...s, share_bonus_count: newCount }));
+          }}
+        />
+      )}
+
       {/* Settings */}
       <div style={card}>
         <div style={{ fontSize: 13, letterSpacing: 3, color: "#8060cc", textTransform: "uppercase", marginBottom: 20 }}>Settings</div>
@@ -157,6 +157,23 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
             placeholder="Anonymous Dreamer"
             style={{
               width: "100%", background: "rgba(5,10,18,0.9)", border: "1px solid rgba(200,160,30,0.25)",
+              borderRadius: 10, padding: "11px 14px", color: "#f5e4b0", fontSize: 14,
+              outline: "none", boxSizing: "border-box", fontFamily: "Georgia, serif"
+            }}
+          />
+        </div>
+
+        <div style={{ marginBottom: 16 }}>
+          <label style={{ display: "block", fontSize: 13, color: "#e8b840", marginBottom: 8 }}>Age</label>
+          <input
+            type="number"
+            value={age}
+            onChange={e => setAge(e.target.value)}
+            placeholder="Your age"
+            min="1"
+            max="120"
+            style={{
+              width: 100, background: "rgba(5,10,18,0.9)", border: "1px solid rgba(200,160,30,0.25)",
               borderRadius: 10, padding: "11px 14px", color: "#f5e4b0", fontSize: 14,
               outline: "none", boxSizing: "border-box", fontFamily: "Georgia, serif"
             }}

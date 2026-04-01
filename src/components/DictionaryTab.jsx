@@ -120,7 +120,7 @@ export default function DictionaryTab() {
             position: "absolute", top: "50%", left: "50%",
             transform: "translate(-50%, -50%)",
             width: 140, height: 140, borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(168,85,247,0.15) 0%, rgba(124,58,237,0.05) 50%, transparent 70%)",
+            background: "radial-gradient(circle, rgba(144,102,212,0.15) 0%, rgba(124,58,237,0.05) 50%, transparent 70%)",
             pointerEvents: "none",
           }} />
           <div style={{
@@ -144,8 +144,8 @@ export default function DictionaryTab() {
         {/* Category badge */}
         <div style={{ textAlign: "center", marginBottom: 20 }}>
           <span style={{
-            fontSize: 11, color: "#a855f7", background: "rgba(168,85,247,0.1)",
-            border: "1px solid rgba(168,85,247,0.2)", borderRadius: 20,
+            fontSize: 11, color: "#9066d4", background: "rgba(144,102,212,0.1)",
+            border: "1px solid rgba(144,102,212,0.2)", borderRadius: 20,
             padding: "4px 14px", fontFamily: "Georgia, serif", textTransform: "capitalize",
           }}>
             {selectedTheme.category}
@@ -156,7 +156,7 @@ export default function DictionaryTab() {
         <div style={{
           height: 2, margin: "0 auto 28px",
           width: 80,
-          background: "linear-gradient(90deg, transparent, rgba(168,85,247,0.5), rgba(232,184,64,0.4), transparent)",
+          background: "linear-gradient(90deg, transparent, rgba(144,102,212,0.5), rgba(232,184,64,0.4), transparent)",
           borderRadius: 1,
         }} />
 
@@ -185,9 +185,9 @@ export default function DictionaryTab() {
         {/* Guidance */}
         <div style={{
           background: "rgba(255,255,255,0.03)",
-          border: "1px solid rgba(168,85,247,0.2)",
+          border: "1px solid rgba(144,102,212,0.2)",
           borderRadius: 20, padding: "24px 22px",
-          boxShadow: "0 0 30px rgba(168,85,247,0.06)",
+          boxShadow: "0 0 30px rgba(144,102,212,0.06)",
         }}>
           <div style={{
             display: "flex", alignItems: "center", gap: 10,
@@ -237,9 +237,9 @@ export default function DictionaryTab() {
             key={cat.id}
             onClick={() => setCategory(cat.id)}
             style={{
-              background: category === cat.id ? "rgba(168,85,247,0.2)" : "rgba(6,12,22,0.5)",
-              border: `1px solid ${category === cat.id ? "rgba(168,85,247,0.4)" : "rgba(200,160,30,0.12)"}`,
-              color: category === cat.id ? "#a855f7" : "#7a6a40",
+              background: category === cat.id ? "rgba(144,102,212,0.2)" : "rgba(6,12,22,0.5)",
+              border: `1px solid ${category === cat.id ? "rgba(144,102,212,0.4)" : "rgba(200,160,30,0.12)"}`,
+              color: category === cat.id ? "#9066d4" : "#7a6a40",
               borderRadius: 20, padding: "6px 16px", fontSize: 12,
               cursor: "pointer", fontFamily: "Georgia, serif",
               whiteSpace: "nowrap", transition: "all 0.2s",
@@ -298,8 +298,8 @@ export default function DictionaryTab() {
               disabled={loadingMore}
               style={{
                 width: "100%", marginTop: 20, padding: "14px",
-                background: "rgba(168,85,247,0.1)", border: "1px solid rgba(168,85,247,0.2)",
-                borderRadius: 16, color: "#a855f7", fontSize: 14,
+                background: "rgba(144,102,212,0.1)", border: "1px solid rgba(144,102,212,0.2)",
+                borderRadius: 16, color: "#9066d4", fontSize: 14,
                 cursor: loadingMore ? "default" : "pointer",
                 fontFamily: "Georgia, serif", transition: "all 0.2s",
               }}

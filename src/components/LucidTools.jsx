@@ -60,57 +60,15 @@ const MILD_STEPS = [
   },
 ];
 
-const WILD_STEPS = [
-  {
-    title: "Relax body completely",
-    detail: "Lie on your back and progressively relax every muscle group from your toes to your scalp. Let your body feel heavy and still.",
-  },
-  {
-    title: "Stay mentally aware",
-    detail: "Keep your mind alert while your body falls asleep. Focus on your breath or count slowly. The key is passive observation.",
-  },
-  {
-    title: "Watch hypnagogic imagery",
-    detail: "As you relax, you may see colors, patterns, or fleeting images behind your eyelids. Observe them without engaging — they are the gateway.",
-  },
-  {
-    title: "Don't move",
-    detail: "Your body will test if you're asleep by sending urges to roll over or scratch. Resist them. Stillness signals your body that it's time to sleep.",
-  },
-  {
-    title: "Enter the dream consciously",
-    detail: "The imagery will intensify into a full scene. Step into it gently. You are now dreaming while fully aware — you've achieved a WILD.",
-  },
-];
-
-const STOP_WORDS = new Set([
-  "the", "and", "was", "were", "is", "are", "am", "been", "being",
-  "have", "has", "had", "do", "does", "did", "will", "would", "could",
-  "should", "may", "might", "shall", "can", "need", "must",
-  "that", "this", "these", "those", "with", "from", "into", "about",
-  "for", "but", "not", "you", "all", "her", "his", "him", "she", "he",
-  "they", "them", "their", "its", "our", "your", "who", "what", "which",
-  "when", "where", "how", "why", "each", "every", "both", "few", "more",
-  "most", "other", "some", "such", "than", "too", "very", "just", "also",
-  "then", "there", "here", "now", "out", "only", "own", "same", "so",
-  "because", "until", "while", "after", "before", "during", "between",
-  "through", "over", "under", "again", "once", "like", "well", "back",
-  "still", "even", "way", "many", "much", "really", "already",
-  "around", "another", "came", "come", "going", "went", "got", "get",
-  "see", "saw", "know", "knew", "make", "made", "think", "thought",
-  "take", "took", "want", "wanted", "look", "looked", "felt", "feel",
-  "try", "tried", "something", "someone", "everything", "anything",
-  "nothing", "one", "two", "three", "first", "last", "new", "old",
-  "big", "small", "long", "little", "large", "great", "good", "bad",
-  "right", "left", "next", "don", "didn", "wasn", "couldn", "wouldn",
-  "doesn", "isn", "aren", "hadn", "it", "me", "my", "we", "us",
-]);
-
 export default function LucidTools({ dreams }) {
-  const [checksToday, setChecksToday] = useState(0);
+  // Persist reality check count in localStorage (resets daily)
+  const todayKey = new Date().toISOString().split("T")[0];
+  const storedChecks = localStorage.getItem(`rc_${todayKey}`);
+  const [checksToday, setChecksToday] = useState(storedChecks ? parseInt(storedChecks) : 0);
   const [practiceCheck, setPracticeCheck] = useState(null);
   const [practiceTimer, setPracticeTimer] = useState(0);
   const [timerInterval, setTimerInterval] = useState(null);
+  const [mildExpanded, setMildExpanded] = useState(false);
 
   const startPractice = (check) => {
     setPracticeCheck(check);
@@ -126,7 +84,9 @@ export default function LucidTools({ dreams }) {
     setTimerInterval(null);
     setPracticeCheck(null);
     setPracticeTimer(0);
-    setChecksToday((c) => c + 1);
+    const newCount = checksToday + 1;
+    setChecksToday(newCount);
+    localStorage.setItem(`rc_${todayKey}`, newCount);
   };
 
   // Lucid dream stats
@@ -170,27 +130,6 @@ export default function LucidTools({ dreams }) {
     return { total, lucidCount, rate, avgLevel, topThemes, last30 };
   }, [dreams]);
 
-  // Dream signs detector
-  const dreamSigns = useMemo(() => {
-    const wordCounts = {};
-    dreams.forEach((d) => {
-      if (!d.description) return;
-      const words = d.description
-        .toLowerCase()
-        .replace(/[^a-z\s'-]/g, "")
-        .split(/\s+/)
-        .filter((w) => w.length > 3 && !STOP_WORDS.has(w));
-      const unique = new Set(words);
-      unique.forEach((w) => {
-        wordCounts[w] = (wordCounts[w] || 0) + 1;
-      });
-    });
-    return Object.entries(wordCounts)
-      .filter(([, c]) => c >= 2)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 10);
-  }, [dreams]);
-
   const formatTime = (seconds) => {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
@@ -219,8 +158,8 @@ export default function LucidTools({ dreams }) {
       <style>{`
         .rc-btn:hover { background: rgba(200,160,30,0.35) !important; border-color: rgba(200,160,30,0.6) !important; }
         .step-card:hover { border-color: rgba(200,160,30,0.4) !important; background: rgba(30,12,60,0.9) !important; }
-        .sign-row:hover { background: rgba(200,160,30,0.1) !important; }
         .practice-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(4,0,26,0.96); display: flex; flex-direction: column; align-items: center; justify-content: center; animation: fadeIn 0.3s ease; }
+        .mild-toggle:hover { background: rgba(200,160,30,0.12) !important; }
       `}</style>
 
       {/* Practice Overlay */}
@@ -284,240 +223,7 @@ export default function LucidTools({ dreams }) {
         </div>
       )}
 
-      {/* ========== REALITY CHECK TRAINER ========== */}
-      <div style={cardStyle}>
-        <div style={sectionTitle}>Reality Check Trainer</div>
-        <div
-          style={{
-            fontSize: 13,
-            color: "#8a7540",
-            marginBottom: 20,
-            lineHeight: 1.6,
-          }}
-        >
-          Practice reality checks throughout the day to build the habit of questioning
-          your state. This habit carries into dreams, triggering lucidity.
-        </div>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 12,
-            marginBottom: 20,
-            padding: "12px 16px",
-            background: "rgba(140,90,5,0.15)",
-            border: "1px solid rgba(200,160,30,0.2)",
-            borderRadius: 12,
-          }}
-        >
-          <span style={{ fontSize: 22 }}>🎯</span>
-          <span style={{ fontSize: 14, color: "#e8b840" }}>
-            Reality checks today:{" "}
-            <span style={{ color: "#f5e4b0", fontWeight: 600 }}>{checksToday}</span>
-          </span>
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-          {REALITY_CHECKS.map((check) => (
-            <div
-              key={check.name}
-              style={{
-                background: "rgba(30,12,60,0.6)",
-                border: "1px solid rgba(200,160,30,0.12)",
-                borderRadius: 16,
-                padding: "16px 18px",
-                transition: "all 0.2s",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                  marginBottom: 8,
-                }}
-              >
-                <span style={{ fontSize: 22 }}>{check.icon}</span>
-                <span style={{ fontSize: 14, color: "#f0d890" }}>{check.name}</span>
-              </div>
-              <p
-                style={{
-                  fontSize: 12,
-                  color: "#8a7540",
-                  lineHeight: 1.6,
-                  margin: "0 0 12px",
-                }}
-              >
-                {check.description}
-              </p>
-              <button
-                className="rc-btn"
-                onClick={() => startPractice(check)}
-                style={{
-                  background: "rgba(200,160,30,0.2)",
-                  border: "1px solid rgba(200,160,30,0.3)",
-                  color: "#e8b840",
-                  padding: "7px 16px",
-                  borderRadius: 20,
-                  fontSize: 12,
-                  cursor: "pointer",
-                  fontFamily: "'Georgia', serif",
-                  transition: "all 0.2s",
-                }}
-              >
-                Practice Now
-              </button>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ========== MILD TECHNIQUE GUIDE ========== */}
-      <div style={cardStyle}>
-        <div style={sectionTitle}>MILD Technique</div>
-        <div style={{ fontSize: 15, color: "#e8b840", marginBottom: 6 }}>
-          Mnemonic Induction of Lucid Dreams
-        </div>
-        <div
-          style={{
-            fontSize: 13,
-            color: "#8a7540",
-            marginBottom: 20,
-            lineHeight: 1.6,
-          }}
-        >
-          A beginner-friendly technique that uses intention and visualization to trigger
-          lucidity during REM sleep.
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          {MILD_STEPS.map((step, i) => (
-            <div
-              key={i}
-              className="step-card"
-              style={{
-                display: "flex",
-                gap: 16,
-                alignItems: "flex-start",
-                background: "rgba(30,12,60,0.5)",
-                border: "1px solid rgba(200,160,30,0.1)",
-                borderRadius: 16,
-                padding: "16px 20px",
-                transition: "all 0.2s",
-              }}
-            >
-              <div
-                style={{
-                  minWidth: 36,
-                  height: 36,
-                  borderRadius: "50%",
-                  background: "linear-gradient(135deg, #7a5200, #c89020)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 15,
-                  color: "white",
-                  fontWeight: 600,
-                  fontFamily: "sans-serif",
-                  flexShrink: 0,
-                }}
-              >
-                {i + 1}
-              </div>
-              <div>
-                <div style={{ fontSize: 15, color: "#f0d890", marginBottom: 4 }}>
-                  {step.title}
-                </div>
-                <div style={{ fontSize: 13, color: "#8a7540", lineHeight: 1.6 }}>
-                  {step.detail}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ========== WILD TECHNIQUE GUIDE ========== */}
-      <div style={cardStyle}>
-        <div style={sectionTitle}>WILD Technique</div>
-        <div style={{ fontSize: 15, color: "#e8b840", marginBottom: 6 }}>
-          Wake Initiated Lucid Dream
-        </div>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-            padding: "10px 16px",
-            background: "rgba(200,80,80,0.1)",
-            border: "1px solid rgba(200,80,80,0.25)",
-            borderRadius: 12,
-            marginBottom: 20,
-          }}
-        >
-          <span style={{ fontSize: 16 }}>⚠️</span>
-          <span style={{ fontSize: 13, color: "#e0a0a0", lineHeight: 1.5 }}>
-            Advanced technique — may cause sleep paralysis. Not recommended for
-            beginners.
-          </span>
-        </div>
-        <div
-          style={{
-            fontSize: 13,
-            color: "#8a7540",
-            marginBottom: 20,
-            lineHeight: 1.6,
-          }}
-        >
-          A powerful technique where you transition directly from wakefulness into a
-          lucid dream without losing consciousness.
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          {WILD_STEPS.map((step, i) => (
-            <div
-              key={i}
-              className="step-card"
-              style={{
-                display: "flex",
-                gap: 16,
-                alignItems: "flex-start",
-                background: "rgba(30,12,60,0.5)",
-                border: "1px solid rgba(200,160,30,0.1)",
-                borderRadius: 16,
-                padding: "16px 20px",
-                transition: "all 0.2s",
-              }}
-            >
-              <div
-                style={{
-                  minWidth: 36,
-                  height: 36,
-                  borderRadius: "50%",
-                  background: "linear-gradient(135deg, #4020a0, #7030cc)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 15,
-                  color: "white",
-                  fontWeight: 600,
-                  fontFamily: "sans-serif",
-                  flexShrink: 0,
-                }}
-              >
-                {i + 1}
-              </div>
-              <div>
-                <div style={{ fontSize: 15, color: "#f0d890", marginBottom: 4 }}>
-                  {step.title}
-                </div>
-                <div style={{ fontSize: 13, color: "#8a7540", lineHeight: 1.6 }}>
-                  {step.detail}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ========== LUCID DREAM STATS ========== */}
+      {/* ========== LUCID DREAM STATS (first) ========== */}
       <div style={cardStyle}>
         <div style={sectionTitle}>Lucid Dream Stats</div>
         <div
@@ -701,9 +407,9 @@ export default function LucidTools({ dreams }) {
         )}
       </div>
 
-      {/* ========== DREAM SIGNS DETECTOR ========== */}
+      {/* ========== REALITY CHECK TRAINER (second) ========== */}
       <div style={cardStyle}>
-        <div style={sectionTitle}>Dream Signs Detector</div>
+        <div style={sectionTitle}>Reality Check Trainer</div>
         <div
           style={{
             fontSize: 13,
@@ -712,108 +418,174 @@ export default function LucidTools({ dreams }) {
             lineHeight: 1.6,
           }}
         >
-          Your dreams are analyzed to find recurring elements that could be dream signs.
-          Train yourself to notice these in waking life to trigger lucidity.
+          Practice reality checks throughout the day to build the habit of questioning
+          your state. This habit carries into dreams, triggering lucidity.
         </div>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            marginBottom: 20,
+            padding: "12px 16px",
+            background: "rgba(140,90,5,0.15)",
+            border: "1px solid rgba(200,160,30,0.2)",
+            borderRadius: 12,
+          }}
+        >
+          <span style={{ fontSize: 22 }}>🎯</span>
+          <span style={{ fontSize: 14, color: "#e8b840" }}>
+            Reality checks today:{" "}
+            <span style={{ color: "#f5e4b0", fontWeight: 600 }}>{checksToday}</span>
+          </span>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          {REALITY_CHECKS.map((check) => (
+            <div
+              key={check.name}
+              style={{
+                background: "rgba(30,12,60,0.6)",
+                border: "1px solid rgba(200,160,30,0.12)",
+                borderRadius: 16,
+                padding: "16px 18px",
+                transition: "all 0.2s",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  marginBottom: 8,
+                }}
+              >
+                <span style={{ fontSize: 22 }}>{check.icon}</span>
+                <span style={{ fontSize: 14, color: "#f0d890" }}>{check.name}</span>
+              </div>
+              <p
+                style={{
+                  fontSize: 12,
+                  color: "#8a7540",
+                  lineHeight: 1.6,
+                  margin: "0 0 12px",
+                }}
+              >
+                {check.description}
+              </p>
+              <button
+                className="rc-btn"
+                onClick={() => startPractice(check)}
+                style={{
+                  background: "rgba(200,160,30,0.2)",
+                  border: "1px solid rgba(200,160,30,0.3)",
+                  color: "#e8b840",
+                  padding: "7px 16px",
+                  borderRadius: 20,
+                  fontSize: 12,
+                  cursor: "pointer",
+                  fontFamily: "'Georgia', serif",
+                  transition: "all 0.2s",
+                }}
+              >
+                Practice Now
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
 
-        {dreamSigns.length > 0 ? (
-          <>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              {dreamSigns.map(([word, count], i) => (
+      {/* ========== MILD TECHNIQUE GUIDE (collapsible, last) ========== */}
+      <div style={cardStyle}>
+        <button
+          className="mild-toggle"
+          onClick={() => setMildExpanded(!mildExpanded)}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            width: "100%",
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            padding: "4px 0",
+            borderRadius: 8,
+            transition: "background 0.2s",
+          }}
+        >
+          <div>
+            <div style={sectionTitle}>MILD Technique</div>
+            <div style={{ fontSize: 14, color: "#8a7540", textAlign: "left" }}>
+              Mnemonic Induction of Lucid Dreams
+            </div>
+          </div>
+          <div style={{
+            fontSize: 18,
+            color: "#8a7540",
+            transition: "transform 0.3s ease",
+            transform: mildExpanded ? "rotate(180deg)" : "rotate(0deg)",
+          }}>
+            ▼
+          </div>
+        </button>
+
+        {mildExpanded && (
+          <div style={{ marginTop: 20, animation: "fadeIn 0.3s ease" }}>
+            <div
+              style={{
+                fontSize: 13,
+                color: "#8a7540",
+                marginBottom: 20,
+                lineHeight: 1.6,
+              }}
+            >
+              A beginner-friendly technique that uses intention and visualization to trigger
+              lucidity during REM sleep.
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {MILD_STEPS.map((step, i) => (
                 <div
-                  key={word}
-                  className="sign-row"
+                  key={i}
+                  className="step-card"
                   style={{
                     display: "flex",
-                    alignItems: "center",
-                    gap: 14,
-                    padding: "10px 14px",
-                    borderRadius: 12,
-                    transition: "background 0.2s",
+                    gap: 16,
+                    alignItems: "flex-start",
+                    background: "rgba(30,12,60,0.5)",
+                    border: "1px solid rgba(200,160,30,0.1)",
+                    borderRadius: 16,
+                    padding: "16px 20px",
+                    transition: "all 0.2s",
                   }}
                 >
                   <div
                     style={{
-                      minWidth: 28,
-                      height: 28,
+                      minWidth: 36,
+                      height: 36,
                       borderRadius: "50%",
-                      background: "rgba(140,90,5,0.3)",
+                      background: "linear-gradient(135deg, #7a5200, #c89020)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      fontSize: 12,
-                      color: "#d4a840",
-                      fontFamily: "sans-serif",
+                      fontSize: 15,
+                      color: "white",
                       fontWeight: 600,
+                      fontFamily: "sans-serif",
+                      flexShrink: 0,
                     }}
                   >
                     {i + 1}
                   </div>
-                  <div style={{ flex: 1 }}>
-                    <span
-                      style={{
-                        fontSize: 15,
-                        color: "#f0d890",
-                        textTransform: "capitalize",
-                      }}
-                    >
-                      {word}
-                    </span>
-                  </div>
-                  <div style={{ fontSize: 13, color: "#8a7540" }}>
-                    {count} dream{count !== 1 ? "s" : ""}
-                  </div>
-                  <div
-                    style={{
-                      width: 40,
-                      height: 4,
-                      background: "rgba(255,255,255,0.06)",
-                      borderRadius: 2,
-                      overflow: "hidden",
-                    }}
-                  >
-                    <div
-                      style={{
-                        height: "100%",
-                        width: `${(count / (dreamSigns[0]?.[1] || 1)) * 100}%`,
-                        background:
-                          "linear-gradient(90deg, #7a5200, #c060ff)",
-                        borderRadius: 2,
-                      }}
-                    />
+                  <div>
+                    <div style={{ fontSize: 15, color: "#f0d890", marginBottom: 4 }}>
+                      {step.title}
+                    </div>
+                    <div style={{ fontSize: 13, color: "#8a7540", lineHeight: 1.6 }}>
+                      {step.detail}
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
-            <div
-              style={{
-                marginTop: 20,
-                padding: "14px 18px",
-                background: "rgba(140,90,5,0.12)",
-                border: "1px solid rgba(200,160,30,0.15)",
-                borderRadius: 14,
-                fontSize: 13,
-                color: "#8a7a50",
-                lineHeight: 1.6,
-                textAlign: "center",
-              }}
-            >
-              These recurring elements in your dreams could be dream signs. Train
-              yourself to notice them!
-            </div>
-          </>
-        ) : (
-          <div
-            style={{
-              textAlign: "center",
-              padding: "20px 0",
-              fontSize: 13,
-              color: "#6b5c30",
-              lineHeight: 1.6,
-            }}
-          >
-            Record more dreams to detect recurring dream signs. At least 2
-            appearances of a word are needed.
           </div>
         )}
       </div>
