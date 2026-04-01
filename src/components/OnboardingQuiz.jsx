@@ -419,16 +419,37 @@ export default function OnboardingQuiz({ onComplete, preAuth = false }) {
                   ...S.input,
                   resize: "vertical", minHeight: 120, maxHeight: 250,
                   lineHeight: 1.6, fontSize: 15,
+                  borderColor: recentDream.trim().length > 0 && recentDream.trim().length < 50
+                    ? "rgba(255,180,60,0.4)"
+                    : "rgba(200,160,30,0.3)",
                 }}
               />
-              <p style={{ fontSize: 12, color: "#6a5030", marginTop: 8, textAlign: "right" }}>
-                {recentDream.length > 0 ? `${recentDream.length} characters` : "Optional but recommended"}
-              </p>
+              {recentDream.trim().length > 0 && recentDream.trim().length < 50 ? (
+                <div style={{
+                  display: "flex", justifyContent: "space-between", alignItems: "center",
+                  marginTop: 6, fontSize: 12, color: "#c89040",
+                }}>
+                  <span>Add more detail for a richer interpretation</span>
+                  <span style={{ color: "#6b5c30" }}>{recentDream.trim().length}/50</span>
+                </div>
+              ) : (
+                <p style={{ fontSize: 12, color: "#6a5030", marginTop: 8, textAlign: "right" }}>
+                  {recentDream.length > 0 ? `${recentDream.length} characters` : "Optional but recommended"}
+                </p>
+              )}
             </div>
 
             <button
-              style={{ ...S.ctaButton(), animation: "onb-staggerUp 0.4s ease-out 0.35s both" }}
-              onClick={goForward}
+              style={{
+                ...S.ctaButton(),
+                animation: "onb-staggerUp 0.4s ease-out 0.35s both",
+                opacity: recentDream.trim().length > 0 && recentDream.trim().length < 50 ? 0.6 : 1,
+                cursor: recentDream.trim().length > 0 && recentDream.trim().length < 50 ? "not-allowed" : "pointer",
+              }}
+              onClick={() => {
+                if (recentDream.trim().length > 0 && recentDream.trim().length < 50) return;
+                goForward();
+              }}
             >
               {recentDream.trim() ? "Continue" : "Skip"}
             </button>
