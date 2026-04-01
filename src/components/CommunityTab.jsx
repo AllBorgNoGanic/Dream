@@ -200,7 +200,7 @@ const styles = {
   },
 };
 
-function DreamCard({ dream, displayName, user }) {
+function DreamCard({ dream, displayName, isPro, user }) {
   const [likes, setLikes] = useState([]);
   const [liked, setLiked] = useState(false);
   const [showComments, setShowComments] = useState(false);
@@ -311,7 +311,17 @@ function DreamCard({ dream, displayName, user }) {
   return (
     <div style={styles.card}>
       <div style={styles.cardHeader}>
-        <span style={styles.displayName}>{displayName || "Anonymous Dreamer"}</span>
+        <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <span style={styles.displayName}>{displayName || "Anonymous Dreamer"}</span>
+          {isPro && (
+            <span style={{
+              background: "linear-gradient(135deg, rgba(200,160,30,0.2), rgba(232,200,64,0.15))",
+              border: "1px solid rgba(200,160,50,0.35)",
+              borderRadius: 8, padding: "1px 6px", fontSize: 9,
+              color: "#e8c840", fontWeight: 600, letterSpacing: 0.5,
+            }}>PRO</span>
+          )}
+        </span>
         <span style={styles.date}>{formattedDate}</span>
       </div>
       <div style={styles.title}>{dream.title || "Untitled Dream"}</div>
@@ -435,6 +445,7 @@ function DreamCard({ dream, displayName, user }) {
 export default function CommunityTab({ user, supabase: _sb }) {
   const [dreams, setDreams] = useState([]);
   const [displayNames, setDisplayNames] = useState({});
+  const [proUsers, setProUsers] = useState({});
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [moodFilter, setMoodFilter] = useState("");
@@ -455,14 +466,17 @@ export default function CommunityTab({ user, supabase: _sb }) {
       if (userIds.length > 0) {
         const { data: settings } = await supabase
           .from("user_settings")
-          .select("user_id, display_name")
+          .select("user_id, display_name, is_pro")
           .in("user_id", userIds);
         if (settings) {
-          const map = {};
+          const nameMap = {};
+          const proMap = {};
           settings.forEach((s) => {
-            map[s.user_id] = s.display_name;
+            nameMap[s.user_id] = s.display_name;
+            if (s.is_pro) proMap[s.user_id] = true;
           });
-          setDisplayNames(map);
+          setDisplayNames(nameMap);
+          setProUsers(proMap);
         }
       }
     }
@@ -536,6 +550,7 @@ export default function CommunityTab({ user, supabase: _sb }) {
             key={dream.id}
             dream={dream}
             displayName={displayNames[dream.user_id]}
+            isPro={proUsers[dream.user_id]}
             user={user}
           />
         ))
