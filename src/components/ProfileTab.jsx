@@ -47,32 +47,47 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
   return (
     <div style={{ animation: "fadeIn 0.4s ease" }}>
       {/* Archetype card */}
-      {archetype && archetypeData ? (
-        <div style={{ ...card, border: `1px solid ${archetypeData.border}`, background: archetypeData.bg, marginBottom: 20 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 16 }}>
-            <div style={{ fontSize: 48 }}>{archetypeData.emoji}</div>
-            <div>
-              <div style={{ fontSize: 11, letterSpacing: 3, color: "#8a7540", textTransform: "uppercase", marginBottom: 4 }}>Your Dream Archetype</div>
-              <div style={{ fontSize: 26, color: archetypeData.color, fontWeight: 400 }}>{archetype}</div>
+      {userSettings?.onboarding_completed ? (
+        archetype && archetypeData ? (
+          <div style={{ ...card, border: `1px solid ${archetypeData.border}`, background: archetypeData.bg, marginBottom: 20 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 16 }}>
+              <div style={{ fontSize: 48 }}>{archetypeData.emoji}</div>
+              <div>
+                <div style={{ fontSize: 11, letterSpacing: 3, color: "#8a7540", textTransform: "uppercase", marginBottom: 4 }}>Your Dream Archetype</div>
+                <div style={{ fontSize: 26, color: archetypeData.color, fontWeight: 400 }}>{archetype}</div>
+              </div>
+            </div>
+            <p style={{ fontSize: 13, color: "#c8a040", lineHeight: 1.7, margin: "0 0 12px" }}>{archetypeData.description}</p>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              {archetypeData.traits.map(t => (
+                <span key={t} style={{
+                  background: "rgba(200,160,30,0.12)", border: `1px solid ${archetypeData.border}`,
+                  borderRadius: 20, padding: "4px 12px", fontSize: 12, color: archetypeData.color
+                }}>{t}</span>
+              ))}
+            </div>
+            <button onClick={onRetakeQuiz} style={{
+              marginTop: 16, background: "none", border: "1px solid rgba(200,160,30,0.25)",
+              color: "#7a6a40", padding: "7px 16px", borderRadius: 20, fontSize: 11,
+              cursor: "pointer", letterSpacing: 0.5
+            }}>
+              Retake Quiz
+            </button>
+          </div>
+        ) : (
+          <div style={{ ...card, marginBottom: 20 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div style={{ fontSize: 13, color: "#9a8050" }}>Dream profile completed</div>
+              <button onClick={onRetakeQuiz} style={{
+                background: "none", border: "1px solid rgba(200,160,30,0.25)",
+                color: "#7a6a40", padding: "7px 16px", borderRadius: 20, fontSize: 11,
+                cursor: "pointer", letterSpacing: 0.5
+              }}>
+                Retake Quiz
+              </button>
             </div>
           </div>
-          <p style={{ fontSize: 13, color: "#c8a040", lineHeight: 1.7, margin: "0 0 12px" }}>{archetypeData.description}</p>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            {archetypeData.traits.map(t => (
-              <span key={t} style={{
-                background: "rgba(200,160,30,0.12)", border: `1px solid ${archetypeData.border}`,
-                borderRadius: 20, padding: "4px 12px", fontSize: 12, color: archetypeData.color
-              }}>{t}</span>
-            ))}
-          </div>
-          <button onClick={onRetakeQuiz} style={{
-            marginTop: 16, background: "none", border: "1px solid rgba(200,160,30,0.25)",
-            color: "#7a6a40", padding: "7px 16px", borderRadius: 20, fontSize: 11,
-            cursor: "pointer", letterSpacing: 0.5
-          }}>
-            Retake Quiz
-          </button>
-        </div>
+        )
       ) : (
         <div style={{ ...card, border: "1px solid rgba(168,85,247,0.25)", background: "rgba(124,58,237,0.06)", marginBottom: 20, textAlign: "center" }}>
           <div style={{ fontSize: 40, marginBottom: 12 }}>🐑</div>
