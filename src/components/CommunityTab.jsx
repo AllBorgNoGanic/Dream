@@ -383,7 +383,7 @@ function DreamCard({ dream, displayName, user, canInterpret, onInterpretDream })
             }}
             title={canInterpret ? "Use a reflection to interpret this dream" : "No reflections remaining - upgrade to Pro"}
           >
-            {interpreting ? "Reflecting..." : "✦ Seek Guidance"}
+            {interpreting ? "Reflecting..." : "✦ Interpret Dream"}
           </button>
         )}
       </div>
