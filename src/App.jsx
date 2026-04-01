@@ -465,16 +465,6 @@ export default function DreamJournal() {
     }
   };
 
-  // Community interpretation — free for other users' dreams, blocked for your own
-  const handleCommunityInterpretDream = async (dream) => {
-    if (dream.user_id === user?.id) return null;
-    try {
-      return await interpretDream(dream, userSettings);
-    } catch {
-      return null;
-    }
-  };
-
   const totalFree = FREE_INTERPRETATIONS + Math.min(userSettings?.share_bonus_count ?? 0, MAX_SHARE_BONUS);
   const canInterpret =
     userSettings?.is_pro || (userSettings?.interpretation_count ?? 0) < totalFree;
@@ -978,8 +968,6 @@ export default function DreamJournal() {
             <CommunityTab
               user={user}
               supabase={supabase}
-              canInterpret={canInterpret}
-              onInterpretDream={handleCommunityInterpretDream}
             />
           </div>
         )}
