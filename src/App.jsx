@@ -12,17 +12,21 @@ import CalendarHeatmap from "./components/CalendarHeatmap";
 import LucidTools from "./components/LucidTools";
 import CommunityTab from "./components/CommunityTab";
 import DictionaryTab from "./components/DictionaryTab";
-import ArchetypeQuiz from "./components/ArchetypeQuiz";
+import OnboardingQuiz from "./components/OnboardingQuiz";
 import ProfileTab from "./components/ProfileTab";
+import GalleryTab from "./components/GalleryTab";
+import ShareButton from "./components/ShareButton";
+import ReadingModal from "./components/ReadingModal";
 
 // ─── Constants ─────────────────────────────────────────────────────────────
 const FREE_INTERPRETATIONS = 5;
+const MAX_SHARE_BONUS = 3;
 
 const DREAM_DICTIONARY = {
   flying: { symbol: "✈️", meaning: "Freedom, ambition, or desire to escape responsibilities." },
   falling: { symbol: "⬇️", meaning: "Loss of control, insecurity, or anxiety about failure." },
-  water: { symbol: "🌊", meaning: "Emotions, the unconscious mind, and life's flow." },
-  fire: { symbol: "🔥", meaning: "Passion, transformation, or destruction." },
+  water: { symbol: "🌊", meaning: "Emotions, renewal, and spiritual cleansing." },
+  fire: { symbol: "🔥", meaning: "Purification, passion, and the Holy Spirit." },
   death: { symbol: "💀", meaning: "Endings and new beginnings — rarely literal." },
   teeth: { symbol: "🦷", meaning: "Anxiety about appearance, communication, or loss." },
   chase: { symbol: "🏃", meaning: "Avoidance of a person, situation, or emotion." },
@@ -43,6 +47,12 @@ const DREAM_DICTIONARY = {
   sun: { symbol: "☀️", meaning: "Consciousness, vitality, and truth." },
   bridge: { symbol: "🌉", meaning: "Transitions, connections, and decisions." },
   key: { symbol: "🔑", meaning: "Solutions, secrets, and knowledge." },
+  dove: { symbol: "🕊️", meaning: "Peace, the Holy Spirit, and new beginnings." },
+  lamb: { symbol: "🐑", meaning: "Innocence, sacrifice, and divine love." },
+  bread: { symbol: "🍞", meaning: "Provision, communion, and spiritual nourishment." },
+  cross: { symbol: "✝️", meaning: "Sacrifice, redemption, and hope." },
+  light: { symbol: "💡", meaning: "Revelation, truth, and divine presence." },
+  angel: { symbol: "👼", meaning: "Divine messenger, guidance, and protection." },
 };
 
 const detectSymbols = (text) => {
@@ -115,9 +125,13 @@ export default function DreamJournal() {
   const [selectedDream, setSelectedDream] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [readingModal, setReadingModal] = useState(null); // { interpretation, symbols, dreamTitle, themeConnections }
+  const [dreamThemesCache, setDreamThemesCache] = useState(null);
   const [showQuiz, setShowQuiz] = useState(false);
+  const [showPreAuthQuiz, setShowPreAuthQuiz] = useState(false);
   const onboardingChecked = useRef(false); // flipped to true after first check — quiz never re-evaluated
   const quizDoneRef = useRef(false);       // prevents quiz re-showing after completion
+  const pendingQuizDataRef = useRef(null); // stores quiz results from pre-auth flow
   const [stars, setStars] = useState([]);
 
   // Search & filters
@@ -163,8 +177,13 @@ export default function DreamJournal() {
   useEffect(() => {
     if (user) {
       loadDreams();
-      // Only load settings once per unique user ID, not on every re-render
-      if (!userSettings || userSettings.user_id !== user.id) {
+      // If user just signed up after completing the pre-auth quiz, save their quiz data
+      if (pendingQuizDataRef.current) {
+        onboardingChecked.current = true; // prevent loadUserSettings from also showing quiz
+        const data = pendingQuizDataRef.current;
+        pendingQuizDataRef.current = null;
+        handleQuizComplete(data);
+      } else if (!userSettings || userSettings.user_id !== user.id) {
         loadUserSettings();
       }
     } else {
@@ -203,7 +222,7 @@ export default function DreamJournal() {
   const loadDreams = async () => {
     const { data, error } = await supabase
       .from("dreams")
-      .select("*")
+      .select("*, dream_images(id, image_url, created_at)")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
     if (!error && data) setDreams(data);
@@ -264,10 +283,24 @@ export default function DreamJournal() {
   };
 
   // ── Archetype quiz ─────────────────────────────────────────────────────────
-  const handleQuizComplete = async ({ displayName, profile, sleep, emotional, recurringThemes, recentDream, interpretation, aiThemes }) => {
+  const handleQuizComplete = async ({ displayName, profile, sleep, emotional, recurringThemes, recentDream, interpretation, aiThemes, skipped }) => {
     quizDoneRef.current = true;
     setShowQuiz(false);
     localStorage.setItem(`onboarding_done_${user.id}`, "1");
+
+    // If we have a dream but no interpretation (pre-auth flow), generate it now
+    let finalInterpretation = interpretation;
+    if (recentDream?.trim() && !interpretation) {
+      try {
+        finalInterpretation = await interpretDream(
+          { description: recentDream },
+          { archetype_data: { profile, sleep, emotional, recurringThemes } }
+        );
+      } catch {
+        finalInterpretation = null;
+      }
+    }
+
     // Upsert so it works whether the settings row exists or not
     const { data } = await supabase
       .from("user_settings")
@@ -281,8 +314,9 @@ export default function DreamJournal() {
             emotional,
             recurringThemes,
             recentDream,
-            interpretation,
+            interpretation: finalInterpretation,
             aiThemes,
+            skipped: skipped || false,
           },
           onboarding_completed: true,
         },
@@ -291,11 +325,37 @@ export default function DreamJournal() {
       .select()
       .single();
     if (data) setUserSettings(data);
+
+    // Auto-save the onboarding dream as the user's first journal entry
+    if (recentDream?.trim() && finalInterpretation) {
+      await supabase.from("dreams").insert({
+        user_id: user.id,
+        title: "My First Dream",
+        description: recentDream.trim(),
+        interpretation: finalInterpretation,
+        mood: emotional?.mood || null,
+        created_at: new Date().toISOString(),
+      });
+      loadDreams();
+    }
   };
 
   // ── AI Interpretation ──────────────────────────────────────────────────────
-  const interpretDream = async (dream) => {
+  const interpretDream = async (dream, settings) => {
     try {
+      // Build personal context from the user's onboarding profile
+      const ad = settings?.archetype_data;
+      const profileParts = [];
+      if (ad?.profile?.name) profileParts.push(`The dreamer's name is ${ad.profile.name}.`);
+      if (ad?.profile?.gender) profileParts.push(`Gender: ${ad.profile.gender}.`);
+      if (settings?.age) profileParts.push(`Age: ${settings.age}.`);
+      if (ad?.emotional?.stressLevel) profileParts.push(`Current life stress: ${ad.emotional.stressLevel}.`);
+      if (ad?.sleep?.sleepQuality) profileParts.push(`Sleep quality: ${ad.sleep.sleepQuality}/5.`);
+      if (ad?.themes?.length) profileParts.push(`Recurring dream themes in their life: ${ad.themes.join(", ")}.`);
+      const profileContext = profileParts.length > 0
+        ? `\n\nDreamer profile: ${profileParts.join(" ")} Use this context to make the interpretation feel personal and resonant, referencing their life stage or patterns where meaningful. Do not simply list these facts — weave them in naturally.`
+        : "";
+
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/interpret-dream`, {
         method: "POST",
         headers: {
@@ -303,20 +363,78 @@ export default function DreamJournal() {
           "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
         },
         body: JSON.stringify({
-          system: "You are a wise, empathetic dream interpreter drawing from Jungian psychology, symbolism, and spiritual traditions. Give warm, insightful 2-3 sentence interpretations. Be poetic but grounded. Never be alarming.",
+          system: `You are a wise, empathetic dream interpreter drawing from psychology, symbolism, and spiritual traditions including Biblical wisdom. Dreams hold meaning across many traditions, and in scripture figures like Joseph, Daniel, and Jacob received divine insight through dreams. Give warm, insightful 2-3 sentence interpretations. Be poetic but grounded. Never be alarming. Do not use markdown formatting, headers, bullet points, or any special characters - write in plain flowing prose only.${profileContext}`,
           messages: [{
             role: "user",
-            content: `Interpret this dream. Title: "${dream.title}". Mood: ${dream.mood}. Theme: ${dream.theme}. ${dream.is_lucid ? "This was a lucid dream." : ""} Dream: "${dream.description}"`,
+            content: `Interpret this dream. Title: "${dream.title}". Mood: ${dream.mood}. Theme: ${dream.theme}. ${dream.is_lucid ? "This was a lucid dream." : ""}${dream.characters?.length ? ` Characters: ${dream.characters.join(", ")}.` : ""}${dream.tags?.length ? ` Tags: ${dream.tags.join(", ")}.` : ""} Dream: "${dream.description}"`,
           }],
           max_tokens: 1000,
         }),
       });
       const data = await response.json();
       return data.content?.map((b) => b.text || "").join("") ||
-        "The subconscious speaks in mysterious ways — this dream holds personal meaning unique to your journey.";
+        "Dreams speak in their own language -- this dream holds personal meaning unique to your journey.";
     } catch {
-      return "The stars are quiet tonight — try again to unlock this dream's meaning.";
+      return null; // signal failure so we don't save a failed message
     }
+  };
+
+  // ── AI Image Generation ────────────────────────────────────────────────────
+  const FREE_IMAGE_LIMIT = 2;
+
+  const generateDreamImage = async (dream) => {
+    if (!userSettings?.is_pro && (userSettings?.image_generation_count || 0) >= FREE_IMAGE_LIMIT) {
+      setShowUpgradeModal(true);
+      return null;
+    }
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-dream-image`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify({
+          dreamId: dream.id,
+          description: dream.description,
+          interpretation: dream.interpretation,
+          dreamTitle: dream.title,
+        }),
+      });
+      const data = await response.json();
+      if (data.error === "limit_reached") { setShowUpgradeModal(true); return null; }
+      if (data.imageUrl) {
+        const newImage = { image_url: data.imageUrl, created_at: new Date().toISOString() };
+        setDreams((prev) => prev.map((d) => d.id === dream.id
+          ? { ...d, dream_image_url: data.imageUrl, dream_images: [...(d.dream_images || []), newImage] }
+          : d
+        ));
+        setUserSettings((s) => ({ ...s, image_generation_count: (s?.image_generation_count || 0) + 1 }));
+        return data.imageUrl;
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  };
+
+  // ── Theme connection helpers ────────────────────────────────────────────────
+  const fetchDreamThemesCache = async () => {
+    if (dreamThemesCache) return dreamThemesCache;
+    const { data } = await supabase
+      .from("dream_themes")
+      .select("key, symbol, meaning, guidance, category")
+      .order("key", { ascending: true });
+    const themes = data || [];
+    setDreamThemesCache(themes);
+    return themes;
+  };
+
+  const detectThemeConnections = (text, themes) => {
+    if (!text || !themes?.length) return [];
+    const lower = text.toLowerCase();
+    return themes.filter((t) => lower.includes(t.key));
   };
 
   // ── Dream CRUD ─────────────────────────────────────────────────────────────
@@ -326,9 +444,17 @@ export default function DreamJournal() {
     if (!canInterpret) { setShowUpgradeModal(true); return; }
     setInterpretingId(dream.id);
     try {
-      const interpretation = await interpretDream(dream);
+      const interpretation = await interpretDream(dream, userSettings);
+      if (!interpretation) {
+        setInterpretingId(null);
+        return; // API failed silently — keep the button available to retry
+      }
       await supabase.from("dreams").update({ interpretation }).eq("id", dream.id);
       setDreams((prev) => prev.map((d) => d.id === dream.id ? { ...d, interpretation } : d));
+      // Open the immersive reading modal
+      const themes = await fetchDreamThemesCache();
+      const themeConnections = detectThemeConnections(dream.description, themes);
+      setReadingModal({ interpretation, symbols: dream.symbols || [], dreamTitle: dream.title, themeConnections, dream: { ...dream, interpretation } });
       if (!userSettings?.is_pro) {
         const newCount = (userSettings?.interpretation_count ?? 0) + 1;
         await supabase.from("user_settings").update({ interpretation_count: newCount }).eq("user_id", user.id);
@@ -339,8 +465,25 @@ export default function DreamJournal() {
     }
   };
 
+  // Community interpretation — uses the same token pool but result is shown inline only (not saved to the dream)
+  const handleCommunityInterpretDream = async (dream) => {
+    if (!canInterpret) { setShowUpgradeModal(true); return null; }
+    try {
+      const interpretation = await interpretDream(dream, userSettings);
+      if (interpretation && !userSettings?.is_pro) {
+        const newCount = (userSettings?.interpretation_count ?? 0) + 1;
+        await supabase.from("user_settings").update({ interpretation_count: newCount }).eq("user_id", user.id);
+        setUserSettings((s) => ({ ...s, interpretation_count: newCount }));
+      }
+      return interpretation;
+    } catch {
+      return null;
+    }
+  };
+
+  const totalFree = FREE_INTERPRETATIONS + Math.min(userSettings?.share_bonus_count ?? 0, MAX_SHARE_BONUS);
   const canInterpret =
-    userSettings?.is_pro || (userSettings?.interpretation_count ?? 0) < FREE_INTERPRETATIONS;
+    userSettings?.is_pro || (userSettings?.interpretation_count ?? 0) < totalFree;
 
   const handleSubmit = async () => {
     if (!form.title || !form.description) return;
@@ -350,7 +493,7 @@ export default function DreamJournal() {
       let interpretation = null;
 
       if (canInterpret) {
-        interpretation = await interpretDream({ ...form, symbols });
+        interpretation = await interpretDream({ ...form, symbols }, userSettings);
       } else {
         setShowUpgradeModal(true);
       }
@@ -535,6 +678,22 @@ export default function DreamJournal() {
     );
   }
 
+  // ── Pre-auth quiz (gather profile before signing up) ─────────────────────
+  if (!user && showPreAuthQuiz) {
+    return (
+      <div style={sharedBackground}>
+        {starsLayer}
+        {globalStyles}
+        <OnboardingQuiz preAuth onComplete={(data) => {
+          setShowPreAuthQuiz(false);
+          if (data.skipped) return; // just go back to auth
+          pendingQuizDataRef.current = data;
+          setAuthMode("signup");
+        }} />
+      </div>
+    );
+  }
+
   // ── Auth screen ────────────────────────────────────────────────────────────
   if (!user) {
     return (
@@ -550,8 +709,23 @@ export default function DreamJournal() {
             <p style={{ fontSize: 14, color: "#8a7540", margin: 0 }}>Tend to your dreams like a shepherd</p>
           </div>
           <div style={{ background: "rgba(6,12,22,0.85)", border: "1px solid rgba(200,160,30,0.2)", borderRadius: 20, padding: 32, backdropFilter: "blur(10px)" }}>
+            {/* Show signup prompt if quiz was completed pre-auth */}
+            {pendingQuizDataRef.current && (
+              <div style={{
+                textAlign: "center", marginBottom: 20, padding: "14px 16px",
+                background: "rgba(104,71,192,0.08)", border: "1px solid rgba(144,102,212,0.25)",
+                borderRadius: 14,
+              }}>
+                <div style={{ fontSize: 13, color: "#9066d4", marginBottom: 4 }}>
+                  Your dream profile is ready
+                </div>
+                <div style={{ fontSize: 12, color: "#8a7540" }}>
+                  Create an account to unlock your personalized dream reflection
+                </div>
+              </div>
+            )}
             <div style={{ fontSize: 15, color: "#e8b840", textAlign: "center", marginBottom: 24 }}>
-              {authMode === "login" ? "Welcome back" : "Begin your journey"}
+              {pendingQuizDataRef.current ? "Sign up to unlock your dream reflection" : authMode === "login" ? "Welcome back" : "Begin your journey"}
             </div>
             <input
               type="email" placeholder="Email address" value={authForm.email}
@@ -573,7 +747,7 @@ export default function DreamJournal() {
               border: "none", color: "white", padding: "13px", borderRadius: 12,
               fontSize: 14, cursor: authLoading ? "not-allowed" : "pointer", letterSpacing: 0.5,
             }}>
-              {authLoading ? "..." : authMode === "login" ? "Sign In" : "Create Account"}
+              {authLoading ? "..." : pendingQuizDataRef.current ? "Create Account" : authMode === "login" ? "Sign In" : "Create Account"}
             </button>
             <div style={{ textAlign: "center", marginTop: 20 }}>
               <span style={{ fontSize: 13, color: "#8a7540" }}>
@@ -585,6 +759,25 @@ export default function DreamJournal() {
                 {authMode === "login" ? "Sign up free" : "Sign in"}
               </button>
             </div>
+            {/* Discover Archetype CTA for new users */}
+            {!pendingQuizDataRef.current && authMode !== "login" && (
+              <div style={{ textAlign: "center", marginTop: 20, paddingTop: 16, borderTop: "1px solid rgba(200,160,30,0.1)" }}>
+                <button
+                  onClick={() => setShowPreAuthQuiz(true)}
+                  style={{
+                    background: "none", border: "1px solid rgba(144,102,212,0.35)",
+                    color: "#9066d4", padding: "10px 20px", borderRadius: 12,
+                    fontSize: 13, cursor: "pointer", fontFamily: "Georgia, serif",
+                    letterSpacing: 0.5, width: "100%",
+                  }}
+                >
+                  🐑 Take the Dream Quiz
+                </button>
+                <p style={{ fontSize: 11, color: "#6a5030", marginTop: 8, marginBottom: 0 }}>
+                  Answer a few questions to personalize your experience
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -597,7 +790,7 @@ export default function DreamJournal() {
       <div style={sharedBackground}>
         {starsLayer}
         {globalStyles}
-        <ArchetypeQuiz onComplete={handleQuizComplete} />
+        <OnboardingQuiz onComplete={handleQuizComplete} />
       </div>
     );
   }
@@ -609,6 +802,7 @@ export default function DreamJournal() {
     { id: "lucid",      label: "⚡ Lucid" },
     { id: "community",  label: "👥 Community" },
     { id: "dictionary", label: "📖 Library" },
+    { id: "gallery",    label: "🎨 Gallery" },
     { id: "profile",    label: "◉ Profile" },
   ];
 
@@ -641,9 +835,9 @@ export default function DreamJournal() {
               ✦ Pro
             </span>
           )}
-          {(userSettings?.display_name || userSettings?.archetype) && (
+          {userSettings?.display_name && (
             <div style={{ fontSize: 12, color: "#8a7540", marginTop: 6 }}>
-              {userSettings.display_name ? `Welcome, ${userSettings.display_name}` : `${userSettings.archetype} Dreamer`}
+              Welcome, {userSettings.display_name}
             </div>
           )}
           <div style={{ width: 60, height: 1, background: "linear-gradient(90deg, transparent, #c8a030, transparent)", margin: "14px auto 0" }} />
@@ -710,7 +904,7 @@ export default function DreamJournal() {
                   loading={loading}
                   canInterpret={canInterpret}
                   isPro={userSettings?.is_pro}
-                  freeRemaining={Math.max(0, FREE_INTERPRETATIONS - (userSettings?.interpretation_count ?? 0))}
+                  freeRemaining={Math.max(0, totalFree - (userSettings?.interpretation_count ?? 0))}
                 />
               </div>
             )}
@@ -728,7 +922,7 @@ export default function DreamJournal() {
               <div style={{ textAlign: "center", padding: "60px 0", color: "#6b5c30" }}>
                 <div style={{ fontSize: 48, marginBottom: 16 }}>🐑</div>
                 <div style={{ fontSize: 16, color: "#7a6a40", marginBottom: 8 }}>Your dream journal awaits</div>
-                <div style={{ fontSize: 13 }}>Tap "+ Record Dream" to begin capturing your subconscious</div>
+                <div style={{ fontSize: 13 }}>Tap "+ Record Dream" to begin capturing your dreams</div>
               </div>
             )}
 
@@ -747,6 +941,11 @@ export default function DreamJournal() {
                 onDelete={handleDeleteDream}
                 onInterpret={handleInterpretDream}
                 interpreting={interpretingId === dream.id}
+                onViewReading={async (d) => {
+                  const themes = await fetchDreamThemesCache();
+                  const themeConnections = detectThemeConnections(d.description, themes);
+                  setReadingModal({ interpretation: d.interpretation, symbols: d.symbols || [], dreamTitle: d.title, themeConnections, dream: d });
+                }}
               />
             ))}
           </div>
@@ -772,7 +971,12 @@ export default function DreamJournal() {
         {/* ── COMMUNITY TAB ── */}
         {tab === "community" && (
           <div style={{ animation: "fadeIn 0.4s ease" }}>
-            <CommunityTab user={user} supabase={supabase} />
+            <CommunityTab
+              user={user}
+              supabase={supabase}
+              canInterpret={canInterpret}
+              onInterpretDream={handleCommunityInterpretDream}
+            />
           </div>
         )}
 
@@ -780,6 +984,21 @@ export default function DreamJournal() {
         {tab === "dictionary" && (
           <div style={{ animation: "fadeIn 0.4s ease" }}>
             <DictionaryTab />
+          </div>
+        )}
+
+        {/* ── GALLERY TAB ── */}
+        {tab === "gallery" && (
+          <div style={{ animation: "fadeIn 0.4s ease" }}>
+            <GalleryTab
+              user={user}
+              dreams={dreams}
+              onViewReading={async (d) => {
+                const themes = await fetchDreamThemesCache();
+                const themeConnections = detectThemeConnections(d.description, themes);
+                setReadingModal({ interpretation: d.interpretation, symbols: d.symbols || [], dreamTitle: d.title, themeConnections, dream: d });
+              }}
+            />
           </div>
         )}
 
@@ -798,6 +1017,17 @@ export default function DreamJournal() {
         )}
       </div>
 
+      {/* ── Reading Modal ── */}
+      {readingModal && (
+        <ReadingModal
+          reading={readingModal}
+          onClose={() => setReadingModal(null)}
+          onGenerateImage={generateDreamImage}
+          userSettings={userSettings}
+          onUpgrade={handleUpgrade}
+        />
+      )}
+
       {/* ── Upgrade Modal ── */}
       {showUpgradeModal && (
         <div
@@ -815,10 +1045,10 @@ export default function DreamJournal() {
               boxShadow: "0 16px 60px rgba(110,70,5,0.5)", animation: "fadeIn 0.3s ease", textAlign: "center",
             }}
           >
-            <div style={{ fontSize: 40, marginBottom: 16 }}>🔮</div>
-            <div style={{ fontSize: 20, color: "#f5e4b0", marginBottom: 8 }}>Unlock Unlimited Interpretations</div>
+            <div style={{ fontSize: 40, marginBottom: 16 }}>🐑</div>
+            <div style={{ fontSize: 20, color: "#f5e4b0", marginBottom: 8 }}>Unlock Unlimited Reflections</div>
             <div style={{ fontSize: 14, color: "#7a6a40", marginBottom: 24, lineHeight: 1.6 }}>
-              You've used all {FREE_INTERPRETATIONS} free AI interpretations.<br />
+              You've used all {totalFree} free AI reflections.<br />
               Upgrade to Pro for unlimited dream analysis + all premium features.
             </div>
             <div style={{
@@ -828,7 +1058,7 @@ export default function DreamJournal() {
               <div style={{ fontSize: 28, color: "#e8c840", fontWeight: 400 }}>
                 $5.99<span style={{ fontSize: 14, color: "#a09060" }}>/month</span>
               </div>
-              <div style={{ fontSize: 12, color: "#a09060", marginTop: 4 }}>Unlimited Interpretations · All Features</div>
+              <div style={{ fontSize: 12, color: "#a09060", marginTop: 4 }}>Unlimited Reflections · All Features</div>
             </div>
             <button onClick={handleUpgrade} style={{
               width: "100%", background: "linear-gradient(135deg, #c8a020, #e8c840)",
@@ -837,6 +1067,20 @@ export default function DreamJournal() {
             }}>
               Upgrade Now
             </button>
+            {(userSettings?.share_bonus_count ?? 0) < MAX_SHARE_BONUS && (
+              <div style={{ marginBottom: 12 }}>
+                <ShareButton
+                  userId={user?.id}
+                  shareBonusCount={userSettings?.share_bonus_count ?? 0}
+                  maxBonus={MAX_SHARE_BONUS}
+                  variant="compact"
+                  onBonusEarned={(newCount) => {
+                    setUserSettings((s) => ({ ...s, share_bonus_count: newCount }));
+                    setTimeout(() => setShowUpgradeModal(false), 1500);
+                  }}
+                />
+              </div>
+            )}
             <button onClick={() => setShowUpgradeModal(false)} style={{
               background: "none", border: "none", color: "#6b5c30", fontSize: 13, cursor: "pointer", padding: "8px",
             }}>
