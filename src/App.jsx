@@ -561,6 +561,15 @@ export default function DreamJournal() {
     if (selectedDream?.id === dreamId) setSelectedDream(null);
   };
 
+  const handleTogglePublic = async (dreamId) => {
+    const dream = dreams.find((d) => d.id === dreamId);
+    if (!dream) return;
+    const newValue = !dream.is_public;
+    await supabase.from("dreams").update({ is_public: newValue }).eq("id", dreamId);
+    setDreams((prev) => prev.map((d) => d.id === dreamId ? { ...d, is_public: newValue } : d));
+    if (selectedDream?.id === dreamId) setSelectedDream((s) => ({ ...s, is_public: newValue }));
+  };
+
   // ── Upgrade ────────────────────────────────────────────────────────────────
   const handleUpgrade = async () => {
     try {
@@ -939,6 +948,7 @@ export default function DreamJournal() {
                 isSelected={selectedDream?.id === dream.id}
                 onSelect={(d) => setSelectedDream(selectedDream?.id === d.id ? null : d)}
                 onDelete={handleDeleteDream}
+                onTogglePublic={handleTogglePublic}
                 onInterpret={handleInterpretDream}
                 interpreting={interpretingId === dream.id}
                 onViewReading={async (d) => {
