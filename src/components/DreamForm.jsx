@@ -15,10 +15,10 @@ const THEMES = [
   "Adventure",
   "Romance",
   "Mystery",
-  "Fantasy",
+  "Prophetic",
   "Nightmare",
   "Spiritual",
-  "Mundane",
+  "Peaceful",
   "Surreal",
 ];
 
@@ -143,7 +143,7 @@ const styles = {
     height: 24,
     borderRadius: 12,
     background: on
-      ? "linear-gradient(135deg,#7c3aed,#a855f7)"
+      ? "linear-gradient(135deg,#6847c0,#9066d4)"
       : "rgba(60,30,100,0.6)",
     border: "1px solid rgba(200,160,30,0.3)",
     cursor: "pointer",
@@ -163,7 +163,7 @@ const styles = {
   }),
   slider: {
     width: "100%",
-    accentColor: "#a855f7",
+    accentColor: "#9066d4",
     cursor: "pointer",
   },
   starBtn: (active) => ({
@@ -180,7 +180,7 @@ const styles = {
     padding: "14px 0",
     border: "none",
     borderRadius: 14,
-    background: "linear-gradient(135deg, #7c3aed, #a855f7, #c084fc)",
+    background: "linear-gradient(135deg, #6847c0, #9066d4, #c084fc)",
     color: "#fff",
     fontSize: 17,
     fontFamily: "Georgia, serif",
@@ -225,6 +225,8 @@ const styles = {
     outline: "none",
   },
 };
+
+const MIN_DESCRIPTION_LENGTH = 50;
 
 export default function DreamForm({
   form,
@@ -346,8 +348,12 @@ export default function DreamForm({
     );
   };
 
+  const descLength = (form.description || "").trim().length;
+  const descTooShort = descLength > 0 && descLength < MIN_DESCRIPTION_LENGTH;
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (descTooShort) return;
     onSubmit();
   };
 
@@ -394,9 +400,28 @@ export default function DreamForm({
           placeholder="Describe your dream in detail..."
           value={form.description}
           onChange={(e) => update("description", e.target.value)}
-          style={styles.textarea}
+          style={{
+            ...styles.textarea,
+            borderColor: descTooShort ? "rgba(255,180,60,0.4)" : "rgba(200,160,30,0.3)",
+          }}
           required
         />
+        {descTooShort && (
+          <div style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginTop: 6,
+            fontSize: 12,
+            color: "#c89040",
+            fontFamily: "Georgia, serif",
+          }}>
+            <span>Add more detail for a richer interpretation</span>
+            <span style={{ color: "#6b5c30" }}>
+              {descLength}/{MIN_DESCRIPTION_LENGTH}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Mood */}
@@ -615,11 +640,11 @@ export default function DreamForm({
       {/* Submit */}
       <button
         type="submit"
-        disabled={loading}
+        disabled={loading || descTooShort}
         style={{
           ...styles.submitBtn,
-          opacity: loading ? 0.6 : 1,
-          cursor: loading ? "not-allowed" : "pointer",
+          opacity: (loading || descTooShort) ? 0.6 : 1,
+          cursor: (loading || descTooShort) ? "not-allowed" : "pointer",
         }}
       >
         {loading ? "Saving..." : "Save Dream"}
@@ -636,7 +661,7 @@ export default function DreamForm({
             fontFamily: "Georgia, serif",
           }}
         >
-          {freeRemaining} free interpretation{freeRemaining !== 1 ? "s" : ""}{" "}
+          {freeRemaining} free reflection{freeRemaining !== 1 ? "s" : ""}{" "}
           remaining
         </p>
       )}
