@@ -125,6 +125,7 @@ export default function DreamJournal() {
   const [selectedDream, setSelectedDream] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [showUpgradeNudge, setShowUpgradeNudge] = useState(false);
   const [readingModal, setReadingModal] = useState(null); // { interpretation, symbols, dreamTitle, themeConnections }
   const [dreamThemesCache, setDreamThemesCache] = useState(null);
   const [showQuiz, setShowQuiz] = useState(false);
@@ -459,6 +460,8 @@ export default function DreamJournal() {
         const newCount = (userSettings?.interpretation_count ?? 0) + 1;
         await supabase.from("user_settings").update({ interpretation_count: newCount }).eq("user_id", user.id);
         setUserSettings((s) => ({ ...s, interpretation_count: newCount }));
+        // Show soft upgrade nudge after 3rd interpretation
+        if (newCount === 3) setShowUpgradeNudge(true);
       }
     } finally {
       setInterpretingId(null);
@@ -1020,6 +1023,43 @@ export default function DreamJournal() {
         />
       )}
 
+      {/* ── Upgrade Nudge (after 3rd interpretation) ── */}
+      {showUpgradeNudge && !userSettings?.is_pro && (
+        <div style={{
+          position: "fixed", bottom: 20, left: "50%", transform: "translateX(-50%)",
+          background: "linear-gradient(135deg, rgba(16,4,40,0.97), rgba(30,10,60,0.97))",
+          border: "1px solid rgba(200,160,50,0.35)", borderRadius: 18,
+          padding: "16px 22px", maxWidth: 380, width: "90%",
+          boxShadow: "0 8px 40px rgba(0,0,0,0.6)", zIndex: 90,
+          animation: "fadeIn 0.4s ease", display: "flex", alignItems: "center", gap: 14,
+        }}>
+          <div style={{ fontSize: 28, flexShrink: 0 }}>✨</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 13, color: "#f5e4b0", marginBottom: 4 }}>
+              Enjoying your reflections?
+            </div>
+            <div style={{ fontSize: 11, color: "#8a7540", lineHeight: 1.5 }}>
+              You have {Math.max(0, totalFree - (userSettings?.interpretation_count || 0))} left. Pro gives you unlimited interpretations, dream visualizations, and more.
+            </div>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6, flexShrink: 0 }}>
+            <button onClick={() => { setShowUpgradeNudge(false); setShowUpgradeModal(true); }} style={{
+              background: "linear-gradient(135deg, #c8a020, #e8c840)", border: "none",
+              color: "#1a1000", padding: "7px 14px", borderRadius: 10,
+              fontSize: 11, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap",
+            }}>
+              Learn More
+            </button>
+            <button onClick={() => setShowUpgradeNudge(false)} style={{
+              background: "none", border: "none", color: "#6b5c30",
+              fontSize: 10, cursor: "pointer", padding: 0,
+            }}>
+              Dismiss
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* ── Upgrade Modal ── */}
       {showUpgradeModal && (
         <div
@@ -1038,10 +1078,24 @@ export default function DreamJournal() {
             }}
           >
             <div style={{ fontSize: 40, marginBottom: 16 }}>🐑</div>
-            <div style={{ fontSize: 20, color: "#f5e4b0", marginBottom: 8 }}>Unlock Unlimited Reflections</div>
-            <div style={{ fontSize: 14, color: "#7a6a40", marginBottom: 24, lineHeight: 1.6 }}>
-              You've used all {totalFree} free AI reflections.<br />
-              Upgrade to Pro for unlimited dream analysis + all premium features.
+            <div style={{ fontSize: 20, color: "#f5e4b0", marginBottom: 8 }}>Dream Shepherd Pro</div>
+            <div style={{ fontSize: 13, color: "#7a6a40", marginBottom: 20, lineHeight: 1.6 }}>
+              Take your dream journey to the next level.
+            </div>
+            <div style={{
+              textAlign: "left", marginBottom: 20, display: "flex", flexDirection: "column", gap: 10,
+            }}>
+              {[
+                { icon: "🌙", text: "Unlimited AI dream interpretations" },
+                { icon: "🎨", text: "Unlimited dream visualizations" },
+                { icon: "🔮", text: "Deeper, more personalized insights" },
+                { icon: "✨", text: "Priority access to new features" },
+              ].map((item) => (
+                <div key={item.text} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <span style={{ fontSize: 16, flexShrink: 0 }}>{item.icon}</span>
+                  <span style={{ fontSize: 13, color: "#c8a040" }}>{item.text}</span>
+                </div>
+              ))}
             </div>
             <div style={{
               background: "rgba(200,160,50,0.1)", border: "1px solid rgba(200,160,50,0.3)",
@@ -1050,7 +1104,7 @@ export default function DreamJournal() {
               <div style={{ fontSize: 28, color: "#e8c840", fontWeight: 400 }}>
                 $5.99<span style={{ fontSize: 14, color: "#a09060" }}>/month</span>
               </div>
-              <div style={{ fontSize: 12, color: "#a09060", marginTop: 4 }}>Unlimited Reflections · All Features</div>
+              <div style={{ fontSize: 12, color: "#a09060", marginTop: 4 }}>Cancel anytime</div>
             </div>
             <button onClick={handleUpgrade} style={{
               width: "100%", background: "linear-gradient(135deg, #c8a020, #e8c840)",
