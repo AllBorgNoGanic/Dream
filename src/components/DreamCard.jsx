@@ -5,6 +5,12 @@ const DREAM_DICTIONARY = {
   ocean: { symbol: "🌊" }, forest: { symbol: "🌲" }, school: { symbol: "🏫" },
   baby: { symbol: "👶" }, car: { symbol: "🚗" }, mirror: { symbol: "🪞" },
   clock: { symbol: "⏰" },
+  dove: { symbol: "🕊️" },
+  lamb: { symbol: "🐑" },
+  bread: { symbol: "🍞" },
+  cross: { symbol: "✝️" },
+  light: { symbol: "💡" },
+  angel: { symbol: "👼" },
 };
 
 const formatDate = (iso) => {
@@ -14,13 +20,20 @@ const formatDate = (iso) => {
 
 const getMoodEmoji = (mood) => mood?.split(" ")[0] || "💭";
 
-export default function DreamCard({ dream, isSelected, onSelect, onDelete, onInterpret, interpreting }) {
+export default function DreamCard({ dream, isSelected, onSelect, onDelete, onInterpret, interpreting, onViewReading }) {
+  const needsInterpretation = !dream.interpretation && onInterpret;
+
   return (
     <div
       className="dream-card"
       onClick={() => onSelect(dream)}
       style={{
-        background: "rgba(6,12,22,0.7)", border: "1px solid rgba(200,160,30,0.15)",
+        background: "rgba(6,12,22,0.7)",
+        border: isSelected
+          ? "1px solid rgba(144,102,212,0.35)"
+          : needsInterpretation
+            ? "1px solid rgba(144,102,212,0.2)"
+            : "1px solid rgba(200,160,30,0.15)",
         borderRadius: 18, padding: 24, marginBottom: 16, cursor: "pointer",
         boxShadow: "0 4px 20px rgba(20,15,5,0.4)"
       }}
@@ -35,6 +48,15 @@ export default function DreamCard({ dream, isSelected, onSelect, onDelete, onInt
                 borderRadius: 12, padding: "2px 8px", fontSize: 10, color: "#88ccff"
               }}>
                 LUCID
+              </span>
+            )}
+            {needsInterpretation && !isSelected && (
+              <span style={{
+                background: "rgba(104,71,192,0.15)", border: "1px solid rgba(144,102,212,0.3)",
+                borderRadius: 12, padding: "2px 8px", fontSize: 10, color: "#b08aee",
+                letterSpacing: 0.5,
+              }}>
+                ✦ Awaiting Reflection
               </span>
             )}
           </div>
@@ -92,16 +114,20 @@ export default function DreamCard({ dream, isSelected, onSelect, onDelete, onInt
       </p>
 
       {isSelected && dream.interpretation && (
-        <div style={{
-          marginTop: 16, borderRadius: 16, overflow: "hidden",
-          border: "1px solid rgba(168,85,247,0.35)",
-          boxShadow: "0 0 40px rgba(120,60,220,0.12), 0 8px 32px rgba(0,0,0,0.4)",
-          animation: "fadeIn 0.5s ease",
-        }}>
+        <div
+          onClick={(e) => { e.stopPropagation(); onViewReading?.(dream); }}
+          title="Tap to expand reading"
+          style={{
+            marginTop: 16, borderRadius: 16, overflow: "hidden",
+            border: "1px solid rgba(144,102,212,0.35)",
+            boxShadow: "0 0 40px rgba(104,71,192,0.12), 0 8px 32px rgba(0,0,0,0.4)",
+            animation: "fadeIn 0.5s ease",
+            cursor: "pointer",
+          }}>
           {/* Top shimmer bar */}
           <div style={{
             height: 2,
-            background: "linear-gradient(90deg, transparent, #7c3aed, #e8b840, #a855f7, transparent)",
+            background: "linear-gradient(90deg, transparent, #6847c0, #e8b840, #9066d4, transparent)",
           }} />
 
           <div style={{
@@ -112,15 +138,18 @@ export default function DreamCard({ dream, isSelected, onSelect, onDelete, onInt
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
               <span style={{ fontSize: 18, lineHeight: 1 }}>🌙</span>
               <span style={{
-                fontSize: 9, letterSpacing: 4, color: "#a855f7",
+                fontSize: 9, letterSpacing: 4, color: "#9066d4",
                 textTransform: "uppercase", fontFamily: "Georgia, serif", fontWeight: 400,
               }}>
-                The Shepherd's Reading
+                The Shepherd's Reflection
               </span>
               <div style={{
                 flex: 1, height: 1,
-                background: "linear-gradient(90deg, rgba(168,85,247,0.5), transparent)",
+                background: "linear-gradient(90deg, rgba(144,102,212,0.5), transparent)",
               }} />
+              <span style={{ fontSize: 10, color: "#5a3a7a", letterSpacing: 0.5 }}>
+                ↗ expand
+              </span>
             </div>
 
             {/* Interpretation body */}
@@ -137,7 +166,7 @@ export default function DreamCard({ dream, isSelected, onSelect, onDelete, onInt
               <>
                 <div style={{
                   height: 1, margin: "14px 0 12px",
-                  background: "linear-gradient(90deg, transparent, rgba(168,85,247,0.35), transparent)",
+                  background: "linear-gradient(90deg, transparent, rgba(144,102,212,0.35), transparent)",
                 }} />
                 <div style={{
                   fontSize: 9, letterSpacing: 3, color: "#6b4da0",
@@ -149,11 +178,11 @@ export default function DreamCard({ dream, isSelected, onSelect, onDelete, onInt
                   {dream.symbols.map(s => (
                     <span key={s} style={{
                       display: "inline-flex", alignItems: "center", gap: 4,
-                      background: "rgba(120,60,220,0.18)",
-                      border: "1px solid rgba(168,85,247,0.32)",
+                      background: "rgba(104,71,192,0.18)",
+                      border: "1px solid rgba(144,102,212,0.32)",
                       borderRadius: 20, padding: "4px 12px",
                       fontSize: 11, color: "#c4a0ff",
-                      boxShadow: "0 0 10px rgba(120,60,220,0.18)",
+                      boxShadow: "0 0 10px rgba(104,71,192,0.18)",
                     }}>
                       {DREAM_DICTIONARY[s]?.symbol} {s}
                     </span>
@@ -166,7 +195,7 @@ export default function DreamCard({ dream, isSelected, onSelect, onDelete, onInt
           {/* Bottom shimmer bar */}
           <div style={{
             height: 1,
-            background: "linear-gradient(90deg, transparent, rgba(168,85,247,0.3), rgba(232,184,64,0.2), transparent)",
+            background: "linear-gradient(90deg, transparent, rgba(144,102,212,0.3), rgba(232,184,64,0.2), transparent)",
           }} />
         </div>
       )}
@@ -182,17 +211,17 @@ export default function DreamCard({ dream, isSelected, onSelect, onDelete, onInt
                 ? "rgba(60,20,100,0.3)"
                 : "linear-gradient(135deg, rgba(90,30,180,0.5), rgba(140,50,220,0.5))",
               border: interpreting
-                ? "1px solid rgba(120,60,220,0.25)"
-                : "1px solid rgba(168,85,247,0.55)",
+                ? "1px solid rgba(104,71,192,0.25)"
+                : "1px solid rgba(144,102,212,0.55)",
               borderRadius: 14,
               color: interpreting ? "#6b4da0" : "#d4b0ff",
               fontSize: 13, fontFamily: "Georgia, serif",
               cursor: interpreting ? "not-allowed" : "pointer",
               letterSpacing: 1, transition: "all 0.25s",
-              boxShadow: interpreting ? "none" : "0 0 20px rgba(120,60,220,0.2)",
+              boxShadow: interpreting ? "none" : "0 0 20px rgba(104,71,192,0.2)",
             }}
           >
-            {interpreting ? "🌙 Reading your dream..." : "✦ Unlock the Meaning"}
+            {interpreting ? "🌙 Reflecting on your dream..." : "✦ Seek the Shepherd's Guidance"}
           </button>
           {!interpreting && (
             <div style={{

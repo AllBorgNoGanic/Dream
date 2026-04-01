@@ -1,22 +1,28 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 
 const DREAM_DICTIONARY = {
   flying: { symbol: "✈️", meaning: "Freedom, ambition" },
   falling: { symbol: "⬇️", meaning: "Loss of control" },
-  water: { symbol: "🌊", meaning: "Emotions" },
-  fire: { symbol: "🔥", meaning: "Passion, transformation" },
+  water: { symbol: "🌊", meaning: "Emotions, renewal, spiritual cleansing" },
+  fire: { symbol: "🔥", meaning: "Purification, passion, the Holy Spirit" },
   death: { symbol: "💀", meaning: "Endings and new beginnings" },
   teeth: { symbol: "🦷", meaning: "Anxiety about appearance" },
   chase: { symbol: "🏃", meaning: "Avoidance" },
   house: { symbol: "🏠", meaning: "The self or psyche" },
   snake: { symbol: "🐍", meaning: "Hidden fears" },
-  ocean: { symbol: "🌊", meaning: "The unconscious" },
+  ocean: { symbol: "🌊", meaning: "The deep unknown" },
   forest: { symbol: "🌲", meaning: "Mystery and unknown" },
   school: { symbol: "🏫", meaning: "Learning, judgment" },
   baby: { symbol: "👶", meaning: "New beginnings" },
   car: { symbol: "🚗", meaning: "Control over direction" },
   mirror: { symbol: "🪞", meaning: "Self-reflection" },
   clock: { symbol: "⏰", meaning: "Anxiety about time" },
+  dove: { symbol: "🕊️", meaning: "Peace, the Holy Spirit, new beginnings" },
+  lamb: { symbol: "🐑", meaning: "Innocence, sacrifice, divine love" },
+  bread: { symbol: "🍞", meaning: "Provision, communion, spiritual nourishment" },
+  cross: { symbol: "✝️", meaning: "Sacrifice, redemption, hope" },
+  light: { symbol: "💡", meaning: "Revelation, truth, divine presence" },
+  angel: { symbol: "👼", meaning: "Divine messenger, guidance, protection" },
 };
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -168,7 +174,7 @@ function HorizontalBar({ label, value, maxValue, color, emoji }) {
             width: `${pct}%`,
             height: "100%",
             borderRadius: 5,
-            background: color || "linear-gradient(90deg, #7c3aed, #a855f7)",
+            background: color || "linear-gradient(90deg, #6847c0, #9066d4)",
             transition: "width 0.6s ease",
           }}
         />
@@ -204,6 +210,29 @@ function StatCard({ label, value, icon, delay }) {
     </div>
   );
 }
+
+const STOP_WORDS = new Set([
+  "the", "and", "was", "were", "is", "are", "am", "been", "being",
+  "have", "has", "had", "do", "does", "did", "will", "would", "could",
+  "should", "may", "might", "shall", "can", "need", "must",
+  "that", "this", "these", "those", "with", "from", "into", "about",
+  "for", "but", "not", "you", "all", "her", "his", "him", "she", "he",
+  "they", "them", "their", "its", "our", "your", "who", "what", "which",
+  "when", "where", "how", "why", "each", "every", "both", "few", "more",
+  "most", "other", "some", "such", "than", "too", "very", "just", "also",
+  "then", "there", "here", "now", "out", "only", "own", "same", "so",
+  "because", "until", "while", "after", "before", "during", "between",
+  "through", "over", "under", "again", "once", "like", "well", "back",
+  "still", "even", "way", "many", "much", "really", "already",
+  "around", "another", "came", "come", "going", "went", "got", "get",
+  "see", "saw", "know", "knew", "make", "made", "think", "thought",
+  "take", "took", "want", "wanted", "look", "looked", "felt", "feel",
+  "try", "tried", "something", "someone", "everything", "anything",
+  "nothing", "one", "two", "three", "first", "last", "new", "old",
+  "big", "small", "long", "little", "large", "great", "good", "bad",
+  "right", "left", "next", "don", "didn", "wasn", "couldn", "wouldn",
+  "doesn", "isn", "aren", "hadn", "it", "me", "my", "we", "us",
+]);
 
 export default function PatternsTab({ dreams, userSettings }) {
   const [hoveredInsight, setHoveredInsight] = useState(null);
@@ -266,6 +295,27 @@ export default function PatternsTab({ dreams, userSettings }) {
     .sort((a, b) => b[1] - a[1])
     .slice(0, 10);
 
+  // Dream signs detector - recurring words across all dream descriptions
+  const dreamSigns = useMemo(() => {
+    const wordCounts = {};
+    dreams.forEach((d) => {
+      if (!d.description) return;
+      const words = d.description
+        .toLowerCase()
+        .replace(/[^a-z\s'-]/g, "")
+        .split(/\s+/)
+        .filter((w) => w.length > 3 && !STOP_WORDS.has(w));
+      const unique = new Set(words);
+      unique.forEach((w) => {
+        wordCounts[w] = (wordCounts[w] || 0) + 1;
+      });
+    });
+    return Object.entries(wordCounts)
+      .filter(([, c]) => c >= 2)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10);
+  }, [dreams]);
+
   // Pattern insights
   const insights = [];
   Object.entries(symbolMoodMap).forEach(([symbol, moods]) => {
@@ -303,21 +353,21 @@ export default function PatternsTab({ dreams, userSettings }) {
   }
 
   const moodColors = [
-    "linear-gradient(90deg, #7c3aed, #a855f7)",
-    "linear-gradient(90deg, #6d28d9, #8b5cf6)",
-    "linear-gradient(90deg, #5b21b6, #7c3aed)",
-    "linear-gradient(90deg, #4c1d95, #6d28d9)",
-    "linear-gradient(90deg, #3b0764, #5b21b6)",
-    "linear-gradient(90deg, #2e1065, #4c1d95)",
-    "linear-gradient(90deg, #581c87, #9333ea)",
-    "linear-gradient(90deg, #6b21a8, #a855f7)",
+    "linear-gradient(90deg, #6847c0, #9066d4)",
+    "linear-gradient(90deg, #5a3aa0, #7b5cb8)",
+    "linear-gradient(90deg, #4c2e90, #6847c0)",
+    "linear-gradient(90deg, #3e2280, #5a3aa0)",
+    "linear-gradient(90deg, #301870, #4c2e90)",
+    "linear-gradient(90deg, #281060, #3e2280)",
+    "linear-gradient(90deg, #462090, #8050c0)",
+    "linear-gradient(90deg, #5530a8, #9066d4)",
   ];
 
   if (!dreams.length) {
     return (
       <div style={{ ...cardBase, textAlign: "center", padding: 48 }}>
         <style>{fadeIn}</style>
-        <div style={{ fontSize: 48, marginBottom: 12 }}>🔮</div>
+        <div style={{ fontSize: 48, marginBottom: 12 }}>✦</div>
         <div style={{ ...sectionTitle, marginBottom: 8 }}>No Dreams Yet</div>
         <div style={{ ...subText, fontSize: 15 }}>
           Start recording your dreams to see patterns and insights emerge.
@@ -479,7 +529,7 @@ export default function PatternsTab({ dreams, userSettings }) {
                       width: 28,
                       height: 28,
                       borderRadius: "50%",
-                      background: "linear-gradient(135deg, #7c3aed, #a855f7)",
+                      background: "linear-gradient(135deg, #6847c0, #9066d4)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -589,7 +639,7 @@ export default function PatternsTab({ dreams, userSettings }) {
                       <span
                         key={star}
                         style={{
-                          color: star <= q ? "#a855f7" : "rgba(200,160,30,0.2)",
+                          color: star <= q ? "#9066d4" : "rgba(200,160,30,0.2)",
                           fontSize: 14,
                         }}
                       >
@@ -650,7 +700,7 @@ export default function PatternsTab({ dreams, userSettings }) {
                     style={{
                       width: "70%",
                       height: `${Math.max(height, 4)}%`,
-                      background: "linear-gradient(180deg, #a855f7, #6d28d9)",
+                      background: "linear-gradient(180deg, #9066d4, #5a3aa0)",
                       borderRadius: "6px 6px 2px 2px",
                       transition: "height 0.5s ease",
                       minHeight: 4,
@@ -667,6 +717,100 @@ export default function PatternsTab({ dreams, userSettings }) {
             );
           })}
         </div>
+      </div>
+
+      {/* ── Dream Signs Detector ──────────────────────────────────────────── */}
+      <div style={{ ...cardBase, animationDelay: "0.7s" }}>
+        <h3 style={sectionTitle}>✦ Recurring Dream Signs</h3>
+        <p style={{ ...subText, marginBottom: 18, lineHeight: 1.6 }}>
+          Words and elements that appear across multiple dreams. These recurring signs can reveal deeper patterns in your dream life.
+        </p>
+
+        {dreamSigns.length > 0 ? (
+          <>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              {dreamSigns.map(([word, count], i) => (
+                <div
+                  key={word}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 14,
+                    padding: "10px 14px",
+                    borderRadius: 12,
+                    transition: "background 0.2s",
+                  }}
+                >
+                  <div
+                    style={{
+                      minWidth: 28,
+                      height: 28,
+                      borderRadius: "50%",
+                      background: "rgba(140,90,5,0.3)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: 12,
+                      color: "#d4a840",
+                      fontFamily: "sans-serif",
+                      fontWeight: 600,
+                    }}
+                  >
+                    {i + 1}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <span
+                      style={{
+                        fontSize: 15,
+                        color: "#f0d890",
+                        textTransform: "capitalize",
+                        fontFamily: "Georgia, serif",
+                      }}
+                    >
+                      {word}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: 13, color: "#8a7540", fontFamily: "Georgia, serif" }}>
+                    {count} dream{count !== 1 ? "s" : ""}
+                  </div>
+                  <div
+                    style={{
+                      width: 40,
+                      height: 4,
+                      background: "rgba(255,255,255,0.06)",
+                      borderRadius: 2,
+                      overflow: "hidden",
+                    }}
+                  >
+                    <div
+                      style={{
+                        height: "100%",
+                        width: `${(count / (dreamSigns[0]?.[1] || 1)) * 100}%`,
+                        background:
+                          "linear-gradient(90deg, #7a5200, #9066d4)",
+                        borderRadius: 2,
+                      }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        ) : (
+          <div
+            style={{
+              textAlign: "center",
+              padding: "20px 0",
+              fontSize: 13,
+              color: "#6b5c30",
+              lineHeight: 1.6,
+              fontFamily: "Georgia, serif",
+            }}
+          >
+            Record more dreams to detect recurring dream signs. At least 2
+            appearances of a word are needed.
+          </div>
+        )}
       </div>
     </div>
   );

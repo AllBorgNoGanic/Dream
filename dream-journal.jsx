@@ -77,7 +77,7 @@ export default function DreamJournal() {
         body: JSON.stringify({
           model: "claude-sonnet-4-20250514",
           max_tokens: 1000,
-          system: "You are a wise, empathetic dream interpreter drawing from Jungian psychology, symbolism, and spiritual traditions. Give warm, insightful, 2-3 sentence interpretations. Be poetic but grounded. Never be alarming.",
+          system: "You are a wise, empathetic dream interpreter drawing from psychology, symbolism, and spiritual traditions including Biblical wisdom. Dreams hold meaning across many traditions, and in scripture figures like Joseph, Daniel, and Jacob received divine insight through dreams. Give warm, insightful, 2-3 sentence interpretations. Be poetic but grounded. Never be alarming.",
           messages: [{ role: "user", content: `Interpret this dream. Title: "${dream.title}". Mood: ${dream.mood}. Theme: ${dream.theme}. Dream: "${dream.description}"` }]
         })
       });
@@ -290,7 +290,7 @@ export default function DreamJournal() {
                 { label: "Dreams Recorded", value: dreams.length, icon: "🌙" },
                 { label: "Top Mood", value: topMood?.[0]?.split(" ").slice(1).join(" ") || "—", icon: topMood?.[0]?.split(" ")[0] || "✦" },
                 { label: "Favorite Theme", value: topTheme?.[0] || "—", icon: "🎭" },
-                { label: "Symbols Found", value: allSymbols.length, icon: "🔮" },
+                { label: "Symbols Found", value: allSymbols.length, icon: "🔣" },
               ].map(stat => (
                 <div key={stat.label} style={{ background: "rgba(20,8,50,0.7)", border: "1px solid rgba(160,100,255,0.15)", borderRadius: 16, padding: "20px 22px" }}>
                   <div style={{ fontSize: 28, marginBottom: 8 }}>{stat.icon}</div>

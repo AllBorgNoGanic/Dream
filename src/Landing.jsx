@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 
 const FEATURES = [
   { icon: "🌙", title: "Capture Every Dream", desc: "Log your dreams with mood, theme, and vivid detail before they fade from memory." },
-  { icon: "✦", title: "AI-Powered Interpretation", desc: "Claude AI decodes the symbols and emotions in your dreams using Jungian psychology and symbolism." },
-  { icon: "🔮", title: "Discover Your Patterns", desc: "Track recurring symbols, moods, and themes to understand what your subconscious is telling you." },
+  { icon: "✦", title: "AI-Powered Interpretation", desc: "Claude AI helps you understand the symbols and emotions in your dreams through guided reflection." },
+  { icon: "📊", title: "Discover Your Patterns", desc: "Track recurring symbols, moods, and themes to understand what your dreams may be telling you." },
 ];
 
 export default function Landing() {
@@ -60,7 +60,7 @@ export default function Landing() {
         {/* Hero */}
         <div style={{ textAlign: "center", padding: "100px 0 64px", animation: "fadeUp 0.6s ease" }}>
           <div style={{ fontSize: 13, letterSpacing: 6, color: "#c8a030", textTransform: "uppercase", marginBottom: 16 }}>
-            Your Subconscious
+            Your Dreams Await
           </div>
           <h1 className="hero-title" style={{
             fontSize: 56, fontWeight: 400, margin: "0 0 24px",
@@ -73,7 +73,7 @@ export default function Landing() {
             fontSize: 18, color: "#8a7a50", lineHeight: 1.7, maxWidth: 480,
             margin: "0 auto 40px",
           }}>
-            An AI-powered dream journal that helps you record, interpret, and understand the language of your subconscious.
+            An AI-powered dream journal that helps you record, interpret, and understand what your dreams may be telling you.
           </p>
           <button className="cta-btn" onClick={() => window.location.href = "/app"} style={{
             background: "linear-gradient(135deg, #7a5200, #c89020)",
