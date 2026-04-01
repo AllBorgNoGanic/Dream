@@ -200,7 +200,7 @@ const styles = {
   },
 };
 
-function DreamCard({ dream, displayName, user, canInterpret, onInterpretDream }) {
+function DreamCard({ dream, displayName, user }) {
   const [likes, setLikes] = useState([]);
   const [liked, setLiked] = useState(false);
   const [showComments, setShowComments] = useState(false);
@@ -208,8 +208,7 @@ function DreamCard({ dream, displayName, user, canInterpret, onInterpretDream })
   const [commentText, setCommentText] = useState("");
   const [commentAuthors, setCommentAuthors] = useState({});
   const [loadingComments, setLoadingComments] = useState(false);
-  const [communityInterpretation, setCommunityInterpretation] = useState(null);
-  const [interpreting, setInterpreting] = useState(false);
+  const [showInterpretation, setShowInterpretation] = useState(false);
 
   useEffect(() => {
     loadLikes();
@@ -294,13 +293,6 @@ function DreamCard({ dream, displayName, user, canInterpret, onInterpretDream })
     }
   };
 
-  const handleInterpret = async () => {
-    if (!onInterpretDream) return;
-    setInterpreting(true);
-    const result = await onInterpretDream(dream);
-    if (result) setCommunityInterpretation(result);
-    setInterpreting(false);
-  };
 
   const tags = dream.tags
     ? Array.isArray(dream.tags)
@@ -367,27 +359,25 @@ function DreamCard({ dream, displayName, user, canInterpret, onInterpretDream })
           <span style={{ fontSize: 16 }}>{showComments ? "\uD83D\uDCAC" : "\uD83D\uDCAC"}</span>
           <span>{showComments ? "Hide" : "Comments"}</span>
         </button>
-        {user && onInterpretDream && !communityInterpretation && dream.user_id !== user.id && (
+        {dream.interpretation && (
           <button
-            onClick={handleInterpret}
-            disabled={interpreting}
+            onClick={() => setShowInterpretation(!showInterpretation)}
             style={{
               ...styles.actionBtn,
               marginLeft: "auto",
-              color: interpreting ? "#8a7540" : "#e8b840",
+              color: showInterpretation ? "#8a7540" : "#e8b840",
               border: "1px solid rgba(200,160,30,0.25)",
               padding: "4px 12px",
               fontStyle: "italic",
               letterSpacing: 0.5,
-              opacity: interpreting ? 0.7 : 1,
             }}
-            title={canInterpret ? "Use a reflection to interpret this dream" : "No reflections remaining - upgrade to Pro"}
+            title="View this dream's interpretation"
           >
-            {interpreting ? "Reflecting..." : "✦ Interpret Dream"}
+            {showInterpretation ? "Hide Interpretation" : "✦ View Interpretation"}
           </button>
         )}
       </div>
-      {communityInterpretation && (
+      {showInterpretation && dream.interpretation && (
         <div style={{
           marginTop: 14,
           padding: "14px 16px",
@@ -399,7 +389,7 @@ function DreamCard({ dream, displayName, user, canInterpret, onInterpretDream })
             The Shepherd's Reflection
           </div>
           <div style={{ color: "#f5e4b0", fontSize: 14, lineHeight: 1.7, fontStyle: "italic" }}>
-            {communityInterpretation}
+            {dream.interpretation}
           </div>
         </div>
       )}
@@ -442,7 +432,7 @@ function DreamCard({ dream, displayName, user, canInterpret, onInterpretDream })
   );
 }
 
-export default function CommunityTab({ user, supabase: _sb, canInterpret, onInterpretDream }) {
+export default function CommunityTab({ user, supabase: _sb }) {
   const [dreams, setDreams] = useState([]);
   const [displayNames, setDisplayNames] = useState({});
   const [loading, setLoading] = useState(true);
@@ -547,8 +537,6 @@ export default function CommunityTab({ user, supabase: _sb, canInterpret, onInte
             dream={dream}
             displayName={displayNames[dream.user_id]}
             user={user}
-            canInterpret={canInterpret}
-            onInterpretDream={onInterpretDream}
           />
         ))
       )}
