@@ -302,16 +302,12 @@ export default function DreamJournal() {
     }
 
     // Upsert so it works whether the settings row exists or not
-    const newInterpCount = finalInterpretation
-      ? (userSettings?.interpretation_count ?? 0) + 1
-      : (userSettings?.interpretation_count ?? 0);
     const { data } = await supabase
       .from("user_settings")
       .upsert(
         {
           user_id: user.id,
           display_name: displayName || null,
-          interpretation_count: newInterpCount,
           archetype_data: {
             profile,
             sleep,
