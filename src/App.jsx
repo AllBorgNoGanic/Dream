@@ -73,6 +73,7 @@ const defaultForm = {
   bed_time: "",
   wake_time: "",
   is_public: false,
+  interpret_on_save: false,
 };
 
 // ─── Shared Styles ──────────────────────────────────────────────────────────
@@ -541,8 +542,22 @@ export default function DreamJournal() {
         symbols,
       };
 
-      const { error } = await supabase.from("dreams").insert(dreamPayload);
+      const { data: inserted, error } = await supabase.from("dreams").insert(dreamPayload).select().single();
       if (error) throw error;
+
+      // Interpret on save if toggled
+      if (form.interpret_on_save && canInterpret && inserted) {
+        const interpretation = await interpretDream({ ...inserted, symbols }, userSettings);
+        if (interpretation) {
+          await supabase.from("dreams").update({ interpretation }).eq("id", inserted.id);
+          if (!userSettings?.is_pro) {
+            const newCount = (userSettings?.interpretation_count ?? 0) + 1;
+            await supabase.from("user_settings").update({ interpretation_count: newCount }).eq("user_id", user.id);
+            setUserSettings((s) => ({ ...s, interpretation_count: newCount }));
+            if (newCount === 3) setShowUpgradeNudge(true);
+          }
+        }
+      }
 
       // Update streak
       await supabase.rpc("update_dream_streak", { p_user_id: user.id });
@@ -914,6 +929,9 @@ export default function DreamJournal() {
                   setForm={setForm}
                   onSubmit={handleSubmit}
                   loading={loading}
+                  canInterpret={canInterpret}
+                  isPro={userSettings?.is_pro}
+                  freeRemaining={Math.max(0, totalFree - (userSettings?.interpretation_count ?? 0))}
                 />
               </div>
             )}

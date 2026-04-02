@@ -233,6 +233,9 @@ export default function DreamForm({
   setForm,
   onSubmit,
   loading,
+  canInterpret,
+  isPro,
+  freeRemaining,
 }) {
   const [tagInput, setTagInput] = useState("");
   const [charInput, setCharInput] = useState("");
@@ -612,6 +615,41 @@ export default function DreamForm({
         </div>
       </div>
 
+      {/* Interpret on save */}
+      <div style={{ ...styles.fieldGroup, ...styles.toggleRow }}>
+        <div
+          style={styles.toggleTrack(form.interpret_on_save)}
+          onClick={() => {
+            if (!form.interpret_on_save && !canInterpret) return;
+            update("interpret_on_save", !form.interpret_on_save);
+          }}
+          role="switch"
+          aria-checked={form.interpret_on_save || false}
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              if (!form.interpret_on_save && !canInterpret) return;
+              update("interpret_on_save", !form.interpret_on_save);
+            }
+          }}
+        >
+          <div style={styles.toggleKnob(form.interpret_on_save)} />
+        </div>
+        <div>
+          <label style={{ ...styles.label, marginBottom: 0 }}>
+            Interpret this dream
+          </label>
+          {!isPro && (
+            <div style={{ fontSize: 11, color: "#6b5c30", marginTop: 2 }}>
+              {canInterpret
+                ? `${freeRemaining} free interpretation${freeRemaining !== 1 ? "s" : ""} remaining`
+                : "No free interpretations remaining"}
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Share with community */}
       <div style={{ ...styles.fieldGroup, ...styles.toggleRow }}>
         <div
@@ -644,21 +682,8 @@ export default function DreamForm({
           cursor: (loading || descTooShort) ? "not-allowed" : "pointer",
         }}
       >
-        {loading ? "Saving..." : "Save Dream"}
+        {loading ? "Saving..." : form.interpret_on_save ? "Save & Interpret" : "Save Dream"}
       </button>
-
-      <p
-        style={{
-          textAlign: "center",
-          fontSize: 12,
-          color: "#8a7540",
-          marginTop: 10,
-          marginBottom: 0,
-          fontFamily: "Georgia, serif",
-        }}
-      >
-        You can interpret this dream after saving
-      </p>
     </form>
   );
 }
