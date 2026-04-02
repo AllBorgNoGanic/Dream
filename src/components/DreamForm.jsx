@@ -233,9 +233,6 @@ export default function DreamForm({
   setForm,
   onSubmit,
   loading,
-  canInterpret,
-  isPro,
-  freeRemaining,
 }) {
   const [tagInput, setTagInput] = useState("");
   const [charInput, setCharInput] = useState("");
@@ -650,21 +647,18 @@ export default function DreamForm({
         {loading ? "Saving..." : "Save Dream"}
       </button>
 
-      {!isPro && (
-        <p
-          style={{
-            textAlign: "center",
-            fontSize: 12,
-            color: "#8a7540",
-            marginTop: 10,
-            marginBottom: 0,
-            fontFamily: "Georgia, serif",
-          }}
-        >
-          {freeRemaining} free reflection{freeRemaining !== 1 ? "s" : ""}{" "}
-          remaining
-        </p>
-      )}
+      <p
+        style={{
+          textAlign: "center",
+          fontSize: 12,
+          color: "#8a7540",
+          marginTop: 10,
+          marginBottom: 0,
+          fontFamily: "Georgia, serif",
+        }}
+      >
+        You can interpret this dream after saving
+      </p>
     </form>
   );
 }

@@ -511,13 +511,6 @@ export default function DreamJournal() {
     setLoading(true);
     try {
       const symbols = detectSymbols(form.description);
-      let interpretation = null;
-
-      if (canInterpret) {
-        interpretation = await interpretDream({ ...form, symbols }, userSettings);
-      } else {
-        setShowUpgradeModal(true);
-      }
 
       // Calculate sleep hours from bed/wake times
       let sleep_hours = null;
@@ -546,21 +539,10 @@ export default function DreamJournal() {
         sleep_hours,
         is_public: form.is_public || false,
         symbols,
-        interpretation,
       };
 
       const { error } = await supabase.from("dreams").insert(dreamPayload);
       if (error) throw error;
-
-      // Update interpretation count
-      if (interpretation && !userSettings?.is_pro) {
-        const newCount = (userSettings?.interpretation_count ?? 0) + 1;
-        await supabase
-          .from("user_settings")
-          .update({ interpretation_count: newCount })
-          .eq("user_id", user.id);
-        setUserSettings((s) => ({ ...s, interpretation_count: newCount }));
-      }
 
       // Update streak
       await supabase.rpc("update_dream_streak", { p_user_id: user.id });
@@ -932,9 +914,6 @@ export default function DreamJournal() {
                   setForm={setForm}
                   onSubmit={handleSubmit}
                   loading={loading}
-                  canInterpret={canInterpret}
-                  isPro={userSettings?.is_pro}
-                  freeRemaining={Math.max(0, totalFree - (userSettings?.interpretation_count ?? 0))}
                 />
               </div>
             )}
