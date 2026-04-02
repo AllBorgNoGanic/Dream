@@ -226,6 +226,17 @@ const styles = {
   },
 };
 
+const LUCID_TRIGGERS = [
+  "Reality check",
+  "Dream sign",
+  "Spontaneous",
+  "MILD technique",
+  "WILD technique",
+  "Sleep paralysis",
+  "False awakening",
+  "Nightmare",
+];
+
 const MIN_DESCRIPTION_LENGTH = 50;
 
 export default function DreamForm({
@@ -239,6 +250,7 @@ export default function DreamForm({
 }) {
   const [tagInput, setTagInput] = useState("");
   const [charInput, setCharInput] = useState("");
+  const [signInput, setSignInput] = useState("");
   const [recording, setRecording] = useState(false);
   const recognitionRef = useRef(null);
   const styleInjectedRef = useRef(false);
@@ -345,6 +357,24 @@ export default function DreamForm({
     update(
       "characters",
       form.characters.filter((c) => c !== ch)
+    );
+  };
+
+  const addSign = (e) => {
+    if (e.key === "Enter" && signInput.trim()) {
+      e.preventDefault();
+      const sign = signInput.trim();
+      if (!(form.dream_signs || []).includes(sign)) {
+        update("dream_signs", [...(form.dream_signs || []), sign]);
+      }
+      setSignInput("");
+    }
+  };
+
+  const removeSign = (sign) => {
+    update(
+      "dream_signs",
+      (form.dream_signs || []).filter((s) => s !== sign)
     );
   };
 
@@ -541,23 +571,145 @@ export default function DreamForm({
           </label>
         </div>
         {form.is_lucid && (
-          <div style={{ paddingLeft: 4 }}>
-            <label
-              style={{ ...styles.label, fontSize: 13, marginBottom: 4 }}
-            >
-              Lucidity Level: {form.lucidity_level ?? 0} / 5
-            </label>
-            <input
-              type="range"
-              min={0}
-              max={5}
-              step={1}
-              value={form.lucidity_level ?? 0}
-              onChange={(e) =>
-                update("lucidity_level", parseInt(e.target.value))
-              }
-              style={styles.slider}
-            />
+          <div style={{
+            marginTop: 12,
+            padding: "16px 18px",
+            background: "rgba(100,60,200,0.08)",
+            border: "1px solid rgba(140,100,220,0.2)",
+            borderRadius: 14,
+          }}>
+            {/* Lucidity Level */}
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ ...styles.label, fontSize: 13, marginBottom: 4 }}>
+                Lucidity Level: {form.lucidity_level ?? 0} / 5
+              </label>
+              <input
+                type="range"
+                min={0}
+                max={5}
+                step={1}
+                value={form.lucidity_level ?? 0}
+                onChange={(e) =>
+                  update("lucidity_level", parseInt(e.target.value))
+                }
+                style={styles.slider}
+              />
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "#6b5c30", marginTop: 2 }}>
+                <span>Barely aware</span>
+                <span>Full control</span>
+              </div>
+            </div>
+
+            {/* What triggered lucidity */}
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ ...styles.label, fontSize: 13 }}>What triggered your lucidity?</label>
+              <div style={{ ...styles.chipRow, gap: 6 }}>
+                {LUCID_TRIGGERS.map((t) => (
+                  <button
+                    type="button"
+                    key={t}
+                    onClick={() => update("lucid_trigger", form.lucid_trigger === t ? "" : t)}
+                    style={{
+                      padding: "5px 12px",
+                      borderRadius: 10,
+                      border: form.lucid_trigger === t
+                        ? "1px solid rgba(140,100,220,0.6)"
+                        : "1px solid rgba(200,160,30,0.2)",
+                      background: form.lucid_trigger === t
+                        ? "rgba(120,60,220,0.4)"
+                        : "rgba(8,16,28,0.5)",
+                      color: form.lucid_trigger === t ? "#d4b8ff" : "#8a7540",
+                      cursor: "pointer",
+                      fontSize: 12,
+                      fontFamily: "Georgia, serif",
+                      transition: "all 0.2s",
+                    }}
+                  >
+                    {t}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* What did you do once lucid */}
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ ...styles.label, fontSize: 13 }}>What did you do once lucid?</label>
+              <input
+                type="text"
+                placeholder="Flew over mountains, talked to a character..."
+                value={form.lucid_activity || ""}
+                onChange={(e) => update("lucid_activity", e.target.value)}
+                style={styles.input}
+              />
+            </div>
+
+            {/* How long did lucidity last */}
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ ...styles.label, fontSize: 13 }}>How long did lucidity last?</label>
+              <div style={{ ...styles.chipRow, gap: 6 }}>
+                {["A few seconds", "Under a minute", "1-5 minutes", "5+ minutes", "Entire dream"].map((d) => (
+                  <button
+                    type="button"
+                    key={d}
+                    onClick={() => update("lucid_duration", form.lucid_duration === d ? "" : d)}
+                    style={{
+                      padding: "5px 12px",
+                      borderRadius: 10,
+                      border: form.lucid_duration === d
+                        ? "1px solid rgba(140,100,220,0.6)"
+                        : "1px solid rgba(200,160,30,0.2)",
+                      background: form.lucid_duration === d
+                        ? "rgba(120,60,220,0.4)"
+                        : "rgba(8,16,28,0.5)",
+                      color: form.lucid_duration === d ? "#d4b8ff" : "#8a7540",
+                      cursor: "pointer",
+                      fontSize: 12,
+                      fontFamily: "Georgia, serif",
+                      transition: "all 0.2s",
+                    }}
+                  >
+                    {d}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Dream Signs */}
+            <div>
+              <label style={{ ...styles.label, fontSize: 13 }}>Dream Signs</label>
+              <div style={{ fontSize: 11, color: "#6b5c30", marginBottom: 6, lineHeight: 1.5 }}>
+                Recurring elements that signal you're dreaming (e.g., flying, being at school, a specific person)
+              </div>
+              <input
+                type="text"
+                placeholder="Type a dream sign and press Enter..."
+                value={signInput}
+                onChange={(e) => setSignInput(e.target.value)}
+                onKeyDown={addSign}
+                style={styles.input}
+              />
+              {(form.dream_signs || []).length > 0 && (
+                <div style={{ ...styles.chipRow, marginTop: 8 }}>
+                  {form.dream_signs.map((sign) => (
+                    <span key={sign} style={{
+                      ...styles.chip,
+                      background: "rgba(140,100,220,0.25)",
+                      border: "1px solid rgba(140,100,220,0.35)",
+                    }}>
+                      {sign}
+                      <button
+                        type="button"
+                        onClick={() => removeSign(sign)}
+                        style={styles.chipX}
+                        aria-label={`Remove dream sign ${sign}`}
+                      >
+                        x
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>

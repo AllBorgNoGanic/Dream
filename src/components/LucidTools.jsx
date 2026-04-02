@@ -127,7 +127,35 @@ export default function LucidTools({ dreams }) {
       return { date: dateStr, count };
     });
 
-    return { total, lucidCount, rate, avgLevel, topThemes, last30 };
+    // Dream signs across ALL dreams
+    const signCounts = {};
+    dreams.forEach((d) => {
+      const signs = Array.isArray(d.dream_signs) ? d.dream_signs : [];
+      signs.forEach((s) => {
+        signCounts[s] = (signCounts[s] || 0) + 1;
+      });
+    });
+    const topSigns = Object.entries(signCounts)
+      .sort((a, b) => b[1] - a[1]);
+    const totalSignEntries = Object.values(signCounts).reduce((a, b) => a + b, 0);
+
+    // Trigger breakdown for lucid dreams
+    const triggerCounts = {};
+    lucidDreams.forEach((d) => {
+      if (d.lucid_trigger) triggerCounts[d.lucid_trigger] = (triggerCounts[d.lucid_trigger] || 0) + 1;
+    });
+    const topTriggers = Object.entries(triggerCounts)
+      .sort((a, b) => b[1] - a[1]);
+
+    // Duration breakdown
+    const durationCounts = {};
+    lucidDreams.forEach((d) => {
+      if (d.lucid_duration) durationCounts[d.lucid_duration] = (durationCounts[d.lucid_duration] || 0) + 1;
+    });
+    const topDurations = Object.entries(durationCounts)
+      .sort((a, b) => b[1] - a[1]);
+
+    return { total, lucidCount, rate, avgLevel, topThemes, last30, topSigns, totalSignEntries, topTriggers, topDurations };
   }, [dreams]);
 
   const formatTime = (seconds) => {
@@ -406,6 +434,129 @@ export default function LucidTools({ dreams }) {
           </div>
         )}
       </div>
+
+      {/* ========== DREAM SIGNS TRACKER ========== */}
+      <div style={cardStyle}>
+        <div style={sectionTitle}>Dream Signs Tracker</div>
+        <div style={{ fontSize: 13, color: "#8a7540", marginBottom: 20, lineHeight: 1.6 }}>
+          Dream signs are recurring elements that appear across your dreams. Recognizing them is the foundation of becoming lucid -- when you spot a familiar sign mid-dream, it can trigger awareness.
+        </div>
+
+        {lucidStats.topSigns.length > 0 ? (
+          <>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {lucidStats.topSigns.slice(0, 10).map(([sign, count], i) => {
+                const pct = lucidStats.totalSignEntries > 0 ? (count / lucidStats.totalSignEntries) * 100 : 0;
+                return (
+                  <div key={sign} style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <span style={{ fontSize: 12, color: "#6b5c30", minWidth: 20, textAlign: "right" }}>
+                      {i + 1}.
+                    </span>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                        <span style={{ fontSize: 14, color: "#f0d890" }}>{sign}</span>
+                        <span style={{ fontSize: 12, color: "#8a7540" }}>
+                          {count} time{count !== 1 ? "s" : ""}
+                        </span>
+                      </div>
+                      <div style={{
+                        height: 6,
+                        borderRadius: 3,
+                        background: "rgba(30,12,60,0.6)",
+                        overflow: "hidden",
+                      }}>
+                        <div style={{
+                          height: "100%",
+                          width: `${Math.max(pct, 4)}%`,
+                          borderRadius: 3,
+                          background: "linear-gradient(90deg, #8060cc, #c89020)",
+                          transition: "width 0.4s ease",
+                        }} />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            {lucidStats.topSigns.length > 10 && (
+              <div style={{ fontSize: 12, color: "#6b5c30", textAlign: "center", marginTop: 12 }}>
+                + {lucidStats.topSigns.length - 10} more sign{lucidStats.topSigns.length - 10 !== 1 ? "s" : ""}
+              </div>
+            )}
+          </>
+        ) : (
+          <div style={{ textAlign: "center", padding: "12px 0", fontSize: 13, color: "#6b5c30", lineHeight: 1.6 }}>
+            No dream signs recorded yet. When logging a lucid dream, add recurring elements like "flying", "being at school", or "a specific person" to start building your pattern library.
+          </div>
+        )}
+      </div>
+
+      {/* ========== LUCID INSIGHTS ========== */}
+      {(lucidStats.topTriggers.length > 0 || lucidStats.topDurations.length > 0) && (
+        <div style={cardStyle}>
+          <div style={sectionTitle}>Lucid Insights</div>
+
+          {/* Triggers */}
+          {lucidStats.topTriggers.length > 0 && (
+            <div style={{ marginBottom: lucidStats.topDurations.length > 0 ? 24 : 0 }}>
+              <div style={{ fontSize: 12, color: "#8a7540", marginBottom: 12, letterSpacing: 1 }}>
+                What Triggers Your Lucidity
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {lucidStats.topTriggers.map(([trigger, count]) => (
+                  <div key={trigger} style={{
+                    background: "rgba(120,60,220,0.15)",
+                    border: "1px solid rgba(140,100,220,0.25)",
+                    borderRadius: 12,
+                    padding: "8px 14px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                  }}>
+                    <span style={{ fontSize: 13, color: "#d4b8ff" }}>{trigger}</span>
+                    <span style={{
+                      background: "rgba(140,100,220,0.3)",
+                      borderRadius: 8,
+                      padding: "1px 7px",
+                      fontSize: 11,
+                      color: "#b090e8",
+                    }}>{count}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Duration breakdown */}
+          {lucidStats.topDurations.length > 0 && (
+            <div>
+              <div style={{ fontSize: 12, color: "#8a7540", marginBottom: 12, letterSpacing: 1 }}>
+                How Long Lucidity Lasts
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {lucidStats.topDurations.map(([duration, count]) => {
+                  const pct = lucidStats.lucidCount > 0 ? (count / lucidStats.lucidCount) * 100 : 0;
+                  return (
+                    <div key={duration} style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                      <span style={{ fontSize: 13, color: "#d4b8ff", minWidth: 120 }}>{duration}</span>
+                      <div style={{ flex: 1, height: 6, borderRadius: 3, background: "rgba(30,12,60,0.6)", overflow: "hidden" }}>
+                        <div style={{
+                          height: "100%",
+                          width: `${Math.max(pct, 4)}%`,
+                          borderRadius: 3,
+                          background: "linear-gradient(90deg, #6847c0, #9066d4)",
+                          transition: "width 0.4s ease",
+                        }} />
+                      </div>
+                      <span style={{ fontSize: 11, color: "#8a7540", minWidth: 24, textAlign: "right" }}>{count}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ========== REALITY CHECK TRAINER (second) ========== */}
       <div style={cardStyle}>

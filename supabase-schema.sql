@@ -40,6 +40,10 @@ alter table dreams add column if not exists wake_time      timestamptz;
 alter table dreams add column if not exists sleep_hours    numeric(4,2);
 alter table dreams add column if not exists is_public      boolean     default false;
 alter table dreams add column if not exists likes_count    int         default 0;
+alter table dreams add column if not exists dream_signs    text[]      default '{}';
+alter table dreams add column if not exists lucid_trigger  text;
+alter table dreams add column if not exists lucid_activity text;
+alter table dreams add column if not exists lucid_duration text;
 
 alter table dreams enable row level security;
 
