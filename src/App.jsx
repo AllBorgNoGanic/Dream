@@ -408,7 +408,7 @@ export default function DreamJournal() {
       });
       const data = await response.json();
       return data.content?.map((b) => b.text || "").join("") ||
-        "Dreams speak in their own language -- this dream holds personal meaning unique to your journey.";
+        "Your dream holds meaning waiting to be uncovered. Upgrade to Dream Shepherd Pro for unlimited AI-powered interpretations.";
     } catch {
       return null; // signal failure so we don't save a failed message
     }
