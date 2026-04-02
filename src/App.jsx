@@ -219,6 +219,40 @@ export default function DreamJournal() {
     }
   }, []);
 
+  // ── Dream reminder notifications ────────────────────────────────────────────
+  useEffect(() => {
+    if (!userSettings?.reminder_enabled) return;
+    if (!("Notification" in window) || Notification.permission !== "granted") return;
+    const wakeTime = userSettings.wake_time || "07:00";
+    const [hours, minutes] = wakeTime.split(":").map(Number);
+
+    const scheduleReminder = () => {
+      const now = new Date();
+      const target = new Date();
+      target.setHours(hours, minutes, 0, 0);
+      // If the time already passed today, schedule for tomorrow
+      if (target <= now) target.setDate(target.getDate() + 1);
+      const delay = target - now;
+
+      return setTimeout(() => {
+        // Only notify if they haven't logged a dream today
+        const today = new Date().toISOString().split("T")[0];
+        if (userSettings.last_dream_date !== today) {
+          new Notification("Dream Shepherd", {
+            body: "Good morning! Record your dream before it fades.",
+            icon: "/icon-192.png",
+            tag: "dream-reminder",
+          });
+        }
+        // Reschedule for next day
+        scheduleReminder();
+      }, delay);
+    };
+
+    const timerId = scheduleReminder();
+    return () => clearTimeout(timerId);
+  }, [userSettings?.reminder_enabled, userSettings?.wake_time, userSettings?.last_dream_date]);
+
   // ── Data loaders ───────────────────────────────────────────────────────────
   const loadDreams = async () => {
     const { data, error } = await supabase

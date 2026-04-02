@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
 import ShareButton from "./ShareButton";
 import { ARCHETYPES } from "../constants/archetypes";
@@ -13,6 +13,10 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
   const [reminderEnabled, setReminderEnabled] = useState(userSettings?.reminder_enabled || false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [notifSupported] = useState(() => "Notification" in window && "serviceWorker" in navigator);
+  const [notifPermission, setNotifPermission] = useState(() =>
+    "Notification" in window ? Notification.permission : "denied"
+  );
 
   const archetype = userSettings?.archetype;
   const archetypeData = ARCHETYPES[archetype];
@@ -209,23 +213,47 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
           />
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
-          <label style={{ fontSize: 13, color: "#e8b840" }}>Dream Reminders</label>
-          <div
-            onClick={() => setReminderEnabled(r => !r)}
-            style={{
-              width: 44, height: 24, borderRadius: 12, cursor: "pointer", transition: "background 0.2s",
-              background: reminderEnabled ? "linear-gradient(135deg, #7a5200, #c89020)" : "rgba(255,255,255,0.1)",
-              position: "relative"
-            }}
-          >
-            <div style={{
-              position: "absolute", top: 3, left: reminderEnabled ? 22 : 3, width: 18, height: 18,
-              borderRadius: "50%", background: "white", transition: "left 0.2s",
-              boxShadow: "0 1px 4px rgba(0,0,0,0.4)"
-            }} />
+        <div style={{ marginBottom: 20 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
+            <label style={{ fontSize: 13, color: "#e8b840" }}>Dream Reminders</label>
+            <div
+              onClick={async () => {
+                if (!reminderEnabled && notifSupported) {
+                  const perm = await Notification.requestPermission();
+                  setNotifPermission(perm);
+                  if (perm !== "granted") return;
+                }
+                setReminderEnabled(r => !r);
+              }}
+              style={{
+                width: 44, height: 24, borderRadius: 12, cursor: "pointer", transition: "background 0.2s",
+                background: reminderEnabled ? "linear-gradient(135deg, #7a5200, #c89020)" : "rgba(255,255,255,0.1)",
+                position: "relative"
+              }}
+            >
+              <div style={{
+                position: "absolute", top: 3, left: reminderEnabled ? 22 : 3, width: 18, height: 18,
+                borderRadius: "50%", background: "white", transition: "left 0.2s",
+                boxShadow: "0 1px 4px rgba(0,0,0,0.4)"
+              }} />
+            </div>
+            <span style={{ fontSize: 12, color: "#6b5c30" }}>{reminderEnabled ? "On" : "Off"}</span>
           </div>
-          <span style={{ fontSize: 12, color: "#6b5c30" }}>{reminderEnabled ? "On" : "Off"}</span>
+          {!notifSupported && (
+            <div style={{ fontSize: 11, color: "#6b5c30", marginLeft: 0 }}>
+              Notifications are not supported in this browser.
+            </div>
+          )}
+          {notifSupported && notifPermission === "denied" && (
+            <div style={{ fontSize: 11, color: "#c87040", marginLeft: 0 }}>
+              Notifications are blocked. Enable them in your browser settings.
+            </div>
+          )}
+          {reminderEnabled && notifPermission === "granted" && (
+            <div style={{ fontSize: 11, color: "#7a9050", marginLeft: 0 }}>
+              You'll get a reminder at your wake time to record your dreams.
+            </div>
+          )}
         </div>
 
         <button onClick={handleSave} disabled={saving} style={{
