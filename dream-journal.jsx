@@ -85,7 +85,7 @@ export default function DreamJournal() {
       const interpretation = data.content?.map(b => b.text || "").join("") || "The subconscious speaks in mysterious ways — this dream holds personal meaning unique to your journey.";
       return interpretation;
     } catch {
-      return "The stars are quiet tonight — try again to unlock this dream's meaning.";
+      return "Your dream holds meaning waiting to be uncovered. Upgrade to Dream Shepherd Pro for unlimited AI-powered interpretations.";
     } finally {
       setLoading(false);
     }
