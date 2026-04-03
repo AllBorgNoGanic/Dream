@@ -675,7 +675,7 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
 
   // ── Stars layer ────────────────────────────────────────────────────────────
   const starsLayer = (
-    <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 0 }}>
+    <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 0, willChange: "transform", transform: "translateZ(0)" }}>
       {/* Regular stars */}
       {stars.map((s) => (
         <div key={s.id} style={{

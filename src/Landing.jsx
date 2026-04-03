@@ -62,7 +62,7 @@ export default function Landing({ onSignIn }) {
       `}</style>
 
       {/* Star field */}
-      <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 0 }}>
+      <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 0, willChange: "transform", transform: "translateZ(0)" }}>
         {stars.map(s => (
           <div key={s.id} style={{
             position: "absolute", left: `${s.x}%`, top: `${s.y}%`,
