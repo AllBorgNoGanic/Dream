@@ -563,7 +563,7 @@ export default function ReadingModal({ reading, onClose, onGenerateImage, userSe
                   Want unlimited visualizations?
                 </div>
                 <p style={{ fontSize: 11, color: "#6b5c30", lineHeight: 1.5, margin: "0 0 10px" }}>
-                  Dream Shepherd Pro gives you unlimited AI dream art, unlimited interpretations, and more.
+                  Dream Shepherd gives you unlimited AI dream art, unlimited interpretations, and more.
                 </p>
                 <button
                   onClick={() => { setShowVisualizeConfirm(false); if (onUpgrade) onUpgrade(); }}
@@ -574,7 +574,7 @@ export default function ReadingModal({ reading, onClose, onGenerateImage, userSe
                     letterSpacing: 0.5,
                   }}
                 >
-                  Upgrade to Pro - $5.99/mo
+                  Subscribe - $5.99/mo
                 </button>
               </div>
             </div>
