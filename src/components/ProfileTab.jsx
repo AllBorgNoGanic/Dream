@@ -130,7 +130,7 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
             <div style={{ fontSize: 16, color: userSettings?.is_pro ? "#e8c840" : "#f5e4b0", marginBottom: 4 }}>
-              {userSettings?.is_pro ? "✦ Dream Shepherd Pro" : "Free Plan"}
+              {userSettings?.is_pro ? "✦ Dream Shepherd" : "Free Plan"}
             </div>
             <div style={{ fontSize: 12, color: "#6b5c30" }}>
               {userSettings?.is_pro
@@ -145,7 +145,7 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
               fontSize: 12, fontWeight: 600, cursor: "pointer", letterSpacing: 0.5,
               whiteSpace: "nowrap"
             }}>
-              Upgrade $5.99/mo
+              Subscribe $5.99/mo
             </button>
           )}
         </div>

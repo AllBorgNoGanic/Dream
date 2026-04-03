@@ -435,7 +435,7 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
       } catch {
         // Fallback: if AI didn't return valid JSON, treat the whole response as interpretation
         return {
-          interpretation: rawText || "Your dream holds meaning waiting to be uncovered. Upgrade to Dream Shepherd Pro for unlimited AI-powered interpretations.",
+          interpretation: rawText || "Your dream holds meaning waiting to be uncovered. Subscribe to Dream Shepherd for unlimited AI-powered interpretations.",
           generated_themes: [],
         };
       }
@@ -894,7 +894,7 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
               background: "linear-gradient(135deg, #c8a020, #e8c840)",
               color: "#1a1000", padding: "3px 10px", borderRadius: 20, fontSize: 11, fontWeight: 600, letterSpacing: 1,
             }}>
-              ✦ Pro
+              ✦
             </span>
           )}
           {userSettings?.display_name && (
@@ -1105,7 +1105,7 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
               Enjoying your reflections?
             </div>
             <div style={{ fontSize: 11, color: "#8a7540", lineHeight: 1.5 }}>
-              You have {Math.max(0, totalFree - (userSettings?.interpretation_count || 0))} left. Pro gives you unlimited interpretations, dream visualizations, and more.
+              You have {Math.max(0, totalFree - (userSettings?.interpretation_count || 0))} left. Subscribe for unlimited interpretations, dream visualizations, and more.
             </div>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 6, flexShrink: 0 }}>
@@ -1144,7 +1144,7 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
             }}
           >
             <div style={{ fontSize: 40, marginBottom: 16 }}>🐑</div>
-            <div style={{ fontSize: 20, color: "#f5e4b0", marginBottom: 8 }}>Dream Shepherd Pro</div>
+            <div style={{ fontSize: 20, color: "#f5e4b0", marginBottom: 8 }}>Dream Shepherd</div>
             <div style={{ fontSize: 13, color: "#7a6a40", marginBottom: 20, lineHeight: 1.6 }}>
               Take your dream journey to the next level.
             </div>

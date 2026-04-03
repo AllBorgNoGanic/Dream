@@ -319,7 +319,7 @@ function DreamCard({ dream, displayName, isPro, user }) {
               border: "1px solid rgba(200,160,50,0.35)",
               borderRadius: 8, padding: "1px 6px", fontSize: 9,
               color: "#e8c840", fontWeight: 600, letterSpacing: 0.5,
-            }}>PRO</span>
+            }}>✦</span>
           )}
         </span>
         <span style={styles.date}>{formattedDate}</span>
