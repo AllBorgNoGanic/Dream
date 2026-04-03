@@ -17,6 +17,7 @@ import ProfileTab from "./components/ProfileTab";
 import GalleryTab from "./components/GalleryTab";
 import ShareButton from "./components/ShareButton";
 import ReadingModal from "./components/ReadingModal";
+import Landing from "./Landing";
 
 // ─── Constants ─────────────────────────────────────────────────────────────
 const FREE_INTERPRETATIONS = 5;
@@ -119,6 +120,7 @@ export default function DreamJournal() {
   const [authError, setAuthError] = useState("");
   const [authLoading, setAuthLoading] = useState(false);
   const [sessionLoading, setSessionLoading] = useState(true);
+  const [showLanding, setShowLanding] = useState(true);
 
   // Data
   const [userSettings, setUserSettings] = useState(null);
@@ -763,6 +765,11 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
         }} />
       </div>
     );
+  }
+
+  // ── Landing page (unauthenticated visitors) ────────────────────────────────
+  if (!user && showLanding) {
+    return <Landing onSignIn={() => setShowLanding(false)} />;
   }
 
   // ── Auth screen ────────────────────────────────────────────────────────────
