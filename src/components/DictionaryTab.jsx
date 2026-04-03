@@ -217,7 +217,7 @@ export default function DictionaryTab() {
     <div style={{ animation: "fadeIn 0.4s ease" }} ref={scrollRef}>
       {/* Search */}
       <input
-        placeholder="Search themes..."
+        placeholder="Search symbols..."
         value={search}
         onChange={e => handleSearch(e.target.value)}
         style={{
