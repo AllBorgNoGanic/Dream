@@ -9,12 +9,6 @@ const FEATURES = [
   { icon: "🤝", title: "Dream Community", desc: "Share dreams with fellow dreamers. Like, comment, and explore interpretations from people around the world." },
 ];
 
-const TESTIMONIALS = [
-  { text: "I've been journaling my dreams for years but never understood them until Dream Shepherd connected the dots for me.", name: "Sarah M.", detail: "127 dreams logged" },
-  { text: "The AI interpretations feel genuinely personal. It picked up on themes I hadn't noticed across weeks of dreams.", name: "James R.", detail: "Dream journaler since 2024" },
-  { text: "The lucid dreaming tools actually work. I had my first lucid dream within two weeks of using the reality check trainer.", name: "Maria K.", detail: "Lucid dreamer" },
-];
-
 const FAQ = [
   { q: "Is Dream Shepherd free?", a: "Yes. You can journal unlimited dreams for free. You get 5 free AI interpretations and 2 free dream visualizations to start. Subscribe for unlimited access to all features." },
   { q: "How does the AI interpretation work?", a: "When you record a dream, our AI analyzes your description along with your mood, themes, tags, and personal dream profile. It generates a unique interpretation with custom dream themes, each with its own meaning and guidance tailored specifically to your dream." },
@@ -61,7 +55,6 @@ export default function Landing({ onSignIn }) {
           .ld-features-grid { grid-template-columns: 1fr !important; }
           .ld-hero-title { font-size: 36px !important; }
           .ld-hero-sub { font-size: 16px !important; padding: 0 8px !important; }
-          .ld-testimonials { flex-direction: column !important; }
           .ld-pricing-grid { flex-direction: column !important; align-items: center !important; }
           .ld-nav { padding: 16px 20px !important; }
           .ld-section { padding-left: 20px !important; padding-right: 20px !important; }
@@ -137,13 +130,13 @@ export default function Landing({ onSignIn }) {
             WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
             letterSpacing: 1, lineHeight: 1.2,
           }}>
-            Record. Interpret.<br />Understand.
+            Sleep. Dream.<br />Discover.
           </h1>
           <p className="ld-hero-sub" style={{
             fontSize: 18, color: "#8a7a50", lineHeight: 1.75,
             maxWidth: 520, margin: "0 auto 40px",
           }}>
-            An AI-powered dream journal that helps you capture your dreams, uncover their meaning, and discover patterns in your subconscious mind.
+            Your personal guided dream journal. Capture dreams before they fade, unveil their hidden meanings, and discover what it all means.
           </p>
           <button className="ld-cta" onClick={onSignIn} style={{
             background: "linear-gradient(135deg, #7a5200, #c89020)",
@@ -154,9 +147,6 @@ export default function Landing({ onSignIn }) {
           }}>
             Start Journaling Free
           </button>
-          <div style={{ marginTop: 14, fontSize: 12, color: "#504080" }}>
-            No credit card required
-          </div>
         </section>
 
         {/* ── Shimmer divider ── */}
@@ -226,44 +216,6 @@ export default function Landing({ onSignIn }) {
                     <span style={{ color: "#8a7540", marginRight: 8 }}>{s.step}.</span>{s.title}
                   </div>
                   <p style={{ fontSize: 14, color: "#7a6a50", lineHeight: 1.7, margin: 0 }}>{s.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* ── Testimonials ── */}
-        <section className="ld-section" style={{ padding: "72px 32px", maxWidth: 900, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: 48 }}>
-            <div style={{ fontSize: 11, letterSpacing: 4, color: "#8a7540", textTransform: "uppercase", marginBottom: 12 }}>
-              From the community
-            </div>
-            <h2 style={{ fontSize: 28, fontWeight: 400, color: "#f5e4b0", margin: 0 }}>
-              What dreamers are saying
-            </h2>
-          </div>
-          <div className="ld-testimonials" style={{ display: "flex", gap: 16 }}>
-            {TESTIMONIALS.map((t, i) => (
-              <div key={i} style={{
-                flex: 1,
-                background: "rgba(20,8,45,0.6)",
-                border: "1px solid rgba(200,160,30,0.1)",
-                borderRadius: 20, padding: "24px 22px",
-              }}>
-                <p style={{ fontSize: 14, color: "#c8a870", lineHeight: 1.75, margin: "0 0 16px", fontStyle: "italic" }}>
-                  "{t.text}"
-                </p>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <div style={{
-                    width: 32, height: 32, borderRadius: "50%",
-                    background: "linear-gradient(135deg, rgba(120,60,220,0.3), rgba(200,160,30,0.2))",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    fontSize: 14, color: "#e8b840",
-                  }}>{t.name[0]}</div>
-                  <div>
-                    <div style={{ fontSize: 13, color: "#f0d890" }}>{t.name}</div>
-                    <div style={{ fontSize: 11, color: "#6b5c30" }}>{t.detail}</div>
-                  </div>
                 </div>
               </div>
             ))}
