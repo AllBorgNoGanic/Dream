@@ -927,13 +927,12 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
 
   // ── Nav config ─────────────────────────────────────────────────────────────
   const tabs = [
-    { id: "journal",    label: "🐑 Journal" },
-    { id: "patterns",   label: "✦ Patterns" },
-    { id: "lucid",      label: "⚡ Lucid" },
-    { id: "community",  label: "👥 Community" },
-    { id: "dictionary", label: "📖 Library" },
-    { id: "gallery",    label: "🎨 Gallery" },
-    { id: "profile",    label: "◉ Profile" },
+    { id: "journal",    icon: "🐑", label: "Journal" },
+    { id: "patterns",   icon: "✦",  label: "Patterns" },
+    { id: "lucid",      icon: "⚡", label: "Lucid" },
+    { id: "community",  icon: "👥", label: "Community" },
+    { id: "dictionary", icon: "📖", label: "Library" },
+    { id: "profile",    icon: "◉",  label: "Profile" },
   ];
 
   // ── Main App ───────────────────────────────────────────────────────────────
@@ -942,57 +941,41 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
       {starsLayer}
       {globalStyles}
 
-      <div style={{ position: "relative", zIndex: 1, maxWidth: 820, margin: "0 auto", padding: "0 16px 80px" }}>
+      <div style={{ position: "relative", zIndex: 1, maxWidth: 820, margin: "0 auto", padding: "0 16px 100px" }}>
 
         {/* Header */}
-        <div style={{ textAlign: "center", padding: "40px 0 28px", position: "relative" }}>
-          <div style={{ fontSize: 12, letterSpacing: 6, color: "#c8a030", textTransform: "uppercase", marginBottom: 10 }}>
-            Guide Your Dreams
-          </div>
-          <h1 style={{
-            fontSize: 38, fontWeight: 400, margin: 0,
-            background: "linear-gradient(135deg, #f5e4b0, #e8b840, #a07010)",
-            WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", letterSpacing: 1, display: "inline"
-          }}>
-            Dream Shepherd
-          </h1>
-          {userSettings?.is_pro && (
-            <span style={{
-              display: "inline-block", marginLeft: 12, verticalAlign: "middle",
-              background: "linear-gradient(135deg, #c8a020, #e8c840)",
-              color: "#1a1000", padding: "3px 10px", borderRadius: 20, fontSize: 11, fontWeight: 600, letterSpacing: 1,
-            }}>
-              ✦
-            </span>
-          )}
-          {userSettings?.display_name && (
-            <div style={{ fontSize: 12, color: "#8a7540", marginTop: 6 }}>
-              Welcome, {userSettings.display_name}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 4px 20px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={{ fontSize: 24 }}>🐑</span>
+            <div>
+              <h1 style={{
+                fontSize: 20, fontWeight: 400, margin: 0,
+                background: "linear-gradient(135deg, #f5e4b0, #e8b840, #a07010)",
+                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", letterSpacing: 0.5,
+              }}>
+                Dream Shepherd
+              </h1>
+              {userSettings?.display_name && (
+                <div style={{ fontSize: 11, color: "#8a7540", marginTop: 2 }}>
+                  Welcome, {userSettings.display_name}
+                </div>
+              )}
             </div>
-          )}
-          <div style={{ width: 60, height: 1, background: "linear-gradient(90deg, transparent, #c8a030, transparent)", margin: "14px auto 0" }} />
+            {userSettings?.is_pro && (
+              <span style={{
+                background: "linear-gradient(135deg, #c8a020, #e8c840)",
+                color: "#1a1000", padding: "2px 8px", borderRadius: 16, fontSize: 10, fontWeight: 600,
+              }}>
+                ✦
+              </span>
+            )}
+          </div>
           <button className="logout-btn" onClick={handleLogout} style={{
-            position: "absolute", top: 40, right: 0,
             background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)",
             color: "#7a6a40", padding: "7px 16px", borderRadius: 40, fontSize: 12, cursor: "pointer",
           }}>
             Sign Out
           </button>
-        </div>
-
-        {/* Nav */}
-        <div className="main-nav" style={{ display: "flex", justifyContent: "center", gap: 6, marginBottom: 32, flexWrap: "wrap" }}>
-          {tabs.map((t) => (
-            <button key={t.id} className="nav-tab" onClick={() => setTab(t.id)} style={{
-              background: tab === t.id ? "rgba(200,160,30,0.25)" : "rgba(255,255,255,0.04)",
-              border: `1px solid ${tab === t.id ? "rgba(200,160,30,0.6)" : "rgba(255,255,255,0.08)"}`,
-              color: tab === t.id ? "#f0c840" : "#7a6a40",
-              padding: "9px 18px", borderRadius: 40, fontSize: 12, cursor: "pointer",
-              letterSpacing: 0.3, transition: "all 0.2s",
-            }}>
-              {t.label}
-            </button>
-          ))}
         </div>
 
         {/* ── JOURNAL TAB ── */}
@@ -1116,22 +1099,7 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
           </div>
         )}
 
-        {/* ── GALLERY TAB ── */}
-        {tab === "gallery" && (
-          <div style={{ animation: "fadeIn 0.4s ease" }}>
-            <GalleryTab
-              user={user}
-              dreams={dreams}
-              onViewReading={async (d) => {
-                const themes = await fetchDreamThemesCache();
-                const themeConnections = detectThemeConnections(d.description, themes);
-                setReadingModal({ interpretation: d.interpretation, symbols: d.symbols || [], dreamTitle: d.title, themeConnections, generatedThemes: d.generated_themes || [], dream: d });
-              }}
-            />
-          </div>
-        )}
-
-        {/* ── PROFILE TAB ── */}
+        {/* ── PROFILE TAB (includes Gallery subsection) ── */}
         {tab === "profile" && (
           <div style={{ animation: "fadeIn 0.4s ease" }}>
             <ProfileTab
@@ -1142,6 +1110,23 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
               onUpgrade={handleUpgrade}
               onRetakeQuiz={() => setShowQuiz(true)}
             />
+
+            {/* Gallery subsection */}
+            <div style={{ marginTop: 28 }}>
+              <div style={{
+                height: 1, marginBottom: 24,
+                background: "linear-gradient(90deg, transparent, rgba(200,160,30,0.2), transparent)",
+              }} />
+              <GalleryTab
+                user={user}
+                dreams={dreams}
+                onViewReading={async (d) => {
+                  const themes = await fetchDreamThemesCache();
+                  const themeConnections = detectThemeConnections(d.description, themes);
+                  setReadingModal({ interpretation: d.interpretation, symbols: d.symbols || [], dreamTitle: d.title, themeConnections, generatedThemes: d.generated_themes || [], dream: d });
+                }}
+              />
+            </div>
           </div>
         )}
       </div>
@@ -1157,10 +1142,42 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
         />
       )}
 
+      {/* ── Bottom Tab Bar ── */}
+      <nav style={{
+        position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 80,
+        background: "rgba(4,8,18,0.95)",
+        backdropFilter: "blur(12px)",
+        borderTop: "1px solid rgba(200,160,30,0.1)",
+        display: "flex", justifyContent: "space-around", alignItems: "center",
+        padding: "6px 0 env(safe-area-inset-bottom, 8px)",
+      }}>
+        {tabs.map((t) => (
+          <button key={t.id} onClick={() => setTab(t.id)} style={{
+            background: "none", border: "none", cursor: "pointer",
+            display: "flex", flexDirection: "column", alignItems: "center",
+            gap: 2, padding: "6px 0", minWidth: 52,
+            transition: "all 0.2s",
+          }}>
+            <span style={{
+              fontSize: 20,
+              filter: tab === t.id ? "drop-shadow(0 0 6px rgba(232,184,64,0.4))" : "none",
+              transition: "filter 0.2s",
+            }}>{t.icon}</span>
+            <span style={{
+              fontSize: 10, letterSpacing: 0.3,
+              color: tab === t.id ? "#e8b840" : "#5a5040",
+              fontFamily: "Georgia, serif",
+              fontWeight: tab === t.id ? 600 : 400,
+              transition: "color 0.2s",
+            }}>{t.label}</span>
+          </button>
+        ))}
+      </nav>
+
       {/* ── Upgrade Nudge (after 3rd interpretation) ── */}
       {showUpgradeNudge && !userSettings?.is_pro && (
         <div style={{
-          position: "fixed", bottom: 20, left: "50%", transform: "translateX(-50%)",
+          position: "fixed", bottom: 84, left: "50%", transform: "translateX(-50%)",
           background: "linear-gradient(135deg, rgba(16,4,40,0.97), rgba(30,10,60,0.97))",
           border: "1px solid rgba(200,160,50,0.35)", borderRadius: 18,
           padding: "16px 22px", maxWidth: 380, width: "90%",
