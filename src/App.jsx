@@ -436,9 +436,14 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
       const data = await response.json();
       const rawText = data.content?.map((b) => b.text || "").join("") || "";
 
-      // Parse the JSON response
+      // Strip markdown code fences if present, then parse JSON
+      let cleanText = rawText.trim();
+      if (cleanText.startsWith("```")) {
+        cleanText = cleanText.replace(/^```(?:json)?\s*\n?/, "").replace(/\n?```\s*$/, "");
+      }
+
       try {
-        const parsed = JSON.parse(rawText);
+        const parsed = JSON.parse(cleanText);
         return {
           interpretation: parsed.interpretation || rawText,
           generated_themes: Array.isArray(parsed.themes) ? parsed.themes : [],
