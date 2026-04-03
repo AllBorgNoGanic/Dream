@@ -237,7 +237,7 @@ const LUCID_TRIGGERS = [
   "Nightmare",
 ];
 
-const MIN_DESCRIPTION_LENGTH = 50;
+const MIN_DESCRIPTION_LENGTH = 30;
 
 export default function DreamForm({
   form,
