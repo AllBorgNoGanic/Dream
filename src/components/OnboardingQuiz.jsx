@@ -302,7 +302,7 @@ export default function OnboardingQuiz({ onComplete, preAuth = false }) {
 
   // ── Background orbs + stars ────────────────────────────────────────────────
   const orbs = (
-    <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 0 }}>
+    <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 0, willChange: "transform", transform: "translateZ(0)" }}>
       {stars.map((s) => (
         <div key={s.id} style={{
           position: "absolute", left: `${s.x}%`, top: `${s.y}%`,
