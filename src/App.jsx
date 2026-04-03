@@ -330,12 +330,17 @@ export default function DreamJournal() {
 
     // If we have a dream but no interpretation (pre-auth flow), generate it now
     let finalInterpretation = interpretation;
+    let finalGeneratedThemes = [];
     if (recentDream?.trim() && !interpretation) {
       try {
-        finalInterpretation = await interpretDream(
+        const result = await interpretDream(
           { description: recentDream },
           { archetype_data: { profile, sleep, emotional, recurringThemes } }
         );
+        if (result) {
+          finalInterpretation = result.interpretation;
+          finalGeneratedThemes = result.generated_themes || [];
+        }
       } catch {
         finalInterpretation = null;
       }
@@ -373,6 +378,7 @@ export default function DreamJournal() {
         title: "My First Dream",
         description: recentDream.trim(),
         interpretation: finalInterpretation,
+        generated_themes: finalGeneratedThemes,
         mood: emotional?.mood || null,
         created_at: new Date().toISOString(),
       });
@@ -393,7 +399,7 @@ export default function DreamJournal() {
       if (ad?.sleep?.sleepQuality) profileParts.push(`Sleep quality: ${ad.sleep.sleepQuality}/5.`);
       if (ad?.themes?.length) profileParts.push(`Recurring dream themes in their life: ${ad.themes.join(", ")}.`);
       const profileContext = profileParts.length > 0
-        ? `\n\nDreamer profile: ${profileParts.join(" ")} Use this context to make the interpretation feel personal and resonant, referencing their life stage or patterns where meaningful. Do not simply list these facts — weave them in naturally.`
+        ? `\n\nDreamer profile: ${profileParts.join(" ")} Use this context to make the interpretation feel personal and resonant, referencing their life stage or patterns where meaningful. Do not simply list these facts -- weave them in naturally.`
         : "";
 
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/interpret-dream`, {
@@ -403,17 +409,36 @@ export default function DreamJournal() {
           "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
         },
         body: JSON.stringify({
-          system: `You are a wise, empathetic dream interpreter drawing from psychology, symbolism, and spiritual traditions including Biblical wisdom. Dreams hold meaning across many traditions, and in scripture figures like Joseph, Daniel, and Jacob received divine insight through dreams. Give warm, insightful 2-3 sentence interpretations. Be poetic but grounded. Never be alarming. Do not use markdown formatting, headers, bullet points, or any special characters - write in plain flowing prose only.${profileContext}`,
+          system: `You are a wise, empathetic dream interpreter drawing from psychology, symbolism, and spiritual traditions including Biblical wisdom. Dreams hold meaning across many traditions, and in scripture figures like Joseph, Daniel, and Jacob received divine insight through dreams.
+
+Respond ONLY with valid JSON in this exact format (no markdown, no code fences):
+{"interpretation":"A warm, insightful 2-3 sentence interpretation. Be poetic but grounded. Never be alarming. Write in plain flowing prose only.","themes":[{"title":"A unique evocative theme title","symbol":"A single relevant emoji","meaning":"What this theme represents in the dreamer's life","guidance":"Actionable advice or reflection prompt for the dreamer"}]}
+
+Generate 2-3 themes that are specific and unique to this dream. Theme titles should be creative and evocative (e.g. "The Unfinished Bridge", "Voices Behind the Door"). Each theme should feel personally tailored, not generic.${profileContext}`,
           messages: [{
             role: "user",
             content: `Interpret this dream. Title: "${dream.title}". Mood: ${dream.mood}. Theme: ${dream.theme}. ${dream.is_lucid ? "This was a lucid dream." : ""}${dream.characters?.length ? ` Characters: ${dream.characters.join(", ")}.` : ""}${dream.tags?.length ? ` Tags: ${dream.tags.join(", ")}.` : ""} Dream: "${dream.description}"`,
           }],
-          max_tokens: 1000,
+          max_tokens: 1200,
         }),
       });
       const data = await response.json();
-      return data.content?.map((b) => b.text || "").join("") ||
-        "Your dream holds meaning waiting to be uncovered. Upgrade to Dream Shepherd Pro for unlimited AI-powered interpretations.";
+      const rawText = data.content?.map((b) => b.text || "").join("") || "";
+
+      // Parse the JSON response
+      try {
+        const parsed = JSON.parse(rawText);
+        return {
+          interpretation: parsed.interpretation || rawText,
+          generated_themes: Array.isArray(parsed.themes) ? parsed.themes : [],
+        };
+      } catch {
+        // Fallback: if AI didn't return valid JSON, treat the whole response as interpretation
+        return {
+          interpretation: rawText || "Your dream holds meaning waiting to be uncovered. Upgrade to Dream Shepherd Pro for unlimited AI-powered interpretations.",
+          generated_themes: [],
+        };
+      }
     } catch {
       return null; // signal failure so we don't save a failed message
     }
@@ -484,17 +509,18 @@ export default function DreamJournal() {
     if (!canInterpret) { setShowUpgradeModal(true); return; }
     setInterpretingId(dream.id);
     try {
-      const interpretation = await interpretDream(dream, userSettings);
-      if (!interpretation) {
+      const result = await interpretDream(dream, userSettings);
+      if (!result) {
         setInterpretingId(null);
-        return; // API failed silently — keep the button available to retry
+        return; // API failed silently -- keep the button available to retry
       }
-      await supabase.from("dreams").update({ interpretation }).eq("id", dream.id);
-      setDreams((prev) => prev.map((d) => d.id === dream.id ? { ...d, interpretation } : d));
+      const { interpretation, generated_themes } = result;
+      await supabase.from("dreams").update({ interpretation, generated_themes: generated_themes || [] }).eq("id", dream.id);
+      setDreams((prev) => prev.map((d) => d.id === dream.id ? { ...d, interpretation, generated_themes: generated_themes || [] } : d));
       // Open the immersive reading modal
       const themes = await fetchDreamThemesCache();
       const themeConnections = detectThemeConnections(dream.description, themes);
-      setReadingModal({ interpretation, symbols: dream.symbols || [], dreamTitle: dream.title, themeConnections, dream: { ...dream, interpretation } });
+      setReadingModal({ interpretation, symbols: dream.symbols || [], dreamTitle: dream.title, themeConnections, generatedThemes: generated_themes || [], dream: { ...dream, interpretation, generated_themes } });
       if (!userSettings?.is_pro) {
         const newCount = (userSettings?.interpretation_count ?? 0) + 1;
         await supabase.from("user_settings").update({ interpretation_count: newCount }).eq("user_id", user.id);
@@ -555,9 +581,10 @@ export default function DreamJournal() {
 
       // Interpret on save if toggled
       if (form.interpret_on_save && canInterpret && inserted) {
-        const interpretation = await interpretDream({ ...inserted, symbols }, userSettings);
-        if (interpretation) {
-          await supabase.from("dreams").update({ interpretation }).eq("id", inserted.id);
+        const result = await interpretDream({ ...inserted, symbols }, userSettings);
+        if (result) {
+          const { interpretation, generated_themes } = result;
+          await supabase.from("dreams").update({ interpretation, generated_themes: generated_themes || [] }).eq("id", inserted.id);
           if (!userSettings?.is_pro) {
             const newCount = (userSettings?.interpretation_count ?? 0) + 1;
             await supabase.from("user_settings").update({ interpretation_count: newCount }).eq("user_id", user.id);
@@ -980,7 +1007,7 @@ export default function DreamJournal() {
                 onViewReading={async (d) => {
                   const themes = await fetchDreamThemesCache();
                   const themeConnections = detectThemeConnections(d.description, themes);
-                  setReadingModal({ interpretation: d.interpretation, symbols: d.symbols || [], dreamTitle: d.title, themeConnections, dream: d });
+                  setReadingModal({ interpretation: d.interpretation, symbols: d.symbols || [], dreamTitle: d.title, themeConnections, generatedThemes: d.generated_themes || [], dream: d });
                 }}
               />
             ))}
@@ -1030,7 +1057,7 @@ export default function DreamJournal() {
               onViewReading={async (d) => {
                 const themes = await fetchDreamThemesCache();
                 const themeConnections = detectThemeConnections(d.description, themes);
-                setReadingModal({ interpretation: d.interpretation, symbols: d.symbols || [], dreamTitle: d.title, themeConnections, dream: d });
+                setReadingModal({ interpretation: d.interpretation, symbols: d.symbols || [], dreamTitle: d.title, themeConnections, generatedThemes: d.generated_themes || [], dream: d });
               }}
             />
           </div>

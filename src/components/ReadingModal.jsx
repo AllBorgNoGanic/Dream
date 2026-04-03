@@ -27,7 +27,7 @@ const KEYFRAMES = `
 `;
 
 export default function ReadingModal({ reading, onClose, onGenerateImage, userSettings, onUpgrade }) {
-  const { interpretation = "", symbols = [], dreamTitle = "", themeConnections = [], dream } = reading;
+  const { interpretation = "", symbols = [], dreamTitle = "", themeConnections = [], generatedThemes = [], dream } = reading;
 
   const [showText, setShowText] = useState(false);
   const [showSymbols, setShowSymbols] = useState(false);
@@ -261,7 +261,90 @@ export default function ReadingModal({ reading, onClose, onGenerateImage, userSe
             </div>
           )}
 
-          {/* Theme connections */}
+          {/* AI-Generated Dream Themes */}
+          {showThemes && generatedThemes.length > 0 && (
+            <div style={{ marginTop: 22, animation: "rm-fadeIn 0.5s ease" }}>
+              <div style={{
+                height: 1, marginBottom: 16,
+                background: "linear-gradient(90deg, transparent, rgba(232,184,64,0.25), transparent)",
+              }} />
+              <div style={{
+                fontSize: 9, letterSpacing: 3, color: "#8a7540",
+                textTransform: "uppercase", marginBottom: 14,
+              }}>
+                Dream Themes
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {generatedThemes.map((theme, i) => {
+                  const isExpanded = expandedTheme === i;
+                  return (
+                    <div key={i} style={{ animation: `rm-badgeIn 0.4s cubic-bezier(0.34,1.56,0.64,1) ${i * 0.12}s both` }}>
+                      <button
+                        onClick={() => setExpandedTheme(prev => prev === i ? null : i)}
+                        style={{
+                          width: "100%", textAlign: "left",
+                          display: "flex", alignItems: "center", gap: 12,
+                          background: isExpanded ? "rgba(200,160,30,0.12)" : "rgba(10,6,24,0.6)",
+                          border: `1px solid ${isExpanded ? "rgba(200,160,30,0.4)" : "rgba(200,160,30,0.15)"}`,
+                          borderRadius: isExpanded ? "16px 16px 0 0" : 16,
+                          padding: "14px 16px",
+                          cursor: "pointer", fontFamily: "Georgia, serif",
+                          transition: "all 0.25s",
+                        }}
+                      >
+                        <span style={{ fontSize: 26, flexShrink: 0 }}>{theme.symbol || "✦"}</span>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: 14, color: "#f0dfa0", fontStyle: "italic" }}>{theme.title}</div>
+                        </div>
+                        <span style={{
+                          fontSize: 14, color: "#6b5c30",
+                          transition: "transform 0.25s",
+                          transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)",
+                        }}>
+                          &#9660;
+                        </span>
+                      </button>
+                      {isExpanded && (
+                        <div style={{
+                          background: "rgba(10,6,24,0.85)",
+                          border: "1px solid rgba(200,160,30,0.2)",
+                          borderTop: "none",
+                          borderRadius: "0 0 16px 16px",
+                          padding: "18px 18px 20px",
+                          animation: "rm-fadeIn 0.3s ease",
+                        }}>
+                          {theme.meaning && (
+                            <div style={{ marginBottom: 14 }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                                <span style={{ fontSize: 12 }}>&#128161;</span>
+                                <span style={{ fontSize: 9, letterSpacing: 2, color: "#8a7540", textTransform: "uppercase" }}>Possible Meaning</span>
+                              </div>
+                              <p style={{ fontSize: 13, color: "#c8a870", lineHeight: 1.75, margin: 0 }}>{theme.meaning}</p>
+                            </div>
+                          )}
+                          {theme.guidance && (
+                            <div style={{
+                              background: "rgba(255,255,255,0.02)",
+                              border: "1px solid rgba(144,102,212,0.15)",
+                              borderRadius: 14, padding: "14px 16px",
+                            }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                                <span style={{ fontSize: 12 }}>&#129517;</span>
+                                <span style={{ fontSize: 9, letterSpacing: 2, color: "#8a7540", textTransform: "uppercase" }}>Guidance</span>
+                              </div>
+                              <p style={{ fontSize: 13, color: "#c8a870", lineHeight: 1.75, margin: 0 }}>{theme.guidance}</p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Static Theme Connections (from dictionary) */}
           {showThemes && themeConnections.length > 0 && (
             <div style={{ marginTop: 22, animation: "rm-fadeIn 0.5s ease" }}>
               <div style={{
@@ -272,7 +355,7 @@ export default function ReadingModal({ reading, onClose, onGenerateImage, userSe
                 fontSize: 9, letterSpacing: 3, color: "#8a7540",
                 textTransform: "uppercase", marginBottom: 10,
               }}>
-                Theme Connections
+                Symbol Connections
               </div>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 {themeConnections.map((theme, i) => (
@@ -295,7 +378,7 @@ export default function ReadingModal({ reading, onClose, onGenerateImage, userSe
                 ))}
               </div>
 
-              {expandedTheme && (
+              {expandedTheme && typeof expandedTheme === "object" && expandedTheme.key && (
                 <div style={{
                   marginTop: 16,
                   background: "rgba(10,6,24,0.85)",
@@ -318,7 +401,7 @@ export default function ReadingModal({ reading, onClose, onGenerateImage, userSe
                   {expandedTheme.meaning && (
                     <div style={{ marginBottom: 14 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                        <span style={{ fontSize: 12 }}>💡</span>
+                        <span style={{ fontSize: 12 }}>&#128161;</span>
                         <span style={{ fontSize: 9, letterSpacing: 2, color: "#8a7540", textTransform: "uppercase" }}>Possible Meaning</span>
                       </div>
                       <p style={{ fontSize: 13, color: "#c8a870", lineHeight: 1.75, margin: 0 }}>{expandedTheme.meaning}</p>
@@ -331,7 +414,7 @@ export default function ReadingModal({ reading, onClose, onGenerateImage, userSe
                       borderRadius: 14, padding: "14px 16px",
                     }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                        <span style={{ fontSize: 12 }}>🧭</span>
+                        <span style={{ fontSize: 12 }}>&#129517;</span>
                         <span style={{ fontSize: 9, letterSpacing: 2, color: "#8a7540", textTransform: "uppercase" }}>Guidance</span>
                       </div>
                       <p style={{ fontSize: 13, color: "#c8a870", lineHeight: 1.75, margin: 0 }}>{expandedTheme.guidance}</p>
