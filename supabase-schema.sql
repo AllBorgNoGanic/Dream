@@ -44,6 +44,7 @@ alter table dreams add column if not exists dream_signs    text[]      default '
 alter table dreams add column if not exists lucid_trigger  text;
 alter table dreams add column if not exists lucid_activity text;
 alter table dreams add column if not exists lucid_duration text;
+alter table dreams add column if not exists generated_themes jsonb default '[]';
 
 alter table dreams enable row level security;
 
