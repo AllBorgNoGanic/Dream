@@ -1,0 +1,24 @@
+{
+  "appId": "app.dreamshepherd",
+  "appName": "Dream Shepherd",
+  "webDir": "dist",
+  "server": {
+    "url": "https://dreamshepherd.app",
+    "cleartext": false
+  },
+  "ios": {
+    "contentInset": "always",
+    "allowsLinkPreview": false,
+    "scrollEnabled": true
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchAutoHide": true,
+      "launchFadeOutDuration": 300,
+      "backgroundColor": "#04001a"
+    },
+    "StatusBar": {
+      "style": "LIGHT"
+    }
+  }
+}
