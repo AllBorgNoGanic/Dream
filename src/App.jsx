@@ -1107,7 +1107,7 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
               userSettings={userSettings}
               onSettingsUpdate={setUserSettings}
               dreams={dreams}
-              onUpgrade={handleUpgrade}
+              onUpgrade={() => setShowUpgradeModal(true)}
               onRetakeQuiz={() => setShowQuiz(true)}
             />
 
