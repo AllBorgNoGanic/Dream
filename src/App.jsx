@@ -120,7 +120,7 @@ export default function DreamJournal() {
   const [authError, setAuthError] = useState("");
   const [authLoading, setAuthLoading] = useState(false);
   const [sessionLoading, setSessionLoading] = useState(true);
-  const [showLanding, setShowLanding] = useState(true);
+  const [showLanding, setShowLanding] = useState(!window.Capacitor);
 
   // Data
   const [userSettings, setUserSettings] = useState(null);
