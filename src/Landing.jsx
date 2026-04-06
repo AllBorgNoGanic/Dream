@@ -145,7 +145,7 @@ export default function Landing({ onSignIn }) {
             letterSpacing: 0.5, fontFamily: "Georgia, serif",
             boxShadow: "0 4px 30px rgba(160,100,5,0.45)",
           }}>
-            Start Journaling Free
+            Start Journaling Now
           </button>
         </section>
 
@@ -383,7 +383,7 @@ export default function Landing({ onSignIn }) {
             fontFamily: "Georgia, serif", letterSpacing: 0.5,
             boxShadow: "0 4px 30px rgba(160,100,5,0.45)",
           }}>
-            Start Journaling Free
+            Start Journaling Now
           </button>
         </section>
 
