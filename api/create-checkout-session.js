@@ -7,11 +7,22 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { user_id } = req.body;
+  const { user_id, plan = "monthly" } = req.body;
 
   if (!user_id) {
     return res.status(400).json({ error: 'user_id is required' });
   }
+
+  const plans = {
+    monthly: { unit_amount: 599, interval: "month" },
+    annual:  { unit_amount: 4999, interval: "year" },
+  };
+
+  if (!plans[plan]) {
+    return res.status(400).json({ error: 'Invalid plan. Must be "monthly" or "annual".' });
+  }
+
+  const selected = plans[plan];
 
   try {
     const session = await stripe.checkout.sessions.create({
@@ -22,12 +33,12 @@ export default async function handler(req, res) {
         {
           price_data: {
             currency: 'usd',
-            recurring: { interval: 'month' },
+            recurring: { interval: selected.interval },
             product_data: {
               name: 'Dream Shepherd',
               description: 'Unlimited AI Dream Interpretations',
             },
-            unit_amount: 599,
+            unit_amount: selected.unit_amount,
           },
           quantity: 1,
         },

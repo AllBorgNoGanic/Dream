@@ -145,7 +145,7 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
               fontSize: 13, fontWeight: 600, cursor: "pointer", letterSpacing: 0.5, minHeight: 44,
               whiteSpace: "nowrap"
             }}>
-              Subscribe $5.99/mo
+              Subscribe from $4.17/mo
             </button>
           )}
         </div>

@@ -130,6 +130,7 @@ export default function DreamJournal() {
   const [selectedDream, setSelectedDream] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState("annual");
   const [showUpgradeNudge, setShowUpgradeNudge] = useState(false);
   const [readingModal, setReadingModal] = useState(null); // { interpretation, symbols, dreamTitle, themeConnections }
   const [dreamThemesCache, setDreamThemesCache] = useState(null);
@@ -638,12 +639,12 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
   };
 
   // ── Upgrade ────────────────────────────────────────────────────────────────
-  const handleUpgrade = async () => {
+  const handleUpgrade = async (plan) => {
     try {
       const res = await fetch("/api/create-checkout-session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id: user.id }),
+        body: JSON.stringify({ user_id: user.id, plan: plan || selectedPlan }),
       });
       const { url } = await res.json();
       if (url) window.location.href = url;
@@ -1308,21 +1309,54 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
                 </div>
               ))}
             </div>
+            {/* Plan Toggle */}
+            <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+              {["monthly", "annual"].map((p) => (
+                <button
+                  key={p}
+                  onClick={() => setSelectedPlan(p)}
+                  style={{
+                    flex: 1, padding: "10px 0", borderRadius: 12, fontSize: 13, fontWeight: 600,
+                    cursor: "pointer", border: `1px solid rgba(200,160,50,${selectedPlan === p ? "0.5" : "0.2"})`,
+                    minHeight: 44, fontFamily: "Georgia, serif",
+                    background: selectedPlan === p ? "rgba(200,160,50,0.15)" : "transparent",
+                    color: selectedPlan === p ? "#e8c840" : "#7a6a40",
+                    transition: "all 0.2s",
+                  }}
+                >
+                  {p === "monthly" ? "Monthly" : "Annual"}
+                </button>
+              ))}
+            </div>
+            {/* Price Display */}
             <div style={{
               background: "rgba(200,160,50,0.1)", border: "1px solid rgba(200,160,50,0.3)",
               borderRadius: 16, padding: "16px 20px", marginBottom: 24,
             }}>
-              <div style={{ fontSize: 28, color: "#e8c840", fontWeight: 400 }}>
-                $5.99<span style={{ fontSize: 14, color: "#a09060" }}>/month</span>
-              </div>
-              <div style={{ fontSize: 12, color: "#a09060", marginTop: 4 }}>Cancel anytime</div>
+              {selectedPlan === "monthly" ? (
+                <>
+                  <div style={{ fontSize: 28, color: "#e8c840", fontWeight: 400 }}>
+                    $5.99<span style={{ fontSize: 14, color: "#a09060" }}>/month</span>
+                  </div>
+                  <div style={{ fontSize: 12, color: "#a09060", marginTop: 4 }}>Cancel anytime</div>
+                </>
+              ) : (
+                <>
+                  <div style={{ fontSize: 28, color: "#e8c840", fontWeight: 400 }}>
+                    $49.99<span style={{ fontSize: 14, color: "#a09060" }}>/year</span>
+                  </div>
+                  <div style={{ fontSize: 12, color: "#a09060", marginTop: 4 }}>
+                    Just $4.17/mo - Save 30%
+                  </div>
+                </>
+              )}
             </div>
-            <button onClick={handleUpgrade} style={{
+            <button onClick={() => handleUpgrade(selectedPlan)} style={{
               width: "100%", background: "linear-gradient(135deg, #c8a020, #e8c840)",
               border: "none", color: "#1a1000", padding: "16px", borderRadius: 12,
               fontSize: 16, fontWeight: 600, cursor: "pointer", letterSpacing: 0.5, marginBottom: 12, minHeight: 48,
             }}>
-              Upgrade Now
+              {selectedPlan === "annual" ? "Upgrade Now - Best Value" : "Upgrade Now"}
             </button>
             {(userSettings?.share_bonus_count ?? 0) < MAX_SHARE_BONUS && (
               <div style={{ marginBottom: 12 }}>
