@@ -14,8 +14,8 @@ export default async function handler(req, res) {
   }
 
   const plans = {
-    monthly: { unit_amount: 599, interval: "month" },
-    annual:  { unit_amount: 4999, interval: "year" },
+    monthly: { unit_amount: 800, interval: "month" },
+    annual:  { unit_amount: 5999, interval: "year" },
   };
 
   if (!plans[plan]) {
