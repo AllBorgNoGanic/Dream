@@ -961,20 +961,15 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
         </svg>
       );
       case "library": return (
-        <svg viewBox="0 0 24 24" fill="none" style={s}>
-          <path d="M12 5C10 3.5 7 3 2.5 3.5v15c4.5-0.5 7.5 0 9.5 1.5" stroke={color} strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-          <path d="M12 5c2-1.5 5-2 9.5-1.5v15c-4.5-0.5-7.5 0-9.5 1.5" stroke={color} strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-          <line x1="12" y1="5" x2="12" y2="20" stroke={color} strokeWidth="1"/>
-          <line x1="7" y1="7" x2="7" y2="12" stroke={color} strokeWidth="1" opacity="0.5"/>
-          <line x1="5.2" y1="8.5" x2="8.8" y2="8.5" stroke={color} strokeWidth="1" opacity="0.5"/>
-          <line x1="4.5" y1="14" x2="9.5" y2="14.5" stroke={color} strokeWidth="0.6" opacity="0.25"/>
-          <line x1="4.5" y1="15.5" x2="9.5" y2="16" stroke={color} strokeWidth="0.6" opacity="0.25"/>
-          <line x1="14.5" y1="7.5" x2="19.5" y2="7" stroke={color} strokeWidth="0.6" opacity="0.25"/>
-          <line x1="14.5" y1="9.5" x2="19.5" y2="9" stroke={color} strokeWidth="0.6" opacity="0.25"/>
-          <line x1="14.5" y1="11.5" x2="19.5" y2="11" stroke={color} strokeWidth="0.6" opacity="0.25"/>
-          <line x1="14.5" y1="13.5" x2="19.5" y2="13" stroke={color} strokeWidth="0.6" opacity="0.25"/>
-          <path d="M13.5 5c0.2 2 0.1 4 0.3 6.5" stroke={color} strokeWidth="0.7" opacity="0.5" strokeLinecap="round"/>
-          <path d="M13.8 11.5l-0.5 1 0.8 0" stroke={color} strokeWidth="0.6" opacity="0.5" strokeLinecap="round" strokeLinejoin="round"/>
+        <svg viewBox="0 0 496 496" fill={color} style={s}>
+          <path d="M424,416h8V0H112C85.528,0,64,21.528,64,48v400c0,26.472,21.528,48,48,48h320v-16h-8c-17.648,0-32-14.352-32-32 S406.352,416,424,416z M388.256,480H112c-17.648,0-32-14.352-32-32s14.352-32,32-32h276.256C380.64,424.504,376,435.72,376,448 C376,460.28,380.64,471.504,388.256,480z M112,400c-12.28,0-23.504,4.64-32,12.248V48c0-17.648,14.352-32,32-32h304v384H112z"/>
+          <rect x="96" y="440" width="232" height="16"/>
+          <rect x="344" y="440" width="16" height="16"/>
+          <path d="M104,248h288V40H104V248z M120,56h256v176H120V56z"/>
+          <polygon points="264,132.688 232.496,101.176 130.88,185.856 141.12,198.144 231.504,122.824 282.344,173.656 293.656,162.344 275.312,144 287.696,131.624 354.056,205.352 365.944,194.648 288.304,108.376"/>
+          <rect x="376" y="264" width="16" height="16"/>
+          <rect x="344" y="264" width="16" height="16"/>
+          <rect x="312" y="264" width="16" height="16"/>
         </svg>
       );
       case "profile": return (
