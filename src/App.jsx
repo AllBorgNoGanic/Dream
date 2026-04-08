@@ -921,10 +921,10 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
 
   // ── Nav config ─────────────────────────────────────────────────────────────
   const tabs = [
-    { id: "journal",    icon: "🐑", label: "Journal" },
-    { id: "patterns",   icon: "✦",  label: "Patterns" },
-    { id: "lucid",      icon: "⚡", label: "Lucid" },
     { id: "community",  icon: "👥", label: "Community" },
+    { id: "insights",   icon: "✦",  label: "Insights" },
+    { id: "journal",    icon: "🐑", label: "Journal" },
+    { id: "library",    icon: "📖", label: "Library" },
     { id: "profile",    icon: "◉",  label: "Profile" },
   ];
 
@@ -1058,20 +1058,27 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
           </div>
         )}
 
-        {/* ── PATTERNS TAB ── */}
-        {tab === "patterns" && (
+        {/* ── INSIGHTS TAB (Patterns + Lucid) ── */}
+        {tab === "insights" && (
           <div style={{ animation: "fadeIn 0.4s ease" }}>
             <PatternsTab dreams={dreams} userSettings={userSettings} />
             <div style={{ marginTop: 16 }}>
               <CalendarHeatmap dreams={dreams} />
             </div>
+            <div style={{ marginTop: 28 }}>
+              <div style={{
+                height: 1, marginBottom: 24,
+                background: "linear-gradient(90deg, transparent, rgba(200,160,30,0.2), transparent)",
+              }} />
+              <LucidTools dreams={dreams} />
+            </div>
           </div>
         )}
 
-        {/* ── LUCID TAB ── */}
-        {tab === "lucid" && (
+        {/* ── LIBRARY TAB ── */}
+        {tab === "library" && (
           <div style={{ animation: "fadeIn 0.4s ease" }}>
-            <LucidTools dreams={dreams} />
+            <DictionaryTab />
           </div>
         )}
 
@@ -1114,14 +1121,6 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
               />
             </div>
 
-            {/* Library subsection */}
-            <div style={{ marginTop: 28 }}>
-              <div style={{
-                height: 1, marginBottom: 24,
-                background: "linear-gradient(90deg, transparent, rgba(200,160,30,0.2), transparent)",
-              }} />
-              <DictionaryTab />
-            </div>
           </div>
         )}
       </div>
