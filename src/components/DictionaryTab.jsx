@@ -99,9 +99,9 @@ export default function DictionaryTab() {
             background: "none",
             border: "1px solid rgba(255,255,255,0.15)",
             color: "#c8a030",
-            padding: "8px 18px",
+            padding: "12px 20px",
             borderRadius: 30,
-            fontSize: 13,
+            fontSize: 14, minHeight: 44,
             cursor: "pointer",
             fontFamily: "Georgia, serif",
             marginBottom: 24,
@@ -222,7 +222,7 @@ export default function DictionaryTab() {
         onChange={e => handleSearch(e.target.value)}
         style={{
           width: "100%", background: "rgba(6,12,22,0.7)", border: "1px solid rgba(200,160,30,0.2)",
-          borderRadius: 40, padding: "13px 22px", color: "#f5e4b0", fontSize: 14,
+          borderRadius: 40, padding: "14px 18px", color: "#f5e4b0", fontSize: 16,
           marginBottom: 16, boxSizing: "border-box", outline: "none", fontFamily: "Georgia, serif"
         }}
       />
@@ -240,7 +240,7 @@ export default function DictionaryTab() {
               background: category === cat.id ? "rgba(144,102,212,0.2)" : "rgba(6,12,22,0.5)",
               border: `1px solid ${category === cat.id ? "rgba(144,102,212,0.4)" : "rgba(200,160,30,0.12)"}`,
               color: category === cat.id ? "#9066d4" : "#7a6a40",
-              borderRadius: 20, padding: "6px 16px", fontSize: 12,
+              borderRadius: 20, padding: "10px 18px", fontSize: 13, minHeight: 40,
               cursor: "pointer", fontFamily: "Georgia, serif",
               whiteSpace: "nowrap", transition: "all 0.2s",
             }}
@@ -276,7 +276,7 @@ export default function DictionaryTab() {
                 onClick={() => setSelectedTheme(theme)}
                 style={{
                   background: "rgba(6,12,22,0.7)", border: "1px solid rgba(200,160,30,0.12)",
-                  borderRadius: 16, padding: "18px 20px", cursor: "pointer",
+                  borderRadius: 16, padding: "14px 14px", cursor: "pointer",
                   transition: "all 0.2s ease",
                 }}
               >
@@ -284,7 +284,7 @@ export default function DictionaryTab() {
                   <span style={{ fontSize: 22 }}>{theme.symbol}</span>
                   <span style={{ fontSize: 15, color: "#e8b840", textTransform: "capitalize" }}>{theme.key}</span>
                 </div>
-                <p style={{ fontSize: 12, color: "#7a6a40", lineHeight: 1.6, margin: 0 }}>
+                <p style={{ fontSize: 13, color: "#7a6a40", lineHeight: 1.6, margin: 0 }}>
                   {theme.meaning.length > 80 ? theme.meaning.substring(0, 80) + "..." : theme.meaning}
                 </p>
               </div>

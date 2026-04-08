@@ -184,10 +184,10 @@ export default function LucidTools({ dreams }) {
   return (
     <div style={{ animation: "fadeIn 0.4s ease" }}>
       <style>{`
-        .rc-btn:hover { background: rgba(200,160,30,0.35) !important; border-color: rgba(200,160,30,0.6) !important; }
-        .step-card:hover { border-color: rgba(200,160,30,0.4) !important; background: rgba(30,12,60,0.9) !important; }
+        .rc-btn:active { background: rgba(200,160,30,0.35) !important; border-color: rgba(200,160,30,0.6) !important; }
+        .step-card:active { border-color: rgba(200,160,30,0.4) !important; background: rgba(30,12,60,0.9) !important; }
         .practice-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(4,0,26,0.96); display: flex; flex-direction: column; align-items: center; justify-content: center; animation: fadeIn 0.3s ease; }
-        .mild-toggle:hover { background: rgba(200,160,30,0.12) !important; }
+        .mild-toggle:active { background: rgba(200,160,30,0.12) !important; }
       `}</style>
 
       {/* Practice Overlay */}
@@ -285,13 +285,13 @@ export default function LucidTools({ dreams }) {
                 background: "rgba(30,12,60,0.6)",
                 border: "1px solid rgba(200,160,30,0.12)",
                 borderRadius: 16,
-                padding: "18px 16px",
+                padding: "14px 10px",
                 textAlign: "center",
               }}
             >
               <div style={{ fontSize: 24, marginBottom: 6 }}>{stat.icon}</div>
               <div
-                style={{ fontSize: 22, color: "#e8b840", fontWeight: 400 }}
+                style={{ fontSize: 20, color: "#e8b840", fontWeight: 400 }}
               >
                 {stat.value}
               </div>
@@ -590,7 +590,7 @@ export default function LucidTools({ dreams }) {
             <span style={{ color: "#f5e4b0", fontWeight: 600 }}>{checksToday}</span>
           </span>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 12 }}>
           {REALITY_CHECKS.map((check) => (
             <div
               key={check.name}
@@ -630,12 +630,12 @@ export default function LucidTools({ dreams }) {
                   background: "rgba(200,160,30,0.2)",
                   border: "1px solid rgba(200,160,30,0.3)",
                   color: "#e8b840",
-                  padding: "7px 16px",
+                  padding: "12px 20px",
                   borderRadius: 20,
-                  fontSize: 12,
+                  fontSize: 14,
                   cursor: "pointer",
                   fontFamily: "'Georgia', serif",
-                  transition: "all 0.2s",
+                  minHeight: 44,
                 }}
               >
                 Practice Now

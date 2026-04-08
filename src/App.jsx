@@ -96,18 +96,14 @@ const globalStyles = (
     @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes twinkle { 0%,100% { opacity: 0.3; } 50% { opacity: 0.9; } }
     @keyframes bethlehem-pulse { 0%,100% { opacity: 0.88; filter: brightness(1) drop-shadow(0 0 6px rgba(160,215,255,0.7)); } 50% { opacity: 1; filter: brightness(1.3) drop-shadow(0 0 18px rgba(160,215,255,1)); } }
-    * { box-sizing: border-box; }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    button, a, [role="button"] { touch-action: manipulation; }
     ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: rgba(200,160,30,0.3); border-radius: 2px; }
-    .nav-tab:hover { background: rgba(200,160,30,0.15) !important; }
-    .dream-card:hover { border-color: rgba(200,160,30,0.35) !important; transform: translateY(-1px); transition: all 0.2s; }
-    .logout-btn:hover { background: rgba(255,255,255,0.08) !important; color: #e8b840 !important; }
+    .dream-card:active { border-color: rgba(200,160,30,0.35) !important; }
+    .logout-btn:active { background: rgba(255,255,255,0.08) !important; color: #e8b840 !important; }
     input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(0.8); }
-    @media (max-width: 600px) {
-      .main-nav { gap: 4px !important; }
-      .main-nav button { padding: 8px 10px !important; font-size: 11px !important; }
-    }
   `}</style>
 );
 
@@ -120,7 +116,9 @@ export default function DreamJournal() {
   const [authError, setAuthError] = useState("");
   const [authLoading, setAuthLoading] = useState(false);
   const [sessionLoading, setSessionLoading] = useState(true);
-  const [showLanding, setShowLanding] = useState(!window.Capacitor);
+  const [showLanding, setShowLanding] = useState(
+    !window.Capacitor && !new URLSearchParams(window.location.search).has("dev")
+  );
 
   // Data
   const [userSettings, setUserSettings] = useState(null);
@@ -818,11 +816,9 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
                 style={{
                   width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
                   background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)",
-                  borderRadius: 12, padding: "12px 16px", color: "#f5e4b0", fontSize: 14,
-                  cursor: "pointer", fontFamily: "Georgia, serif", transition: "background 0.2s",
+                  borderRadius: 12, padding: "14px 16px", color: "#f5e4b0", fontSize: 15,
+                  cursor: "pointer", fontFamily: "-apple-system, sans-serif", minHeight: 48,
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.1)"}
-                onMouseLeave={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.06)"}
               >
                 <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
                   <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
@@ -837,11 +833,9 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
                 style={{
                   width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
                   background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)",
-                  borderRadius: 12, padding: "12px 16px", color: "#f5e4b0", fontSize: 14,
-                  cursor: "pointer", fontFamily: "Georgia, serif", transition: "background 0.2s",
+                  borderRadius: 12, padding: "14px 16px", color: "#f5e4b0", fontSize: 15,
+                  cursor: "pointer", fontFamily: "-apple-system, sans-serif", minHeight: 48,
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.1)"}
-                onMouseLeave={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.06)"}
               >
                 <svg width="17" height="20" viewBox="0 0 814 1000" xmlns="http://www.w3.org/2000/svg" fill="#f5e4b0">
                   <path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-57.8-155.5-127.4C46 376.7 0 228.3 0 147.4c0-99.4 67.6-153.3 133.3-153.3 63.5 0 109 43.8 147.4 43.8 36.5 0 93.7-46.1 164.4-46.1 26.4 0 108.2 2.6 162.1 98.3zm-234.5-181.5c31.1-36.9 53.1-88.1 53.1-139.3 0-7.1-.6-14.3-1.9-20.1-50.6 1.9-110.8 33.7-147.1 75.8-28.5 32.4-55.1 83.6-55.1 135.5 0 7.8 1.3 15.6 1.9 18.1 3.2.6 8.4 1.3 13.6 1.3 45.4 0 102.5-30.4 135.5-71.3z"/>
@@ -861,21 +855,21 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
               type="email" placeholder="Email address" value={authForm.email}
               onChange={(e) => setAuthForm((f) => ({ ...f, email: e.target.value }))}
               onKeyDown={(e) => e.key === "Enter" && handleAuth()}
-              style={{ width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(200,160,30,0.2)", borderRadius: 10, padding: "12px 16px", color: "#f5e4b0", fontSize: 14, marginBottom: 12, outline: "none" }}
+              style={{ width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(200,160,30,0.2)", borderRadius: 10, padding: "14px 16px", color: "#f5e4b0", fontSize: 16, marginBottom: 12, outline: "none" }}
             />
             <input
               type="password" placeholder="Password" value={authForm.password}
               onChange={(e) => setAuthForm((f) => ({ ...f, password: e.target.value }))}
               onKeyDown={(e) => e.key === "Enter" && handleAuth()}
-              style={{ width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(200,160,30,0.2)", borderRadius: 10, padding: "12px 16px", color: "#f5e4b0", fontSize: 14, marginBottom: 16, outline: "none" }}
+              style={{ width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(200,160,30,0.2)", borderRadius: 10, padding: "14px 16px", color: "#f5e4b0", fontSize: 16, marginBottom: 16, outline: "none" }}
             />
             {authError && (
               <div style={{ fontSize: 12, color: "#ff9999", marginBottom: 12, textAlign: "center" }}>{authError}</div>
             )}
             <button onClick={handleAuth} disabled={authLoading} style={{
               width: "100%", background: authLoading ? "rgba(140,90,5,0.4)" : "linear-gradient(135deg, #7a5200, #c89020)",
-              border: "none", color: "white", padding: "13px", borderRadius: 12,
-              fontSize: 14, cursor: authLoading ? "not-allowed" : "pointer", letterSpacing: 0.5,
+              border: "none", color: "white", padding: "16px", borderRadius: 12,
+              fontSize: 16, cursor: authLoading ? "not-allowed" : "pointer", letterSpacing: 0.5, minHeight: 48,
             }}>
               {authLoading ? "..." : pendingQuizDataRef.current ? "Create Account" : authMode === "login" ? "Sign In" : "Create Account"}
             </button>
@@ -896,8 +890,8 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
                   onClick={() => setShowPreAuthQuiz(true)}
                   style={{
                     background: "none", border: "1px solid rgba(144,102,212,0.35)",
-                    color: "#9066d4", padding: "10px 20px", borderRadius: 12,
-                    fontSize: 13, cursor: "pointer", fontFamily: "Georgia, serif",
+                    color: "#9066d4", padding: "14px 20px", borderRadius: 12,
+                    fontSize: 14, cursor: "pointer", fontFamily: "Georgia, serif", minHeight: 48,
                     letterSpacing: 0.5, width: "100%",
                   }}
                 >
@@ -931,7 +925,6 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
     { id: "patterns",   icon: "✦",  label: "Patterns" },
     { id: "lucid",      icon: "⚡", label: "Lucid" },
     { id: "community",  icon: "👥", label: "Community" },
-    { id: "dictionary", icon: "📖", label: "Library" },
     { id: "profile",    icon: "◉",  label: "Profile" },
   ];
 
@@ -941,7 +934,7 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
       {starsLayer}
       {globalStyles}
 
-      <div style={{ position: "relative", zIndex: 1, maxWidth: 820, margin: "0 auto", padding: "0 16px 100px" }}>
+      <div style={{ position: "relative", zIndex: 1, maxWidth: 600, margin: "0 auto", padding: "0 12px 100px" }}>
 
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 4px 20px" }}>
@@ -972,7 +965,7 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
           </div>
           <button className="logout-btn" onClick={handleLogout} style={{
             background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)",
-            color: "#7a6a40", padding: "7px 16px", borderRadius: 40, fontSize: 12, cursor: "pointer",
+            color: "#7a6a40", padding: "10px 16px", borderRadius: 40, fontSize: 13, cursor: "pointer", minHeight: 44,
           }}>
             Sign Out
           </button>
@@ -1092,14 +1085,7 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
           </div>
         )}
 
-        {/* ── DICTIONARY TAB ── */}
-        {tab === "dictionary" && (
-          <div style={{ animation: "fadeIn 0.4s ease" }}>
-            <DictionaryTab />
-          </div>
-        )}
-
-        {/* ── PROFILE TAB (includes Gallery subsection) ── */}
+        {/* ── PROFILE TAB (includes Gallery + Library subsections) ── */}
         {tab === "profile" && (
           <div style={{ animation: "fadeIn 0.4s ease" }}>
             <ProfileTab
@@ -1127,6 +1113,15 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
                 }}
               />
             </div>
+
+            {/* Library subsection */}
+            <div style={{ marginTop: 28 }}>
+              <div style={{
+                height: 1, marginBottom: 24,
+                background: "linear-gradient(90deg, transparent, rgba(200,160,30,0.2), transparent)",
+              }} />
+              <DictionaryTab />
+            </div>
           </div>
         )}
       </div>
@@ -1145,30 +1140,28 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
       {/* ── Bottom Tab Bar ── */}
       <nav style={{
         position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 80,
-        background: "rgba(4,8,18,0.95)",
-        backdropFilter: "blur(12px)",
-        borderTop: "1px solid rgba(200,160,30,0.1)",
+        background: "rgba(4,8,18,0.98)",
+        borderTop: "1px solid rgba(200,160,30,0.08)",
         display: "flex", justifyContent: "space-around", alignItems: "center",
-        padding: "6px 0 env(safe-area-inset-bottom, 8px)",
+        paddingBottom: "env(safe-area-inset-bottom, 8px)",
       }}>
         {tabs.map((t) => (
           <button key={t.id} onClick={() => setTab(t.id)} style={{
             background: "none", border: "none", cursor: "pointer",
             display: "flex", flexDirection: "column", alignItems: "center",
-            gap: 2, padding: "6px 0", minWidth: 52,
-            transition: "all 0.2s",
+            gap: 3, padding: "10px 0 6px", minWidth: 64, minHeight: 50,
           }}>
             <span style={{
-              fontSize: 20,
-              filter: tab === t.id ? "drop-shadow(0 0 6px rgba(232,184,64,0.4))" : "none",
-              transition: "filter 0.2s",
+              fontSize: 22,
+              opacity: tab === t.id ? 1 : 0.4,
+              transition: "opacity 0.15s",
             }}>{t.icon}</span>
             <span style={{
               fontSize: 10, letterSpacing: 0.3,
               color: tab === t.id ? "#e8b840" : "#5a5040",
-              fontFamily: "Georgia, serif",
+              fontFamily: "-apple-system, sans-serif",
               fontWeight: tab === t.id ? 600 : 400,
-              transition: "color 0.2s",
+              transition: "color 0.15s",
             }}>{t.label}</span>
           </button>
         ))}
@@ -1196,8 +1189,8 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
           <div style={{ display: "flex", flexDirection: "column", gap: 6, flexShrink: 0 }}>
             <button onClick={() => { setShowUpgradeNudge(false); setShowUpgradeModal(true); }} style={{
               background: "linear-gradient(135deg, #c8a020, #e8c840)", border: "none",
-              color: "#1a1000", padding: "7px 14px", borderRadius: 10,
-              fontSize: 11, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap",
+              color: "#1a1000", padding: "10px 16px", borderRadius: 10,
+              fontSize: 12, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", minHeight: 40,
             }}>
               Learn More
             </button>
@@ -1224,7 +1217,7 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
             onClick={(e) => e.stopPropagation()}
             style={{
               background: "rgba(16,4,40,0.97)", border: "1px solid rgba(200,160,50,0.4)",
-              borderRadius: 24, padding: 36, maxWidth: 400, width: "90%",
+              borderRadius: 20, padding: 24, maxWidth: 400, width: "94%",
               boxShadow: "0 16px 60px rgba(110,70,5,0.5)", animation: "fadeIn 0.3s ease", textAlign: "center",
             }}
           >
@@ -1259,8 +1252,8 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
             </div>
             <button onClick={handleUpgrade} style={{
               width: "100%", background: "linear-gradient(135deg, #c8a020, #e8c840)",
-              border: "none", color: "#1a1000", padding: "14px", borderRadius: 12,
-              fontSize: 15, fontWeight: 600, cursor: "pointer", letterSpacing: 0.5, marginBottom: 12,
+              border: "none", color: "#1a1000", padding: "16px", borderRadius: 12,
+              fontSize: 16, fontWeight: 600, cursor: "pointer", letterSpacing: 0.5, marginBottom: 12, minHeight: 48,
             }}>
               Upgrade Now
             </button>
@@ -1279,7 +1272,7 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
               </div>
             )}
             <button onClick={() => setShowUpgradeModal(false)} style={{
-              background: "none", border: "none", color: "#6b5c30", fontSize: 13, cursor: "pointer", padding: "8px",
+              background: "none", border: "none", color: "#6b5c30", fontSize: 14, cursor: "pointer", padding: "12px", minHeight: 44,
             }}>
               Maybe Later
             </button>

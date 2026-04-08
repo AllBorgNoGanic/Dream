@@ -236,11 +236,11 @@ export default function OnboardingQuiz({ onComplete, preAuth = false }) {
     },
     inner: {
       display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-start",
-      minHeight: "100vh", padding: "80px 0 80px",
+      minHeight: "100vh", padding: "48px 0 80px",
       boxSizing: "border-box", position: "relative", zIndex: 1,
     },
     container: {
-      maxWidth: 420, width: "90%", textAlign: "center", padding: "0 8px",
+      maxWidth: 420, width: "94%", textAlign: "center", padding: "0 8px",
       position: "relative", zIndex: 1,
       animation: `${direction === "right" ? "onb-slideInRight" : "onb-slideInLeft"} 0.35s ease-out`,
     },
@@ -265,8 +265,8 @@ export default function OnboardingQuiz({ onComplete, preAuth = false }) {
     backButton: {
       position: "absolute", top: 24, left: 24,
       background: "none", border: "1px solid rgba(255,255,255,0.15)",
-      color: "#c8a030", padding: "8px 18px", borderRadius: 30,
-      fontSize: 13, cursor: "pointer", fontFamily: "Georgia, serif",
+      color: "#c8a030", padding: "12px 20px", borderRadius: 30,
+      fontSize: 14, cursor: "pointer", fontFamily: "Georgia, serif", minHeight: 44,
       transition: "all 0.2s", zIndex: 10,
     },
     sectionTitle: {
@@ -279,14 +279,14 @@ export default function OnboardingQuiz({ onComplete, preAuth = false }) {
       fontSize: 14, color: "#c8a030", marginBottom: 8, textAlign: "left", display: "block",
     },
     input: {
-      width: "100%", padding: "14px 18px", borderRadius: 14, fontSize: 15,
+      width: "100%", padding: "14px 18px", borderRadius: 14, fontSize: 16,
       fontFamily: "Georgia, serif", background: "rgba(255,255,255,0.06)",
       border: "1.5px solid rgba(144,102,212,0.3)", color: "#f5e4b0",
       outline: "none", boxSizing: "border-box",
       transition: "border-color 0.2s",
     },
     pillButton: (selected) => ({
-      padding: "10px 18px", borderRadius: 30, fontSize: 14,
+      padding: "12px 18px", borderRadius: 30, fontSize: 14, minHeight: 44,
       fontFamily: "Georgia, serif", cursor: "pointer",
       background: selected ? "rgba(124,58,237,0.25)" : "rgba(255,255,255,0.04)",
       border: `1.5px solid ${selected ? "rgba(144,102,212,0.7)" : "rgba(255,255,255,0.1)"}`,

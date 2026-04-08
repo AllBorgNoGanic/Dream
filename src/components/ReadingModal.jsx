@@ -127,7 +127,7 @@ export default function ReadingModal({ reading, onClose, onGenerateImage, userSe
         position: "relative", zIndex: 1,
         minHeight: "100%",
         display: "flex", alignItems: "flex-start", justifyContent: "center",
-        padding: "48px 0 48px",
+        padding: "24px 0 24px",
         boxSizing: "border-box",
       }}>
 
@@ -149,10 +149,10 @@ export default function ReadingModal({ reading, onClose, onGenerateImage, userSe
         onClick={(e) => e.stopPropagation()}
         style={{
           position: "relative", zIndex: 1,
-          maxWidth: 500, width: "92%",
+          maxWidth: "100%", width: "96%",
           background: "linear-gradient(160deg, rgba(18,6,44,0.99) 0%, rgba(8,3,20,0.99) 100%)",
           border: "1px solid rgba(144,102,212,0.4)",
-          borderRadius: 28,
+          borderRadius: 20,
           boxShadow: "0 0 80px rgba(104,71,192,0.25), 0 24px 80px rgba(0,0,0,0.7)",
           animation: "rm-scaleIn 0.45s cubic-bezier(0.34,1.56,0.64,1)",
           overflow: "hidden",
@@ -166,7 +166,7 @@ export default function ReadingModal({ reading, onClose, onGenerateImage, userSe
           animation: "rm-shimmer 3s linear infinite",
         }} />
 
-        <div style={{ padding: "32px 28px 28px" }}>
+        <div style={{ padding: "24px 16px 20px" }}>
           {/* Glowing orb icon */}
           <div style={{
             textAlign: "center", marginBottom: 24,
@@ -249,8 +249,8 @@ export default function ReadingModal({ reading, onClose, onGenerateImage, userSe
                     display: "inline-flex", alignItems: "center", gap: 5,
                     background: "rgba(104,71,192,0.18)",
                     border: "1px solid rgba(144,102,212,0.32)",
-                    borderRadius: 20, padding: "5px 14px",
-                    fontSize: 12, color: "#c4a0ff",
+                    borderRadius: 20, padding: "8px 14px",
+                    fontSize: 13, color: "#c4a0ff",
                     boxShadow: "0 0 12px rgba(104,71,192,0.2)",
                     animation: `rm-badgeIn 0.4s cubic-bezier(0.34,1.56,0.64,1) ${i * 0.08}s both`,
                   }}>
@@ -319,7 +319,7 @@ export default function ReadingModal({ reading, onClose, onGenerateImage, userSe
                                 <span style={{ fontSize: 12 }}>&#128161;</span>
                                 <span style={{ fontSize: 9, letterSpacing: 2, color: "#8a7540", textTransform: "uppercase" }}>Possible Meaning</span>
                               </div>
-                              <p style={{ fontSize: 13, color: "#c8a870", lineHeight: 1.75, margin: 0 }}>{theme.meaning}</p>
+                              <p style={{ fontSize: 14, color: "#c8a870", lineHeight: 1.75, margin: 0 }}>{theme.meaning}</p>
                             </div>
                           )}
                           {theme.guidance && (
@@ -332,7 +332,7 @@ export default function ReadingModal({ reading, onClose, onGenerateImage, userSe
                                 <span style={{ fontSize: 12 }}>&#129517;</span>
                                 <span style={{ fontSize: 9, letterSpacing: 2, color: "#8a7540", textTransform: "uppercase" }}>Guidance</span>
                               </div>
-                              <p style={{ fontSize: 13, color: "#c8a870", lineHeight: 1.75, margin: 0 }}>{theme.guidance}</p>
+                              <p style={{ fontSize: 14, color: "#c8a870", lineHeight: 1.75, margin: 0 }}>{theme.guidance}</p>
                             </div>
                           )}
                         </div>
@@ -442,8 +442,8 @@ export default function ReadingModal({ reading, onClose, onGenerateImage, userSe
                       style={{
                         position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)",
                         background: "rgba(0,0,0,0.5)", border: "none", color: "#fff",
-                        borderRadius: "50%", width: 32, height: 32, cursor: "pointer",
-                        fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center",
+                        borderRadius: "50%", width: 44, height: 44, cursor: "pointer",
+                        fontSize: 22, display: "flex", alignItems: "center", justifyContent: "center",
                         opacity: activeImageIndex === 0 ? 0.3 : 1,
                       }}
                     >‹</button>
@@ -453,8 +453,8 @@ export default function ReadingModal({ reading, onClose, onGenerateImage, userSe
                       style={{
                         position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)",
                         background: "rgba(0,0,0,0.5)", border: "none", color: "#fff",
-                        borderRadius: "50%", width: 32, height: 32, cursor: "pointer",
-                        fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center",
+                        borderRadius: "50%", width: 44, height: 44, cursor: "pointer",
+                        fontSize: 22, display: "flex", alignItems: "center", justifyContent: "center",
                         opacity: activeImageIndex === dreamImages.length - 1 ? 0.3 : 1,
                       }}
                     >›</button>
@@ -491,13 +491,10 @@ export default function ReadingModal({ reading, onClose, onGenerateImage, userSe
                   background: "none",
                   border: "1px solid rgba(232,184,64,0.4)",
                   color: generatingImage ? "#6b5c30" : "#c8a040",
-                  padding: "10px 28px", borderRadius: 30, fontSize: 13,
+                  padding: "14px 28px", borderRadius: 30, fontSize: 14, minHeight: 44,
                   cursor: generatingImage ? "not-allowed" : "pointer",
                   fontFamily: "Georgia, serif", letterSpacing: 1,
-                  transition: "all 0.2s",
                 }}
-                onMouseEnter={(e) => { if (!generatingImage) { e.target.style.borderColor = "rgba(232,184,64,0.8)"; e.target.style.color = "#e8b840"; } }}
-                onMouseLeave={(e) => { if (!generatingImage) { e.target.style.borderColor = "rgba(232,184,64,0.4)"; e.target.style.color = "#c8a040"; } }}
               >
                 {generatingImage ? "Creating your vision..." : dreamImages.length > 0 ? "✦ Generate Another Vision" : "✦ Visualize Dream"}
               </button>
@@ -534,8 +531,8 @@ export default function ReadingModal({ reading, onClose, onGenerateImage, userSe
                   onClick={() => setShowVisualizeConfirm(false)}
                   style={{
                     background: "none", border: "1px solid rgba(144,102,212,0.3)",
-                    color: "#8a6ab0", padding: "9px 20px", borderRadius: 30,
-                    fontSize: 12, cursor: "pointer", fontFamily: "Georgia, serif",
+                    color: "#8a6ab0", padding: "12px 24px", borderRadius: 30,
+                    fontSize: 14, cursor: "pointer", fontFamily: "Georgia, serif", minHeight: 44,
                   }}
                 >
                   Cancel
@@ -544,8 +541,8 @@ export default function ReadingModal({ reading, onClose, onGenerateImage, userSe
                   onClick={() => { setShowVisualizeConfirm(false); handleGenerate(); }}
                   style={{
                     background: "linear-gradient(135deg, #7a5200, #c89020)",
-                    border: "none", color: "#fff", padding: "9px 20px", borderRadius: 30,
-                    fontSize: 12, cursor: "pointer", fontFamily: "Georgia, serif",
+                    border: "none", color: "#fff", padding: "12px 24px", borderRadius: 30,
+                    fontSize: 14, cursor: "pointer", fontFamily: "Georgia, serif", minHeight: 44,
                     fontWeight: 600, letterSpacing: 0.3,
                   }}
                 >
@@ -569,8 +566,8 @@ export default function ReadingModal({ reading, onClose, onGenerateImage, userSe
                   onClick={() => { setShowVisualizeConfirm(false); if (onUpgrade) onUpgrade(); }}
                   style={{
                     background: "linear-gradient(135deg, #c8a020, #e8c840)",
-                    border: "none", color: "#1a1000", padding: "8px 22px", borderRadius: 20,
-                    fontSize: 11, fontWeight: 700, cursor: "pointer",
+                    border: "none", color: "#1a1000", padding: "12px 22px", borderRadius: 20,
+                    fontSize: 13, fontWeight: 700, cursor: "pointer", minHeight: 44,
                     letterSpacing: 0.5,
                   }}
                 >
@@ -591,18 +588,10 @@ export default function ReadingModal({ reading, onClose, onGenerateImage, userSe
                 style={{
                   background: "none",
                   border: "1px solid rgba(144,102,212,0.35)",
-                  color: "#8a6ab0", padding: "10px 32px",
-                  borderRadius: 30, fontSize: 13,
+                  color: "#8a6ab0", padding: "14px 32px",
+                  borderRadius: 30, fontSize: 14, minHeight: 44,
                   cursor: "pointer", fontFamily: "Georgia, serif",
-                  letterSpacing: 1, transition: "all 0.2s",
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.borderColor = "rgba(144,102,212,0.7)";
-                  e.target.style.color = "#c4a0ff";
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.borderColor = "rgba(144,102,212,0.35)";
-                  e.target.style.color = "#8a6ab0";
+                  letterSpacing: 1,
                 }}
               >
                 Close
