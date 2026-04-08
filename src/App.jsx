@@ -919,13 +919,80 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
     );
   }
 
+  // ── Tab icon SVGs ──────────────────────────────────────────────────────────
+  const TabIcon = ({ id, active }) => {
+    const color = active ? "#e8b840" : "#5a5040";
+    const s = { width: 24, height: 24, display: "block" };
+    switch (id) {
+      case "community": return (
+        <svg viewBox="0 0 24 24" fill="none" style={s}>
+          <circle cx="9" cy="7" r="3.5" stroke={color} strokeWidth="1.5"/>
+          <path d="M2 19c0-3.3 2.7-6 6-6h2c3.3 0 6 2.7 6 6" stroke={color} strokeWidth="1.5" strokeLinecap="round"/>
+          <circle cx="17" cy="8" r="2.5" stroke={color} strokeWidth="1.3" opacity="0.6"/>
+          <path d="M18 13.5c2.2.5 4 2.5 4 5" stroke={color} strokeWidth="1.3" strokeLinecap="round" opacity="0.6"/>
+        </svg>
+      );
+      case "insights": return (
+        <svg viewBox="0 0 24 24" fill="none" style={s}>
+          <path d="M9 4c0-1.5 1.3-2.5 3-2.5s3 1 3 2.5" stroke={color} strokeWidth="1" strokeLinecap="round"/>
+          <rect x="8" y="4" width="8" height="2" rx="0.8" stroke={color} strokeWidth="1"/>
+          <path d="M8.5 6v10c0 1 1.5 2 3.5 2s3.5-1 3.5-2V6" stroke={color} strokeWidth="1.2"/>
+          <line x1="12" y1="6" x2="12" y2="18" stroke={color} strokeWidth="0.7" opacity="0.3"/>
+          <line x1="8.5" y1="11" x2="15.5" y2="11" stroke={color} strokeWidth="0.7" opacity="0.3"/>
+          <path d="M12 9c-0.8 1-1.2 2-1 3s0.6 1.5 1 1.5s0.8-0.5 1-1.5s-0.2-2-1-3z" stroke={color} strokeWidth="0.8" fill={color} fillOpacity="0.2"/>
+          <rect x="8" y="18" width="8" height="1.5" rx="0.8" stroke={color} strokeWidth="1"/>
+          <line x1="5" y1="11" x2="6.5" y2="11" stroke={color} strokeWidth="0.6" opacity="0.3" strokeLinecap="round"/>
+          <line x1="17.5" y1="11" x2="19" y2="11" stroke={color} strokeWidth="0.6" opacity="0.3" strokeLinecap="round"/>
+          <line x1="6" y1="7" x2="7.2" y2="8" stroke={color} strokeWidth="0.6" opacity="0.25" strokeLinecap="round"/>
+          <line x1="18" y1="7" x2="16.8" y2="8" stroke={color} strokeWidth="0.6" opacity="0.25" strokeLinecap="round"/>
+        </svg>
+      );
+      case "journal": return (
+        <svg viewBox="0 0 24 24" fill="none" style={s}>
+          <ellipse cx="12" cy="13" rx="7" ry="5" stroke={color} strokeWidth="1.5"/>
+          <circle cx="8" cy="11" r="2.5" stroke={color} strokeWidth="1.2"/>
+          <circle cx="16" cy="11" r="2.5" stroke={color} strokeWidth="1.2"/>
+          <circle cx="12" cy="9.5" r="2.5" stroke={color} strokeWidth="1.2"/>
+          <ellipse cx="18.5" cy="10" rx="2.2" ry="2.8" stroke={color} strokeWidth="1.5"/>
+          <circle cx="19.2" cy="9.5" r="0.6" fill={color}/>
+          <line x1="9" y1="17" x2="9" y2="20" stroke={color} strokeWidth="1.3" strokeLinecap="round"/>
+          <line x1="15" y1="17" x2="15" y2="20" stroke={color} strokeWidth="1.3" strokeLinecap="round"/>
+        </svg>
+      );
+      case "library": return (
+        <svg viewBox="0 0 24 24" fill="none" style={s}>
+          <path d="M12 5C10 3.5 7 3 2.5 3.5v15c4.5-0.5 7.5 0 9.5 1.5" stroke={color} strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M12 5c2-1.5 5-2 9.5-1.5v15c-4.5-0.5-7.5 0-9.5 1.5" stroke={color} strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+          <line x1="12" y1="5" x2="12" y2="20" stroke={color} strokeWidth="1"/>
+          <line x1="7" y1="7" x2="7" y2="12" stroke={color} strokeWidth="1" opacity="0.5"/>
+          <line x1="5.2" y1="8.5" x2="8.8" y2="8.5" stroke={color} strokeWidth="1" opacity="0.5"/>
+          <line x1="4.5" y1="14" x2="9.5" y2="14.5" stroke={color} strokeWidth="0.6" opacity="0.25"/>
+          <line x1="4.5" y1="15.5" x2="9.5" y2="16" stroke={color} strokeWidth="0.6" opacity="0.25"/>
+          <line x1="14.5" y1="7.5" x2="19.5" y2="7" stroke={color} strokeWidth="0.6" opacity="0.25"/>
+          <line x1="14.5" y1="9.5" x2="19.5" y2="9" stroke={color} strokeWidth="0.6" opacity="0.25"/>
+          <line x1="14.5" y1="11.5" x2="19.5" y2="11" stroke={color} strokeWidth="0.6" opacity="0.25"/>
+          <line x1="14.5" y1="13.5" x2="19.5" y2="13" stroke={color} strokeWidth="0.6" opacity="0.25"/>
+          <path d="M13.5 5c0.2 2 0.1 4 0.3 6.5" stroke={color} strokeWidth="0.7" opacity="0.5" strokeLinecap="round"/>
+          <path d="M13.8 11.5l-0.5 1 0.8 0" stroke={color} strokeWidth="0.6" opacity="0.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      );
+      case "profile": return (
+        <svg viewBox="0 0 24 24" fill="none" style={s}>
+          <circle cx="12" cy="8" r="4" stroke={color} strokeWidth="1.5"/>
+          <path d="M4 20c0-3.3 3.6-6 8-6s8 2.7 8 6" stroke={color} strokeWidth="1.5" strokeLinecap="round"/>
+        </svg>
+      );
+      default: return null;
+    }
+  };
+
   // ── Nav config ─────────────────────────────────────────────────────────────
   const tabs = [
-    { id: "community",  icon: "👥", label: "Community" },
-    { id: "insights",   icon: "✦",  label: "Insights" },
-    { id: "journal",    icon: "🐑", label: "Journal" },
-    { id: "library",    icon: "📖", label: "Library" },
-    { id: "profile",    icon: "◉",  label: "Profile" },
+    { id: "community",  label: "Community" },
+    { id: "insights",   label: "Insights" },
+    { id: "journal",    label: "Journal" },
+    { id: "library",    label: "Library" },
+    { id: "profile",    label: "Profile" },
   ];
 
   // ── Main App ───────────────────────────────────────────────────────────────
@@ -1151,10 +1218,11 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
             gap: 3, padding: "10px 0 6px", minWidth: 64, minHeight: 50,
           }}>
             <span style={{
-              fontSize: 22,
-              opacity: tab === t.id ? 1 : 0.4,
+              opacity: tab === t.id ? 1 : 0.5,
               transition: "opacity 0.15s",
-            }}>{t.icon}</span>
+              display: "flex", alignItems: "center", justifyContent: "center",
+              filter: tab === t.id ? "drop-shadow(0 0 4px rgba(232,184,64,0.35))" : "none",
+            }}><TabIcon id={t.id} active={tab === t.id} /></span>
             <span style={{
               fontSize: 10, letterSpacing: 0.3,
               color: tab === t.id ? "#e8b840" : "#5a5040",
