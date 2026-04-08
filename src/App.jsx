@@ -1336,17 +1336,17 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
               {selectedPlan === "monthly" ? (
                 <>
                   <div style={{ fontSize: 28, color: "#e8c840", fontWeight: 400 }}>
-                    $5.99<span style={{ fontSize: 14, color: "#a09060" }}>/month</span>
+                    $8<span style={{ fontSize: 14, color: "#a09060" }}>/month</span>
                   </div>
                   <div style={{ fontSize: 12, color: "#a09060", marginTop: 4 }}>Cancel anytime</div>
                 </>
               ) : (
                 <>
                   <div style={{ fontSize: 28, color: "#e8c840", fontWeight: 400 }}>
-                    $49.99<span style={{ fontSize: 14, color: "#a09060" }}>/year</span>
+                    $59.99<span style={{ fontSize: 14, color: "#a09060" }}>/year</span>
                   </div>
                   <div style={{ fontSize: 12, color: "#a09060", marginTop: 4 }}>
-                    Just $4.17/mo - Save 30%
+                    Just $5/mo - Save 37%
                   </div>
                 </>
               )}

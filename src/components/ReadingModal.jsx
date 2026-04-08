@@ -571,7 +571,7 @@ export default function ReadingModal({ reading, onClose, onGenerateImage, userSe
                     letterSpacing: 0.5,
                   }}
                 >
-                  Subscribe from $4.17/mo
+                  Subscribe from $5/mo
                 </button>
               </div>
             </div>
