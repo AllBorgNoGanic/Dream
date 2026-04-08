@@ -44,7 +44,7 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
     background: "rgba(6,12,22,0.7)",
     border: "1px solid rgba(200,160,30,0.15)",
     borderRadius: 18,
-    padding: 24,
+    padding: 20,
     marginBottom: 16,
   };
 
@@ -61,7 +61,7 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
                 <div style={{ fontSize: 26, color: archetypeData.color, fontWeight: 400 }}>{archetype}</div>
               </div>
             </div>
-            <p style={{ fontSize: 13, color: "#c8a040", lineHeight: 1.7, margin: "0 0 12px" }}>{archetypeData.description}</p>
+            <p style={{ fontSize: 14, color: "#c8a040", lineHeight: 1.7, margin: "0 0 12px" }}>{archetypeData.description}</p>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               {archetypeData.traits.map(t => (
                 <span key={t} style={{
@@ -72,7 +72,7 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
             </div>
             <button onClick={onRetakeQuiz} style={{
               marginTop: 16, background: "none", border: "1px solid rgba(200,160,30,0.25)",
-              color: "#7a6a40", padding: "7px 16px", borderRadius: 20, fontSize: 11,
+              color: "#7a6a40", padding: "10px 18px", borderRadius: 20, fontSize: 13, minHeight: 44,
               cursor: "pointer", letterSpacing: 0.5
             }}>
               Retake Quiz
@@ -84,7 +84,7 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
               <div style={{ fontSize: 13, color: "#9a8050" }}>Dream profile completed</div>
               <button onClick={onRetakeQuiz} style={{
                 background: "none", border: "1px solid rgba(200,160,30,0.25)",
-                color: "#7a6a40", padding: "7px 16px", borderRadius: 20, fontSize: 11,
+                color: "#7a6a40", padding: "10px 18px", borderRadius: 20, fontSize: 13, minHeight: 44,
                 cursor: "pointer", letterSpacing: 0.5
               }}>
                 Retake Quiz
@@ -101,7 +101,7 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
           </p>
           <button onClick={onRetakeQuiz} style={{
             background: "linear-gradient(135deg, #6847c0, #9066d4)",
-            border: "none", color: "#fff", padding: "10px 24px", borderRadius: 14,
+            border: "none", color: "#fff", padding: "14px 24px", borderRadius: 14, minHeight: 48,
             fontSize: 14, cursor: "pointer", fontFamily: "Georgia, serif", fontWeight: 600,
             boxShadow: "0 0 20px rgba(168,85,247,0.3)",
           }}>
@@ -117,9 +117,9 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
           { label: "Lucid Dreams", value: lucidCount, icon: "✨" },
           { label: "Avg Sleep", value: avgSleep ? `${avgSleep}h` : "—", icon: "💤" },
         ].map(s => (
-          <div key={s.label} style={{ background: "rgba(6,12,22,0.7)", border: "1px solid rgba(200,160,30,0.12)", borderRadius: 16, padding: "16px 14px", textAlign: "center" }}>
+          <div key={s.label} style={{ background: "rgba(6,12,22,0.7)", border: "1px solid rgba(200,160,30,0.12)", borderRadius: 16, padding: "14px 10px", textAlign: "center" }}>
             <div style={{ fontSize: 24, marginBottom: 6 }}>{s.icon}</div>
-            <div style={{ fontSize: 22, color: "#e8b840" }}>{s.value}</div>
+            <div style={{ fontSize: 20, color: "#e8b840" }}>{s.value}</div>
             <div style={{ fontSize: 11, color: "#6b5c30", marginTop: 4 }}>{s.label}</div>
           </div>
         ))}
@@ -141,8 +141,8 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
           {!userSettings?.is_pro && (
             <button onClick={onUpgrade} style={{
               background: "linear-gradient(135deg, #c8a020, #e8c840)",
-              border: "none", color: "#1a1000", padding: "9px 18px", borderRadius: 20,
-              fontSize: 12, fontWeight: 600, cursor: "pointer", letterSpacing: 0.5,
+              border: "none", color: "#1a1000", padding: "12px 20px", borderRadius: 20,
+              fontSize: 13, fontWeight: 600, cursor: "pointer", letterSpacing: 0.5, minHeight: 44,
               whiteSpace: "nowrap"
             }}>
               Subscribe $5.99/mo

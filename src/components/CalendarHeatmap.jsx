@@ -7,8 +7,8 @@ const fadeIn = `
 }
 `;
 
-const CELL_SIZE = 14;
-const CELL_GAP = 3;
+const CELL_SIZE = 10;
+const CELL_GAP = 2;
 const DAY_LABELS = ["", "Mon", "", "Wed", "", "Fri", ""];
 const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -39,7 +39,7 @@ const cardBase = {
   background: "rgba(6,12,22,0.7)",
   border: "1px solid rgba(200,160,30,0.15)",
   borderRadius: 18,
-  padding: "22px 24px",
+  padding: "16px 12px",
   fontFamily: "Georgia, serif",
   animation: "fadeInHeatmap 0.5s ease both",
 };
