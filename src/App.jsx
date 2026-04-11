@@ -985,7 +985,7 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
   // ── Nav config ─────────────────────────────────────────────────────────────
   const tabs = [
     { id: "community",  label: "Community" },
-    { id: "insights",   label: "Discover" },
+    { id: "insights",   label: "Patterns" },
     { id: "journal",    label: "Journal" },
     { id: "library",    label: "Library" },
     { id: "profile",    label: "Profile" },
