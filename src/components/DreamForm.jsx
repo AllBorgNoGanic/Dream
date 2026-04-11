@@ -394,14 +394,16 @@ export default function DreamForm({
     e.preventDefault();
     if (descTooShort) return;
     setModerationError("");
-    const check = checkFields({
-      title: form.title || "",
-      description: form.description || "",
-      tags: form.tags || [],
-    });
-    if (!check.clean) {
-      setModerationError(`Your ${check.field} contains inappropriate language. Please revise it before sharing.`);
-      return;
+    if (form.is_public) {
+      const check = checkFields({
+        title: form.title || "",
+        description: form.description || "",
+        tags: form.tags || [],
+      });
+      if (!check.clean) {
+        setModerationError(`Your ${check.field} contains inappropriate language. Please revise it before sharing publicly.`);
+        return;
+      }
     }
     onSubmit();
   };
