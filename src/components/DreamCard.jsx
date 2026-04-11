@@ -20,8 +20,13 @@ const formatDate = (iso) => {
 
 const getMoodEmoji = (mood) => mood?.split(" ")[0] || "💭";
 
+import { useState } from "react";
+import { checkFields } from "../utils/moderation";
+
 export default function DreamCard({ dream, isSelected, onSelect, onDelete, onTogglePublic, onInterpret, interpreting, onViewReading }) {
   const needsInterpretation = !dream.interpretation && onInterpret;
+  const [showShareConfirm, setShowShareConfirm] = useState(false);
+  const [shareError, setShareError] = useState("");
 
   return (
     <div
@@ -35,7 +40,7 @@ export default function DreamCard({ dream, isSelected, onSelect, onDelete, onTog
             ? "1px solid rgba(144,102,212,0.2)"
             : "1px solid rgba(200,160,30,0.15)",
         borderRadius: 18, padding: 24, marginBottom: 16, cursor: "pointer",
-        boxShadow: "0 4px 20px rgba(20,15,5,0.4)"
+        boxShadow: "0 4px 20px rgba(20,15,5,0.4)", position: "relative"
       }}
     >
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
@@ -237,18 +242,86 @@ export default function DreamCard({ dream, isSelected, onSelect, onDelete, onTog
       {isSelected && (
         <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 12, gap: 8 }}>
           {onTogglePublic && (
-            <button
-              onClick={(e) => { e.stopPropagation(); onTogglePublic(dream.id); }}
-              style={{
-                background: dream.is_public ? "rgba(100,200,120,0.1)" : "rgba(144,102,212,0.1)",
-                border: dream.is_public ? "1px solid rgba(100,200,120,0.25)" : "1px solid rgba(144,102,212,0.25)",
-                color: dream.is_public ? "#7ac88a" : "#b08aee",
-                padding: "6px 14px", borderRadius: 20, fontSize: 11,
-                cursor: "pointer", fontFamily: "Georgia, serif",
-              }}
-            >
-              {dream.is_public ? "Shared with Community" : "Share to Community"}
-            </button>
+            <>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (dream.is_public) {
+                    onTogglePublic(dream.id);
+                  } else {
+                    setShareError("");
+                    setShowShareConfirm(true);
+                  }
+                }}
+                style={{
+                  background: dream.is_public ? "rgba(100,200,120,0.1)" : "rgba(144,102,212,0.1)",
+                  border: dream.is_public ? "1px solid rgba(100,200,120,0.25)" : "1px solid rgba(144,102,212,0.25)",
+                  color: dream.is_public ? "#7ac88a" : "#b08aee",
+                  padding: "6px 14px", borderRadius: 20, fontSize: 11,
+                  cursor: "pointer", fontFamily: "Georgia, serif",
+                }}
+              >
+                {dream.is_public ? "Shared with Community" : "Share to Community"}
+              </button>
+              {showShareConfirm && !dream.is_public && (
+                <div onClick={(e) => e.stopPropagation()} style={{
+                  position: "absolute", left: 12, right: 12, bottom: 60,
+                  background: "rgba(16,4,40,0.97)", border: "1px solid rgba(200,160,30,0.3)",
+                  borderRadius: 14, padding: 16, zIndex: 10,
+                  boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
+                }}>
+                  <div style={{ color: "#f5e4b0", fontSize: 14, marginBottom: 10, fontFamily: "Georgia, serif" }}>
+                    Share this dream with the community?
+                  </div>
+                  <div style={{ color: "#8a7540", fontSize: 12, marginBottom: 14, lineHeight: 1.5, fontFamily: "Georgia, serif" }}>
+                    Your dream will be visible to all users. Your display name will be shown.
+                  </div>
+                  {shareError && (
+                    <div style={{
+                      color: "#f87171", fontSize: 12, padding: "8px 12px", marginBottom: 10,
+                      background: "rgba(239,68,68,0.1)", borderRadius: 8, lineHeight: 1.5,
+                    }}>
+                      {shareError}
+                    </div>
+                  )}
+                  <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+                    <button
+                      onClick={() => setShowShareConfirm(false)}
+                      style={{
+                        background: "none", border: "1px solid rgba(200,160,30,0.2)",
+                        color: "#8a7540", padding: "8px 16px", borderRadius: 10, fontSize: 12,
+                        cursor: "pointer", fontFamily: "Georgia, serif", minHeight: 40,
+                      }}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={() => {
+                        const check = checkFields({
+                          title: dream.title || "",
+                          description: dream.description || "",
+                          tags: dream.tags || [],
+                        });
+                        if (!check.clean) {
+                          setShareError(`Your ${check.field} contains inappropriate language. Please edit it before sharing.`);
+                          return;
+                        }
+                        setShowShareConfirm(false);
+                        onTogglePublic(dream.id);
+                      }}
+                      style={{
+                        background: "linear-gradient(135deg, #6847c0, #9066d4)",
+                        border: "none", color: "#fff", padding: "8px 16px", borderRadius: 10,
+                        fontSize: 12, cursor: "pointer", fontFamily: "Georgia, serif",
+                        fontWeight: 600, minHeight: 40,
+                      }}
+                    >
+                      Share
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
           {onDelete && (
             <button

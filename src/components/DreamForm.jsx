@@ -394,17 +394,6 @@ export default function DreamForm({
     e.preventDefault();
     if (descTooShort) return;
     setModerationError("");
-    if (form.is_public) {
-      const check = checkFields({
-        title: form.title || "",
-        description: form.description || "",
-        tags: form.tags || [],
-      });
-      if (!check.clean) {
-        setModerationError(`Your ${check.field} contains inappropriate language. Please revise it before sharing publicly.`);
-        return;
-      }
-    }
     onSubmit();
   };
 
@@ -823,27 +812,6 @@ export default function DreamForm({
         </div>
       </div>
 
-      {/* Share with community */}
-      <div style={{ ...styles.fieldGroup, ...styles.toggleRow }}>
-        <div
-          style={styles.toggleTrack(form.is_public)}
-          onClick={() => update("is_public", !form.is_public)}
-          role="switch"
-          aria-checked={form.is_public}
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              update("is_public", !form.is_public);
-            }
-          }}
-        >
-          <div style={styles.toggleKnob(form.is_public)} />
-        </div>
-        <label style={{ ...styles.label, marginBottom: 0 }}>
-          Share with community
-        </label>
-      </div>
 
       {/* Moderation Error */}
       {moderationError && (
