@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { checkFields } from "../utils/moderation";
 
 const MOODS = [
   { label: "Magical", emoji: "\u2728" },
@@ -259,6 +260,7 @@ export default function DreamForm({
   const [charInput, setCharInput] = useState("");
   const [signInput, setSignInput] = useState("");
   const [recording, setRecording] = useState(false);
+  const [moderationError, setModerationError] = useState("");
   const recognitionRef = useRef(null);
   const styleInjectedRef = useRef(false);
 
@@ -391,6 +393,16 @@ export default function DreamForm({
   const handleSubmit = (e) => {
     e.preventDefault();
     if (descTooShort) return;
+    setModerationError("");
+    const check = checkFields({
+      title: form.title || "",
+      description: form.description || "",
+      tags: form.tags || [],
+    });
+    if (!check.clean) {
+      setModerationError(`Your ${check.field} contains inappropriate language. Please revise it before sharing.`);
+      return;
+    }
     onSubmit();
   };
 
@@ -830,6 +842,16 @@ export default function DreamForm({
           Share with community
         </label>
       </div>
+
+      {/* Moderation Error */}
+      {moderationError && (
+        <div style={{
+          color: "#f87171", fontSize: 13, padding: "10px 14px", marginBottom: 12,
+          background: "rgba(239,68,68,0.1)", borderRadius: 10, lineHeight: 1.5,
+        }}>
+          {moderationError}
+        </div>
+      )}
 
       {/* Submit */}
       <button

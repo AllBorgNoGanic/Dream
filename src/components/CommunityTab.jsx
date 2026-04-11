@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../lib/supabase";
+import { checkContent } from "../utils/moderation";
 
 const MOODS = ["Happy", "Sad", "Anxious", "Peaceful", "Confused", "Excited", "Fearful", "Nostalgic"];
 const THEMES = ["Adventure", "Flying", "Falling", "Chase", "Water", "Animals", "People", "Fantasy", "Nightmare", "Lucid"];
@@ -201,7 +202,15 @@ const styles = {
   },
 };
 
-function DreamCard({ dream, displayName, isPro, user }) {
+const REPORT_REASONS = [
+  "Inappropriate content",
+  "Harassment",
+  "Spam",
+  "Explicit imagery",
+  "Other",
+];
+
+function DreamCard({ dream, displayName, isPro, user, onBlock }) {
   const [likes, setLikes] = useState([]);
   const [liked, setLiked] = useState(false);
   const [showComments, setShowComments] = useState(false);
@@ -210,6 +219,10 @@ function DreamCard({ dream, displayName, isPro, user }) {
   const [commentAuthors, setCommentAuthors] = useState({});
   const [loadingComments, setLoadingComments] = useState(false);
   const [showInterpretation, setShowInterpretation] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportTarget, setReportTarget] = useState(null); // { type: "dream"|"comment", id }
+  const [reportStatus, setReportStatus] = useState(""); // "", "sending", "sent", "error", "duplicate"
+  const [commentError, setCommentError] = useState("");
 
   useEffect(() => {
     loadLikes();
@@ -278,6 +291,12 @@ function DreamCard({ dream, displayName, isPro, user }) {
 
   const addComment = async () => {
     if (!user || !commentText.trim()) return;
+    setCommentError("");
+    const check = checkContent(commentText);
+    if (!check.clean) {
+      setCommentError("Your comment contains inappropriate language. Please revise it.");
+      return;
+    }
     await supabase.from("dream_comments").insert({
       dream_id: dream.id,
       user_id: user.id,
@@ -285,6 +304,46 @@ function DreamCard({ dream, displayName, isPro, user }) {
     });
     setCommentText("");
     loadComments();
+  };
+
+  const submitReport = async (reason) => {
+    if (!user) return;
+    setReportStatus("sending");
+    const reportData = {
+      reporter_id: user.id,
+      reason,
+    };
+    if (reportTarget?.type === "comment") {
+      reportData.comment_id = reportTarget.id;
+    } else {
+      reportData.dream_id = dream.id;
+    }
+    const { error } = await supabase.from("reports").insert(reportData);
+    if (error) {
+      if (error.code === "23505") {
+        setReportStatus("duplicate");
+      } else {
+        setReportStatus("error");
+      }
+    } else {
+      setReportStatus("sent");
+    }
+    setTimeout(() => {
+      setShowReportModal(false);
+      setReportTarget(null);
+      setReportStatus("");
+    }, 2000);
+  };
+
+  const handleBlock = async () => {
+    if (!user || dream.user_id === user.id) return;
+    await supabase.from("blocked_users").insert({
+      user_id: user.id,
+      blocked_user_id: dream.user_id,
+    });
+    setShowReportModal(false);
+    setReportTarget(null);
+    if (onBlock) onBlock(dream.user_id);
   };
 
   const handleCommentKeyDown = (e) => {
@@ -387,7 +446,94 @@ function DreamCard({ dream, displayName, isPro, user }) {
             {showInterpretation ? "Hide Interpretation" : "✦ View Interpretation"}
           </button>
         )}
+        {user && dream.user_id !== user.id && (
+          <button
+            onClick={() => {
+              setReportTarget({ type: "dream", id: dream.id });
+              setShowReportModal(true);
+            }}
+            style={{
+              ...styles.actionBtn,
+              color: "#6b5c30",
+              marginLeft: dream.interpretation ? 0 : "auto",
+              fontSize: 12,
+              padding: "6px 10px",
+            }}
+            title="Report or block"
+          >
+            &#9872;
+          </button>
+        )}
       </div>
+
+      {/* Report/Block Modal */}
+      {showReportModal && (
+        <div style={{
+          marginTop: 12, padding: "16px", background: "rgba(10,4,30,0.95)",
+          borderRadius: 14, border: "1px solid rgba(200,160,30,0.2)",
+        }}>
+          {reportStatus === "sent" ? (
+            <div style={{ color: "#4ade80", fontSize: 13, textAlign: "center" }}>
+              Report submitted. We'll review this content.
+            </div>
+          ) : reportStatus === "duplicate" ? (
+            <div style={{ color: "#e8b840", fontSize: 13, textAlign: "center" }}>
+              You've already reported this content.
+            </div>
+          ) : reportStatus === "error" ? (
+            <div style={{ color: "#f87171", fontSize: 13, textAlign: "center" }}>
+              Something went wrong. Please try again.
+            </div>
+          ) : (
+            <>
+              <div style={{ fontSize: 13, color: "#f5e4b0", marginBottom: 12, fontWeight: 600 }}>
+                {reportTarget?.type === "comment" ? "Report Comment" : "Report Dream"}
+              </div>
+              {REPORT_REASONS.map((reason) => (
+                <button
+                  key={reason}
+                  onClick={() => submitReport(reason)}
+                  disabled={reportStatus === "sending"}
+                  style={{
+                    display: "block", width: "100%", textAlign: "left",
+                    background: "rgba(200,160,30,0.06)", border: "1px solid rgba(200,160,30,0.12)",
+                    borderRadius: 10, padding: "10px 14px", marginBottom: 6,
+                    color: "#e8b840", fontSize: 13, cursor: "pointer",
+                    fontFamily: "Georgia, serif", minHeight: 44,
+                  }}
+                >
+                  {reason}
+                </button>
+              ))}
+              {dream.user_id !== user?.id && (
+                <button
+                  onClick={handleBlock}
+                  style={{
+                    display: "block", width: "100%", textAlign: "left",
+                    background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)",
+                    borderRadius: 10, padding: "10px 14px", marginTop: 8,
+                    color: "#f87171", fontSize: 13, cursor: "pointer",
+                    fontFamily: "Georgia, serif", minHeight: 44,
+                  }}
+                >
+                  Block this user
+                </button>
+              )}
+              <button
+                onClick={() => { setShowReportModal(false); setReportTarget(null); }}
+                style={{
+                  display: "block", width: "100%", textAlign: "center",
+                  background: "none", border: "none", padding: "10px",
+                  color: "#6b5c30", fontSize: 13, cursor: "pointer",
+                  fontFamily: "Georgia, serif", marginTop: 4,
+                }}
+              >
+                Cancel
+              </button>
+            </>
+          )}
+        </div>
+      )}
       {showInterpretation && dream.interpretation && (
         <div style={{
           marginTop: 14,
@@ -413,29 +559,54 @@ function DreamCard({ dream, displayName, isPro, user }) {
               No comments yet. Be the first to share your thoughts.
             </div>
           ) : (
-            comments.map((c) => (
-              <div key={c.id} style={styles.commentItem}>
-                <div style={styles.commentAuthor}>
-                  {commentAuthors[c.user_id] || "Anonymous Dreamer"}
+            comments.filter((c) => !c.report_count || c.report_count < 3).map((c) => (
+              <div key={c.id} style={{ ...styles.commentItem, display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                <div style={{ flex: 1 }}>
+                  <div style={styles.commentAuthor}>
+                    {commentAuthors[c.user_id] || "Anonymous Dreamer"}
+                  </div>
+                  <div style={styles.commentContent}>{c.content}</div>
                 </div>
-                <div style={styles.commentContent}>{c.content}</div>
+                {user && c.user_id !== user.id && (
+                  <button
+                    onClick={() => {
+                      setReportTarget({ type: "comment", id: c.id });
+                      setShowReportModal(true);
+                    }}
+                    style={{
+                      background: "none", border: "none", color: "#6b5c30",
+                      fontSize: 11, cursor: "pointer", padding: "4px 6px", flexShrink: 0,
+                    }}
+                    title="Report comment"
+                  >
+                    &#9872;
+                  </button>
+                )}
               </div>
             ))
           )}
           {user && (
-            <div style={styles.commentInputRow}>
-              <input
-                type="text"
-                placeholder="Add a comment..."
-                value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
-                onKeyDown={handleCommentKeyDown}
-                style={styles.commentInput}
-              />
-              <button onClick={addComment} style={styles.sendBtn}>
-                Send
-              </button>
-            </div>
+            <>
+              {commentError && (
+                <div style={{ color: "#f87171", fontSize: 12, marginBottom: 6, padding: "6px 10px",
+                  background: "rgba(239,68,68,0.1)", borderRadius: 8 }}>
+                  {commentError}
+                </div>
+              )}
+              <div style={styles.commentInputRow}>
+                <input
+                  type="text"
+                  placeholder="Add a comment..."
+                  value={commentText}
+                  onChange={(e) => { setCommentText(e.target.value); setCommentError(""); }}
+                  onKeyDown={handleCommentKeyDown}
+                  style={styles.commentInput}
+                />
+                <button onClick={addComment} style={styles.sendBtn}>
+                  Send
+                </button>
+              </div>
+            </>
           )}
         </div>
       )}
@@ -447,10 +618,28 @@ export default function CommunityTab({ user, supabase: _sb }) {
   const [dreams, setDreams] = useState([]);
   const [displayNames, setDisplayNames] = useState({});
   const [proUsers, setProUsers] = useState({});
+  const [blockedUsers, setBlockedUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [moodFilter, setMoodFilter] = useState("");
   const [themeFilter, setThemeFilter] = useState("");
+
+  // Load blocked users
+  useEffect(() => {
+    if (!user) return;
+    const loadBlocked = async () => {
+      const { data } = await supabase
+        .from("blocked_users")
+        .select("blocked_user_id")
+        .eq("user_id", user.id);
+      if (data) setBlockedUsers(data.map((b) => b.blocked_user_id));
+    };
+    loadBlocked();
+  }, [user]);
+
+  const handleBlock = (blockedUserId) => {
+    setBlockedUsers((prev) => [...prev, blockedUserId]);
+  };
 
   const loadDreams = useCallback(async () => {
     setLoading(true);
@@ -489,6 +678,7 @@ export default function CommunityTab({ user, supabase: _sb }) {
   }, [loadDreams]);
 
   const filtered = dreams.filter((d) => {
+    if (blockedUsers.includes(d.user_id)) return false;
     if (moodFilter && d.mood !== moodFilter) return false;
     if (themeFilter && d.theme !== themeFilter) return false;
     if (search.trim()) {
@@ -553,6 +743,7 @@ export default function CommunityTab({ user, supabase: _sb }) {
             displayName={displayNames[dream.user_id]}
             isPro={proUsers[dream.user_id]}
             user={user}
+            onBlock={handleBlock}
           />
         ))
       )}
