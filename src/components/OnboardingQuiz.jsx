@@ -1,4 +1,13 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef } from "react";
+
+const STARS = Array.from({ length: 150 }, (_, i) => ({
+  id: i,
+  x: Math.random() * 100,
+  y: Math.random() * 100,
+  size: Math.random() * 2 + 0.4,
+  opacity: Math.random() * 0.6 + 0.15,
+  delay: Math.random() * 4,
+}));
 
 // ── Dream Themes (for recurring themes grid) ────────────────────────────────
 const DREAM_THEMES = [
@@ -112,16 +121,7 @@ export default function OnboardingQuiz({ onComplete, preAuth = false }) {
 
   const styleInjected = useRef(false);
 
-  // Stars
-  const stars = useMemo(() =>
-    Array.from({ length: 150 }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      size: Math.random() * 2 + 0.4,
-      opacity: Math.random() * 0.6 + 0.15,
-      delay: Math.random() * 4,
-    })), []);
+  const stars = STARS;
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -136,14 +136,6 @@ export default function OnboardingQuiz({ onComplete, preAuth = false }) {
       return () => document.head.removeChild(el);
     }
   }, []);
-
-  // AI interpretation when entering step 5 (post-auth only)
-  useEffect(() => {
-    if (!preAuth && step === 5 && !processing && !interpretation) {
-      setProcessing(true);
-      runInterpretation().then(() => setProcessing(false));
-    }
-  }, [step]); // eslint-disable-line
 
   const runInterpretation = async () => {
     try {
@@ -171,6 +163,14 @@ export default function OnboardingQuiz({ onComplete, preAuth = false }) {
       setAiThemes(themes.slice(0, 3));
     }
   };
+
+  // AI interpretation when entering step 5 (post-auth only)
+  useEffect(() => {
+    if (!preAuth && step === 5 && !processing && !interpretation) {
+      setProcessing(true);
+      runInterpretation().then(() => setProcessing(false));
+    }
+  }, [step]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const goForward = () => {
     setDirection("right");

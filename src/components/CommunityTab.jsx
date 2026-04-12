@@ -224,10 +224,6 @@ function DreamCard({ dream, displayName, isPro, user, onBlock }) {
   const [reportStatus, setReportStatus] = useState(""); // "", "sending", "sent", "error", "duplicate"
   const [commentError, setCommentError] = useState("");
 
-  useEffect(() => {
-    loadLikes();
-  }, [dream.id]);
-
   const loadLikes = async () => {
     const { data } = await supabase
       .from("dream_likes")
@@ -238,6 +234,10 @@ function DreamCard({ dream, displayName, isPro, user, onBlock }) {
       setLiked(user ? data.some((l) => l.user_id === user.id) : false);
     }
   };
+
+  useEffect(() => {
+    loadLikes();
+  }, [dream.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const toggleLike = async () => {
     if (!user) return;
@@ -643,7 +643,7 @@ export default function CommunityTab({ user, supabase: _sb }) {
 
   const loadDreams = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase
+    const { data, error: _error } = await supabase
       .from("dreams")
       .select("*")
       .eq("is_public", true)

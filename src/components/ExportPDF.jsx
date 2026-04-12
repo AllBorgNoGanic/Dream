@@ -7,7 +7,7 @@ export default function ExportPDF({ dreams }) {
     const pageWidth = doc.internal.pageSize.getWidth();
     const margin = 20;
     const maxWidth = pageWidth - margin * 2;
-    let y = 20;
+    let y;
 
     // Title page
     doc.setFontSize(28);

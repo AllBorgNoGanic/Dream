@@ -1,7 +1,7 @@
 export default function StreakBanner({ streak, longestStreak, lastDreamDate }) {
   const today = new Date().toISOString().split("T")[0];
   const loggedToday = lastDreamDate === today;
-  const yesterday = new Date(Date.now() - 86400000).toISOString().split("T")[0];
+  const yesterday = new Date(Date.now() - 86400000).toISOString().split("T")[0]; // eslint-disable-line react-hooks/purity
   const atRisk = lastDreamDate === yesterday && !loggedToday;
 
   if (streak === 0 && !atRisk) return null;

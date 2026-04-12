@@ -1,4 +1,13 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef } from "react";
+
+const STARS = Array.from({ length: 120 }, (_, i) => ({
+  id: i,
+  x: Math.random() * 100,
+  y: Math.random() * 100,
+  size: Math.random() * 1.8 + 0.3,
+  opacity: Math.random() * 0.5 + 0.1,
+  delay: Math.random() * 5,
+}));
 
 const DREAM_DICTIONARY = {
   flying: { symbol: "✈️" }, falling: { symbol: "⬇️" }, water: { symbol: "🌊" },
@@ -43,15 +52,7 @@ export default function ReadingModal({ reading, onClose, onGenerateImage, userSe
   const [expandedTheme, setExpandedTheme] = useState(null);
   const styleInjected = useRef(false);
 
-  const stars = useMemo(() =>
-    Array.from({ length: 120 }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      size: Math.random() * 1.8 + 0.3,
-      opacity: Math.random() * 0.5 + 0.1,
-      delay: Math.random() * 5,
-    })), []);
+  const stars = STARS;
 
   // Inject keyframes once
   useEffect(() => {

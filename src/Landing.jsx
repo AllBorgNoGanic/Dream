@@ -1,15 +1,14 @@
-import { useMemo } from "react";
+const STARS = Array.from({ length: 100 }, (_, i) => ({
+  id: i,
+  x: Math.random() * 100,
+  y: Math.random() * 100,
+  size: Math.random() * 2 + 0.5,
+  opacity: Math.random() * 0.6 + 0.15,
+  delay: Math.random() * 5,
+}));
 
-export default function Landing({ onSignIn }) {
-  const stars = useMemo(() =>
-    Array.from({ length: 100 }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      size: Math.random() * 2 + 0.5,
-      opacity: Math.random() * 0.6 + 0.15,
-      delay: Math.random() * 5,
-    })), []);
+export default function Landing({ onSignIn: _onSignIn }) {
+  const stars = STARS;
 
   return (
     <div style={{

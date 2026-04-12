@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { checkFields } from "../utils/moderation";
+// checkFields available if needed for future moderation
 
 const MOODS = [
   { label: "Magical", emoji: "\u2728" },

@@ -55,7 +55,7 @@ const sectionTitle = {
 export default function CalendarHeatmap({ dreams }) {
   const [tooltip, setTooltip] = useState(null);
 
-  const { grid, monthLabels, dreamsByDate, monthlyData } = useMemo(() => {
+  const { grid, monthLabels, monthlyData } = useMemo(() => {
     // Count dreams per date
     const byDate = {};
     (dreams || []).forEach((d) => {

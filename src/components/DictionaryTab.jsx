@@ -70,7 +70,7 @@ export default function DictionaryTab() {
     setThemes([]);
     setHasMore(true);
     fetchThemes(search, category, 0, false);
-  }, [category]);
+  }, [category]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Debounced search
   const handleSearch = (value) => {

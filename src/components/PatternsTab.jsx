@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 
 const DREAM_DICTIONARY = {
   flying: { symbol: "✈️", meaning: "Freedom, ambition" },
@@ -97,7 +97,7 @@ function computeStreak(dreams) {
   const dates = new Set(
     dreams.map((d) => new Date(d.created_at).toISOString().slice(0, 10))
   );
-  const sorted = [...dates].sort().reverse();
+  const _sorted = [...dates].sort().reverse();
 
   let current = 0;
   const today = new Date();
@@ -234,7 +234,7 @@ const STOP_WORDS = new Set([
   "doesn", "isn", "aren", "hadn", "it", "me", "my", "we", "us",
 ]);
 
-export default function PatternsTab({ dreams, userSettings }) {
+export default function PatternsTab({ dreams }) {
   const [hoveredInsight, setHoveredInsight] = useState(null);
 
   const moodCounts = {};
@@ -283,8 +283,8 @@ export default function PatternsTab({ dreams, userSettings }) {
   const lucidPct = dreams.length > 0 ? ((lucidCount / dreams.length) * 100).toFixed(0) : 0;
   const avgSleep = sleepQualityCount > 0 ? (totalSleepQuality / sleepQualityCount).toFixed(1) : "N/A";
 
-  const maxMoodCount = Math.max(...Object.values(moodCounts), 1);
-  const maxThemeCount = Math.max(...Object.values(themeCounts), 1);
+  const _maxMoodCount = Math.max(...Object.values(moodCounts), 1);
+  const _maxThemeCount = Math.max(...Object.values(themeCounts), 1);
   const maxDayCount = Math.max(...Object.values(dayOfWeekCounts), 1);
 
   const sortedSymbols = Object.entries(symbolCounts)
