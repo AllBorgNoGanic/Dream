@@ -1,14 +1,6 @@
-const STARS = Array.from({ length: 100 }, (_, i) => ({
-  id: i,
-  x: Math.random() * 100,
-  y: Math.random() * 100,
-  size: Math.random() * 2 + 0.5,
-  opacity: Math.random() * 0.6 + 0.15,
-  delay: Math.random() * 5,
-}));
+import StarField from "./components/StarField";
 
 export default function Landing({ onSignIn: _onSignIn }) {
-  const stars = STARS;
 
   return (
     <div style={{
@@ -32,16 +24,7 @@ export default function Landing({ onSignIn: _onSignIn }) {
       `}</style>
 
       {/* Star field */}
-      <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 0, willChange: "transform", transform: "translateZ(0)" }}>
-        {stars.map(s => (
-          <div key={s.id} style={{
-            position: "absolute", left: `${s.x}%`, top: `${s.y}%`,
-            width: s.size, height: s.size, borderRadius: "50%",
-            background: "rgba(255,245,200,1)", opacity: s.opacity,
-            animation: `ld-twinkle ${2.5 + s.delay}s ease-in-out infinite`,
-          }} />
-        ))}
-      </div>
+      <StarField count={100} animation="ld-twinkle" />
 
       <div style={{
         position: "relative", zIndex: 1,

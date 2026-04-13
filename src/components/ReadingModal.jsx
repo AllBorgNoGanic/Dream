@@ -1,13 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-
-const STARS = Array.from({ length: 120 }, (_, i) => ({
-  id: i,
-  x: Math.random() * 100,
-  y: Math.random() * 100,
-  size: Math.random() * 1.8 + 0.3,
-  opacity: Math.random() * 0.5 + 0.1,
-  delay: Math.random() * 5,
-}));
+import * as Dialog from "@radix-ui/react-dialog";
+import StarField from "./StarField";
 
 const DREAM_DICTIONARY = {
   flying: { symbol: "✈️" }, falling: { symbol: "⬇️" }, water: { symbol: "🌊" },
@@ -52,7 +45,7 @@ export default function ReadingModal({ reading, onClose, onGenerateImage, userSe
   const [expandedTheme, setExpandedTheme] = useState(null);
   const styleInjected = useRef(false);
 
-  const stars = STARS;
+  // Stars rendered via StarField component
 
   // Inject keyframes once
   useEffect(() => {
@@ -96,33 +89,26 @@ export default function ReadingModal({ reading, onClose, onGenerateImage, userSe
     return () => [t1, t2, t3, t4].forEach(clearTimeout);
   }, [interpretation]);
 
-  // Allow ESC to close
-  useEffect(() => {
-    const handler = (e) => { if (e.key === "Escape") onClose(); };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [onClose]);
-
   return (
-    <div
-      onClick={onClose}
-      style={{
-        position: "fixed", inset: 0, zIndex: 1000,
-        fontFamily: "Georgia, serif",
-        animation: "rm-fadeIn 0.4s ease",
-        overflowY: "auto",
-        WebkitOverflowScrolling: "touch",
-      }}
-    >
-      {/* Background */}
-      <div style={{
-        position: "fixed", inset: 0,
-        background: "rgba(2,4,14,0.92)",
-        backdropFilter: "blur(8px)",
-        zIndex: 0,
-        pointerEvents: "none",
-      }} />
-
+    <Dialog.Root open={true} onOpenChange={(open) => { if (!open) onClose(); }}>
+      <Dialog.Portal>
+        <Dialog.Overlay style={{
+          position: "fixed", inset: 0,
+          background: "rgba(2,4,14,0.92)",
+          backdropFilter: "blur(8px)",
+          zIndex: 1000,
+        }} />
+        <Dialog.Content
+          aria-describedby={undefined}
+          style={{
+            position: "fixed", inset: 0, zIndex: 1001,
+            fontFamily: "Georgia, serif",
+            animation: "rm-fadeIn 0.4s ease",
+            overflowY: "auto",
+            WebkitOverflowScrolling: "touch",
+            outline: "none",
+          }}
+        >
       {/* Scroll content wrapper */}
       <div style={{
         position: "relative", zIndex: 1,
@@ -133,17 +119,7 @@ export default function ReadingModal({ reading, onClose, onGenerateImage, userSe
       }}>
 
       {/* Star field */}
-      <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 0 }}>
-        {stars.map((s) => (
-          <div key={s.id} style={{
-            position: "absolute", left: `${s.x}%`, top: `${s.y}%`,
-            width: s.size, height: s.size, borderRadius: "50%",
-            background: "rgba(255,245,200,1)", opacity: s.opacity,
-            animation: `rm-twinkle ${2.5 + s.delay}s ease-in-out infinite`,
-            animationDelay: `${s.delay * 0.4}s`,
-          }} />
-        ))}
-      </div>
+      <StarField count={120} animation="rm-twinkle" />
 
       {/* Modal panel */}
       <div
@@ -184,16 +160,15 @@ export default function ReadingModal({ reading, onClose, onGenerateImage, userSe
           </div>
 
           {/* Title */}
-          {dreamTitle && (
-            <div style={{
-              textAlign: "center", marginBottom: 6,
-              fontSize: 11, letterSpacing: 3, color: "#6b4da0",
-              textTransform: "uppercase",
-              animation: "rm-fadeIn 0.5s ease 0.2s both",
-            }}>
-              {dreamTitle}
-            </div>
-          )}
+          <Dialog.Title style={{
+            textAlign: "center", marginBottom: 6,
+            fontSize: 11, letterSpacing: 3, color: "#6b4da0",
+            textTransform: "uppercase", fontWeight: 400,
+            animation: "rm-fadeIn 0.5s ease 0.2s both",
+            display: dreamTitle ? "block" : "none",
+          }}>
+            {dreamTitle || "Dream Reading"}
+          </Dialog.Title>
 
           {/* "The Shepherd's Reading" header */}
           <div style={{
@@ -584,23 +559,22 @@ export default function ReadingModal({ reading, onClose, onGenerateImage, userSe
               marginTop: 28, textAlign: "center",
               animation: "rm-fadeIn 0.5s ease",
             }}>
-              <button
-                onClick={onClose}
-                style={{
+              <Dialog.Close asChild>
+                <button style={{
                   background: "none",
                   border: "1px solid rgba(144,102,212,0.35)",
                   color: "#8a6ab0", padding: "14px 32px",
                   borderRadius: 30, fontSize: 14, minHeight: 44,
                   cursor: "pointer", fontFamily: "Georgia, serif",
                   letterSpacing: 1,
-                }}
-              >
-                Close
-              </button>
+                }}>
+                  Close
+                </button>
+              </Dialog.Close>
               <div style={{
                 marginTop: 8, fontSize: 11, color: "#3a2a50",
               }}>
-                Tap anywhere to dismiss
+                Press ESC to dismiss
               </div>
             </div>
           )}
@@ -613,6 +587,8 @@ export default function ReadingModal({ reading, onClose, onGenerateImage, userSe
         }} />
       </div>
       </div>
-    </div>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }

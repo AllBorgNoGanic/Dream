@@ -1,13 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-
-const STARS = Array.from({ length: 150 }, (_, i) => ({
-  id: i,
-  x: Math.random() * 100,
-  y: Math.random() * 100,
-  size: Math.random() * 2 + 0.4,
-  opacity: Math.random() * 0.6 + 0.15,
-  delay: Math.random() * 4,
-}));
+import StarField from "./StarField";
 
 // ── Dream Themes (for recurring themes grid) ────────────────────────────────
 const DREAM_THEMES = [
@@ -121,7 +113,7 @@ export default function OnboardingQuiz({ onComplete, preAuth = false }) {
 
   const styleInjected = useRef(false);
 
-  const stars = STARS;
+  // Stars rendered via StarField component
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -303,15 +295,7 @@ export default function OnboardingQuiz({ onComplete, preAuth = false }) {
   // ── Background orbs + stars ────────────────────────────────────────────────
   const orbs = (
     <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 0, willChange: "transform", transform: "translateZ(0)" }}>
-      {stars.map((s) => (
-        <div key={s.id} style={{
-          position: "absolute", left: `${s.x}%`, top: `${s.y}%`,
-          width: s.size, height: s.size, borderRadius: "50%",
-          background: "rgba(255,245,200,1)", opacity: s.opacity,
-          animation: `onb-twinkle ${2 + s.delay}s ease-in-out infinite`,
-          animationDelay: `${s.delay}s`,
-        }} />
-      ))}
+      <StarField count={150} animation="onb-twinkle" />
       <div style={{
         position: "absolute", top: "-15%", right: "-20%", width: 400, height: 400,
         borderRadius: "50%", background: "radial-gradient(circle, rgba(124,58,237,0.12) 0%, transparent 70%)",

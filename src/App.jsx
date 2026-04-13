@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from "react";
+import * as Dialog from "@radix-ui/react-dialog";
 import { supabase } from "./lib/supabase";
+import StarField from "./components/StarField";
 
 // Components
 import DreamForm from "./components/DreamForm";
@@ -139,7 +141,6 @@ export default function DreamJournal() {
   const onboardingChecked = useRef(false); // flipped to true after first check — quiz never re-evaluated
   const quizDoneRef = useRef(false);       // prevents quiz re-showing after completion
   const pendingQuizDataRef = useRef(null); // stores quiz results from pre-auth flow
-  const [stars, setStars] = useState([]);
 
   // Search & filters
   const [searchQuery, setSearchQuery] = useState("");
@@ -148,19 +149,7 @@ export default function DreamJournal() {
   // Dream form (controlled)
   const [form, setForm] = useState(defaultForm);
 
-  // ── Stars ──────────────────────────────────────────────────────────────────
-  useEffect(() => {
-    setStars(
-      Array.from({ length: 220 }, (_, i) => ({
-        id: i,
-        x: Math.random() * 100,
-        y: Math.random() * 100,
-        size: Math.random() * 2 + 0.5,
-        opacity: Math.random() * 0.7 + 0.2,
-        delay: Math.random() * 4,
-      }))
-    );
-  }, []);
+  // Stars rendered via StarField component
 
   // ── Session ────────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -675,16 +664,7 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
   // ── Stars layer ────────────────────────────────────────────────────────────
   const starsLayer = (
     <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 0, willChange: "transform", transform: "translateZ(0)" }}>
-      {/* Regular stars */}
-      {stars.map((s) => (
-        <div key={s.id} style={{
-          position: "absolute", left: `${s.x}%`, top: `${s.y}%`,
-          width: s.size, height: s.size, borderRadius: "50%",
-          background: "rgba(255,245,200,1)", opacity: s.opacity,
-          animation: `twinkle ${2 + s.delay}s ease-in-out infinite`,
-          animationDelay: `${s.delay}s`,
-        }} />
-      ))}
+      <StarField count={220} animation="twinkle" />
 
       {/* Star of Bethlehem — upper left, pale blue 4-pointed */}
       <div style={{
@@ -1268,24 +1248,26 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
       )}
 
       {/* ── Upgrade Modal ── */}
-      {showUpgradeModal && (
-        <div
-          onClick={() => setShowUpgradeModal(false)}
-          style={{
+      <Dialog.Root open={showUpgradeModal} onOpenChange={setShowUpgradeModal}>
+        <Dialog.Portal>
+          <Dialog.Overlay style={{
             position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)",
             display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100,
-          }}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
+          }} />
+          <Dialog.Content
+            aria-describedby={undefined}
             style={{
+              position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)",
               background: "rgba(16,4,40,0.97)", border: "1px solid rgba(200,160,50,0.4)",
               borderRadius: 20, padding: 24, maxWidth: 400, width: "94%",
               boxShadow: "0 16px 60px rgba(110,70,5,0.5)", animation: "fadeIn 0.3s ease", textAlign: "center",
+              zIndex: 101,
             }}
           >
-            <div style={{ fontSize: 40, marginBottom: 16 }}>🐑</div>
-            <div style={{ fontSize: 20, color: "#f5e4b0", marginBottom: 8 }}>Dream Shepherd</div>
+            <Dialog.Title style={{ fontSize: 20, color: "#f5e4b0", marginBottom: 8, fontWeight: 400 }}>
+              <div style={{ fontSize: 40, marginBottom: 16 }}>🐑</div>
+              Dream Shepherd
+            </Dialog.Title>
             <div style={{ fontSize: 13, color: "#7a6a40", marginBottom: 20, lineHeight: 1.6 }}>
               Take your dream journey to the next level.
             </div>
@@ -1367,14 +1349,16 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
                 />
               </div>
             )}
-            <button onClick={() => setShowUpgradeModal(false)} style={{
-              background: "none", border: "none", color: "#6b5c30", fontSize: 14, cursor: "pointer", padding: "12px", minHeight: 44,
-            }}>
-              Maybe Later
-            </button>
-          </div>
-        </div>
-      )}
+            <Dialog.Close asChild>
+              <button style={{
+                background: "none", border: "none", color: "#6b5c30", fontSize: 14, cursor: "pointer", padding: "12px", minHeight: 44,
+              }}>
+                Maybe Later
+              </button>
+            </Dialog.Close>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
     </div>
   );
 }

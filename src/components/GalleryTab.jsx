@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import * as Dialog from "@radix-ui/react-dialog";
 import { supabase } from "../lib/supabase";
 
 export default function GalleryTab({ user, dreams, onViewReading }) {
@@ -119,71 +120,75 @@ export default function GalleryTab({ user, dreams, onViewReading }) {
       )}
 
       {/* Lightbox */}
-      {selectedImage && (
-        <div
-          onClick={() => setSelectedImage(null)}
-          style={{
+      <Dialog.Root open={!!selectedImage} onOpenChange={(open) => { if (!open) setSelectedImage(null); }}>
+        <Dialog.Portal>
+          <Dialog.Overlay style={{
             position: "fixed", inset: 0, zIndex: 2000,
             background: "rgba(2,4,14,0.95)",
-            display: "flex", flexDirection: "column",
-            alignItems: "center", justifyContent: "center",
-            padding: 24, boxSizing: "border-box",
-            animation: "fadeIn 0.2s ease",
-          }}
-        >
-          <div onClick={e => e.stopPropagation()} style={{ maxWidth: 480, width: "100%" }}>
-            {/* Title */}
-            <div style={{ textAlign: "center", marginBottom: 14 }}>
-              <div style={{ fontSize: 14, color: "#f0dfa0", fontStyle: "italic" }}>
-                {selectedImage.dreams?.title || "Untitled Dream"}
-              </div>
-              <div style={{ fontSize: 11, color: "#5a4a28", marginTop: 4 }}>
-                {formatDate(selectedImage.created_at)}
-              </div>
-            </div>
+          }} />
+          <Dialog.Content
+            aria-describedby={undefined}
+            style={{
+              position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)",
+              maxWidth: 480, width: "94%", zIndex: 2001,
+              animation: "fadeIn 0.2s ease", outline: "none",
+            }}
+          >
+            {selectedImage && (
+              <>
+                {/* Title */}
+                <Dialog.Title style={{ textAlign: "center", marginBottom: 14, fontWeight: 400 }}>
+                  <div style={{ fontSize: 14, color: "#f0dfa0", fontStyle: "italic" }}>
+                    {selectedImage.dreams?.title || "Untitled Dream"}
+                  </div>
+                  <div style={{ fontSize: 11, color: "#5a4a28", marginTop: 4, fontWeight: 400 }}>
+                    {formatDate(selectedImage.created_at)}
+                  </div>
+                </Dialog.Title>
 
-            {/* Image */}
-            <img
-              src={selectedImage.image_url}
-              alt={selectedImage.dreams?.title || "Dream vision"}
-              style={{ width: "100%", borderRadius: 18, display: "block" }}
-            />
+                {/* Image */}
+                <img
+                  src={selectedImage.image_url}
+                  alt={selectedImage.dreams?.title || "Dream vision"}
+                  style={{ width: "100%", borderRadius: 18, display: "block" }}
+                />
 
-            {/* Actions */}
-            <div style={{ display: "flex", gap: 12, marginTop: 16, justifyContent: "center" }}>
-              {onViewReading && dreams && (() => {
-                const dream = dreams.find(d => d.id === selectedImage.dream_id);
-                return dream?.interpretation ? (
-                  <button
-                    onClick={() => { setSelectedImage(null); onViewReading(dream); }}
-                    style={{
+                {/* Actions */}
+                <div style={{ display: "flex", gap: 12, marginTop: 16, justifyContent: "center" }}>
+                  {onViewReading && dreams && (() => {
+                    const dream = dreams.find(d => d.id === selectedImage.dream_id);
+                    return dream?.interpretation ? (
+                      <button
+                        onClick={() => { setSelectedImage(null); onViewReading(dream); }}
+                        style={{
+                          background: "none",
+                          border: "1px solid rgba(200,160,30,0.35)",
+                          color: "#c8a040", padding: "9px 22px", borderRadius: 30,
+                          fontSize: 12, cursor: "pointer", fontFamily: "Georgia, serif",
+                          letterSpacing: 0.5,
+                        }}
+                      >
+                        View Interpretation
+                      </button>
+                    ) : null;
+                  })()}
+                  <Dialog.Close asChild>
+                    <button style={{
                       background: "none",
-                      border: "1px solid rgba(200,160,30,0.35)",
-                      color: "#c8a040", padding: "9px 22px", borderRadius: 30,
+                      border: "1px solid rgba(144,102,212,0.35)",
+                      color: "#8a6ab0", padding: "9px 22px", borderRadius: 30,
                       fontSize: 12, cursor: "pointer", fontFamily: "Georgia, serif",
                       letterSpacing: 0.5,
-                    }}
-                  >
-                    View Interpretation
-                  </button>
-                ) : null;
-              })()}
-              <button
-                onClick={() => setSelectedImage(null)}
-                style={{
-                  background: "none",
-                  border: "1px solid rgba(144,102,212,0.35)",
-                  color: "#8a6ab0", padding: "9px 22px", borderRadius: 30,
-                  fontSize: 12, cursor: "pointer", fontFamily: "Georgia, serif",
-                  letterSpacing: 0.5,
-                }}
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+                    }}>
+                      Close
+                    </button>
+                  </Dialog.Close>
+                </div>
+              </>
+            )}
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
     </div>
   );
 }

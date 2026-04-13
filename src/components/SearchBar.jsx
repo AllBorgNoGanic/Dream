@@ -1,4 +1,5 @@
 import { useState } from "react";
+import DreamSelect from "./DreamSelect";
 
 const MOODS = ["✨ Magical", "😨 Frightening", "😌 Peaceful", "😕 Confusing", "😢 Sad", "🤩 Exciting", "😶 Neutral", "💭 Nostalgic"];
 const THEMES = ["Adventure", "Romance", "Mystery", "Fantasy", "Nightmare", "Spiritual", "Mundane", "Surreal"];
@@ -35,33 +36,21 @@ export default function SearchBar({ searchQuery, setSearchQuery, filters, setFil
       {showFilters && (
         <div style={{
           display: "flex", gap: 12, marginTop: 12, flexWrap: "wrap",
-          animation: "fadeIn 0.2s ease"
+          alignItems: "center", animation: "fadeIn 0.2s ease"
         }}>
-          <select
+          <DreamSelect
             value={filters.mood || ""}
-            onChange={e => setFilters(f => ({ ...f, mood: e.target.value }))}
-            style={{
-              background: "rgba(5,10,20,0.9)", border: "1px solid rgba(200,160,30,0.2)",
-              borderRadius: 10, padding: "9px 14px", color: filters.mood ? "#f5e4b0" : "#8a7540",
-              fontSize: 13, outline: "none"
-            }}
-          >
-            <option value="">All Moods</option>
-            {MOODS.map(m => <option key={m} value={m}>{m}</option>)}
-          </select>
+            onValueChange={(v) => setFilters(f => ({ ...f, mood: v }))}
+            placeholder="All Moods"
+            options={MOODS}
+          />
 
-          <select
+          <DreamSelect
             value={filters.theme || ""}
-            onChange={e => setFilters(f => ({ ...f, theme: e.target.value }))}
-            style={{
-              background: "rgba(5,10,20,0.9)", border: "1px solid rgba(200,160,30,0.2)",
-              borderRadius: 10, padding: "9px 14px", color: filters.theme ? "#f5e4b0" : "#8a7540",
-              fontSize: 13, outline: "none"
-            }}
-          >
-            <option value="">All Themes</option>
-            {THEMES.map(t => <option key={t} value={t}>{t}</option>)}
-          </select>
+            onValueChange={(v) => setFilters(f => ({ ...f, theme: v }))}
+            placeholder="All Themes"
+            options={THEMES}
+          />
 
           <label style={{
             display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#7a6a40", cursor: "pointer"

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../lib/supabase";
 import { checkContent } from "../utils/moderation";
+import DreamSelect from "./DreamSelect";
 
 const MOODS = ["Happy", "Sad", "Anxious", "Peaceful", "Confused", "Excited", "Fearful", "Nostalgic"];
 const THEMES = ["Adventure", "Flying", "Falling", "Chase", "Water", "Animals", "People", "Fantasy", "Nightmare", "Lucid"];
@@ -706,26 +707,18 @@ export default function CommunityTab({ user, supabase: _sb }) {
           onChange={(e) => setSearch(e.target.value)}
           style={styles.searchInput}
         />
-        <select
+        <DreamSelect
           value={moodFilter}
-          onChange={(e) => setMoodFilter(e.target.value)}
-          style={styles.select}
-        >
-          <option value="">All Moods</option>
-          {MOODS.map((m) => (
-            <option key={m} value={m}>{m}</option>
-          ))}
-        </select>
-        <select
+          onValueChange={setMoodFilter}
+          placeholder="All Moods"
+          options={MOODS}
+        />
+        <DreamSelect
           value={themeFilter}
-          onChange={(e) => setThemeFilter(e.target.value)}
-          style={styles.select}
-        >
-          <option value="">All Themes</option>
-          {THEMES.map((t) => (
-            <option key={t} value={t}>{t}</option>
-          ))}
-        </select>
+          onValueChange={setThemeFilter}
+          placeholder="All Themes"
+          options={THEMES}
+        />
       </div>
       {loading ? (
         <div style={styles.loading}>Loading community dreams...</div>

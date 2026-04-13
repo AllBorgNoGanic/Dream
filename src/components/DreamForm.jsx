@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import DreamSwitch from "./DreamSwitch";
 // checkFields available if needed for future moderation
 
 const MOODS = [
@@ -561,21 +562,10 @@ export default function DreamForm({
       {/* Lucid Dream */}
       <div style={styles.fieldGroup}>
         <div style={styles.toggleRow}>
-          <div
-            style={styles.toggleTrack(form.is_lucid)}
-            onClick={() => update("is_lucid", !form.is_lucid)}
-            role="switch"
-            aria-checked={form.is_lucid}
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                update("is_lucid", !form.is_lucid);
-              }
-            }}
-          >
-            <div style={styles.toggleKnob(form.is_lucid)} />
-          </div>
+          <DreamSwitch
+            checked={form.is_lucid}
+            onCheckedChange={(val) => update("is_lucid", val)}
+          />
           <label style={{ ...styles.label, marginBottom: 0 }}>
             Lucid Dream
           </label>
@@ -779,25 +769,14 @@ export default function DreamForm({
 
       {/* Interpret on save */}
       <div style={{ ...styles.fieldGroup, ...styles.toggleRow }}>
-        <div
-          style={styles.toggleTrack(form.interpret_on_save)}
-          onClick={() => {
-            if (!form.interpret_on_save && !canInterpret) return;
-            update("interpret_on_save", !form.interpret_on_save);
+        <DreamSwitch
+          checked={form.interpret_on_save || false}
+          onCheckedChange={(val) => {
+            if (val && !canInterpret) return;
+            update("interpret_on_save", val);
           }}
-          role="switch"
-          aria-checked={form.interpret_on_save || false}
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              if (!form.interpret_on_save && !canInterpret) return;
-              update("interpret_on_save", !form.interpret_on_save);
-            }
-          }}
-        >
-          <div style={styles.toggleKnob(form.interpret_on_save)} />
-        </div>
+          disabled={!form.interpret_on_save && !canInterpret}
+        />
         <div>
           <label style={{ ...styles.label, marginBottom: 0 }}>
             Interpret this dream

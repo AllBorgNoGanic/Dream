@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
+import * as Tooltip from "@radix-ui/react-tooltip";
 
 const fadeIn = `
 @keyframes fadeInHeatmap {
@@ -53,7 +54,6 @@ const sectionTitle = {
 };
 
 export default function CalendarHeatmap({ dreams }) {
-  const [tooltip, setTooltip] = useState(null);
 
   const { grid, monthLabels, monthlyData } = useMemo(() => {
     // Count dreams per date
@@ -139,6 +139,7 @@ export default function CalendarHeatmap({ dreams }) {
   const maxMonthly = Math.max(...monthlyData.map((m) => m.count), 1);
 
   return (
+    <Tooltip.Provider delayDuration={200}>
     <div style={{ fontFamily: "Georgia, serif" }}>
       <style>{fadeIn}</style>
 
@@ -211,30 +212,50 @@ export default function CalendarHeatmap({ dreams }) {
                       );
                     }
                     return (
-                      <div
-                        key={di}
-                        onMouseEnter={(e) => {
-                          const rect = e.target.getBoundingClientRect();
-                          setTooltip({
-                            date: day.date,
-                            count: day.count,
-                            x: rect.left + rect.width / 2,
-                            y: rect.top - 8,
-                          });
-                        }}
-                        onMouseLeave={() => setTooltip(null)}
-                        style={{
-                          width: CELL_SIZE,
-                          height: CELL_SIZE,
-                          borderRadius: 3,
-                          background: day.future ? "transparent" : getColor(day.count),
-                          border: day.future
-                            ? "1px solid rgba(200,160,30,0.05)"
-                            : "1px solid rgba(200,160,30,0.08)",
-                          cursor: "default",
-                          transition: "background 0.15s ease",
-                        }}
-                      />
+                      <Tooltip.Root key={di} delayDuration={200}>
+                        <Tooltip.Trigger asChild>
+                          <div
+                            style={{
+                              width: CELL_SIZE,
+                              height: CELL_SIZE,
+                              borderRadius: 3,
+                              background: day.future ? "transparent" : getColor(day.count),
+                              border: day.future
+                                ? "1px solid rgba(200,160,30,0.05)"
+                                : "1px solid rgba(200,160,30,0.08)",
+                              cursor: "default",
+                              transition: "background 0.15s ease",
+                            }}
+                          />
+                        </Tooltip.Trigger>
+                        <Tooltip.Portal>
+                          <Tooltip.Content
+                            side="top"
+                            sideOffset={4}
+                            style={{
+                              background: "rgba(30,15,60,0.95)",
+                              border: "1px solid rgba(200,160,30,0.3)",
+                              borderRadius: 8,
+                              padding: "6px 12px",
+                              color: "#f5e4b0",
+                              fontSize: 12,
+                              fontFamily: "Georgia, serif",
+                              whiteSpace: "nowrap",
+                              zIndex: 1000,
+                            }}
+                          >
+                            <div style={{ fontWeight: "bold", marginBottom: 2 }}>
+                              {formatDisplayDate(day.date)}
+                            </div>
+                            <div style={{ color: "#e8b840" }}>
+                              {day.count === 0
+                                ? "No dreams recorded"
+                                : `${day.count} dream${day.count > 1 ? "s" : ""} recorded`}
+                            </div>
+                            <Tooltip.Arrow style={{ fill: "rgba(30,15,60,0.95)" }} />
+                          </Tooltip.Content>
+                        </Tooltip.Portal>
+                      </Tooltip.Root>
                     );
                   })}
                 </div>
@@ -242,36 +263,7 @@ export default function CalendarHeatmap({ dreams }) {
             </div>
           </div>
 
-          {/* Tooltip */}
-          {tooltip && (
-            <div
-              style={{
-                position: "fixed",
-                left: tooltip.x,
-                top: tooltip.y,
-                transform: "translate(-50%, -100%)",
-                background: "rgba(30,15,60,0.95)",
-                border: "1px solid rgba(200,160,30,0.3)",
-                borderRadius: 8,
-                padding: "6px 12px",
-                color: "#f5e4b0",
-                fontSize: 12,
-                fontFamily: "Georgia, serif",
-                whiteSpace: "nowrap",
-                pointerEvents: "none",
-                zIndex: 1000,
-              }}
-            >
-              <div style={{ fontWeight: "bold", marginBottom: 2 }}>
-                {formatDisplayDate(tooltip.date)}
-              </div>
-              <div style={{ color: "#e8b840" }}>
-                {tooltip.count === 0
-                  ? "No dreams recorded"
-                  : `${tooltip.count} dream${tooltip.count > 1 ? "s" : ""} recorded`}
-              </div>
-            </div>
-          )}
+          {/* Tooltip handled by Radix Tooltip on each cell */}
         </div>
 
         {/* Legend */}
@@ -366,5 +358,6 @@ export default function CalendarHeatmap({ dreams }) {
         </div>
       </div>
     </div>
+    </Tooltip.Provider>
   );
 }

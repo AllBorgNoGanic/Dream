@@ -21,6 +21,7 @@ const formatDate = (iso) => {
 const getMoodEmoji = (mood) => mood?.split(" ")[0] || "💭";
 
 import { useState } from "react";
+import * as AlertDialog from "@radix-ui/react-alert-dialog";
 import { checkFields } from "../utils/moderation";
 
 export default function DreamCard({ dream, isSelected, onSelect, onDelete, onTogglePublic, onInterpret, interpreting, onViewReading }) {
@@ -324,16 +325,74 @@ export default function DreamCard({ dream, isSelected, onSelect, onDelete, onTog
             </>
           )}
           {onDelete && (
-            <button
-              onClick={(e) => { e.stopPropagation(); onDelete(dream.id); }}
-              style={{
-                background: "rgba(255,80,80,0.1)", border: "1px solid rgba(255,80,80,0.2)",
-                color: "#ff8888", padding: "6px 14px", borderRadius: 20, fontSize: 11,
-                cursor: "pointer"
-              }}
-            >
-              Delete
-            </button>
+            <AlertDialog.Root>
+              <AlertDialog.Trigger asChild>
+                <button
+                  onClick={(e) => e.stopPropagation()}
+                  style={{
+                    background: "rgba(255,80,80,0.1)", border: "1px solid rgba(255,80,80,0.2)",
+                    color: "#ff8888", padding: "6px 14px", borderRadius: 20, fontSize: 11,
+                    cursor: "pointer"
+                  }}
+                >
+                  Delete
+                </button>
+              </AlertDialog.Trigger>
+              <AlertDialog.Portal>
+                <AlertDialog.Overlay
+                  onClick={(e) => e.stopPropagation()}
+                  style={{
+                    position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)",
+                    backdropFilter: "blur(4px)", zIndex: 100,
+                  }}
+                />
+                <AlertDialog.Content
+                  onClick={(e) => e.stopPropagation()}
+                  style={{
+                    position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)",
+                    background: "rgba(16,4,40,0.97)", border: "1px solid rgba(255,80,80,0.3)",
+                    borderRadius: 18, padding: 24, maxWidth: 340, width: "90%",
+                    boxShadow: "0 16px 60px rgba(0,0,0,0.6)", animation: "fadeIn 0.2s ease",
+                    zIndex: 101,
+                  }}
+                >
+                  <AlertDialog.Title style={{
+                    fontSize: 16, color: "#f5e4b0", marginBottom: 8, fontFamily: "Georgia, serif",
+                  }}>
+                    Delete this dream?
+                  </AlertDialog.Title>
+                  <AlertDialog.Description style={{
+                    fontSize: 13, color: "#8a7540", lineHeight: 1.6, marginBottom: 20,
+                    fontFamily: "Georgia, serif",
+                  }}>
+                    This will permanently remove this dream and its interpretation. This cannot be undone.
+                  </AlertDialog.Description>
+                  <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+                    <AlertDialog.Cancel asChild>
+                      <button style={{
+                        background: "none", border: "1px solid rgba(200,160,30,0.2)",
+                        color: "#8a7540", padding: "10px 18px", borderRadius: 12, fontSize: 13,
+                        cursor: "pointer", fontFamily: "Georgia, serif", minHeight: 42,
+                      }}>
+                        Cancel
+                      </button>
+                    </AlertDialog.Cancel>
+                    <AlertDialog.Action asChild>
+                      <button
+                        onClick={() => onDelete(dream.id)}
+                        style={{
+                          background: "rgba(255,80,80,0.2)", border: "1px solid rgba(255,80,80,0.4)",
+                          color: "#ff8888", padding: "10px 18px", borderRadius: 12, fontSize: 13,
+                          cursor: "pointer", fontFamily: "Georgia, serif", fontWeight: 600, minHeight: 42,
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </AlertDialog.Action>
+                  </div>
+                </AlertDialog.Content>
+              </AlertDialog.Portal>
+            </AlertDialog.Root>
           )}
         </div>
       )}
