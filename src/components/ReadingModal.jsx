@@ -26,7 +26,32 @@ const KEYFRAMES = `
 @keyframes rm-ringPulse { 0%,100% { box-shadow: 0 0 20px rgba(144,102,212,0.2); } 50% { box-shadow: 0 0 60px rgba(144,102,212,0.5), 0 0 100px rgba(232,184,64,0.15); } }
 @keyframes rm-badgeIn   { from { opacity: 0; transform: scale(0.7) translateY(6px); } to { opacity: 1; transform: scale(1) translateY(0); } }
 @keyframes rm-textFadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes rm-blurIn { from { opacity: 0; filter: blur(8px); transform: translateY(4px); } to { opacity: 1; filter: blur(0px); transform: translateY(0); } }
+@keyframes rm-goldShimmer { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
+@keyframes rm-borderGlow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 `;
+
+// BlurReveal: splits text into words and animates each from blurred to sharp
+function BlurReveal({ text, baseDelay = 0 }) {
+  if (!text) return null;
+  const words = text.split(/(\s+)/);
+  return (
+    <span>
+      {words.map((word, i) => (
+        <span
+          key={i}
+          style={{
+            display: "inline",
+            opacity: 0,
+            animation: `rm-blurIn 0.5s ease ${baseDelay + (i * 0.04)}s forwards`,
+          }}
+        >
+          {word}
+        </span>
+      ))}
+    </span>
+  );
+}
 
 export default function ReadingModal({ reading, onClose, onGenerateImage, userSettings, onUpgrade }) {
   const { interpretation = "", symbols = [], dreamTitle = "", themeConnections = [], generatedThemes = [], dream } = reading;
@@ -181,8 +206,14 @@ export default function ReadingModal({ reading, onClose, onGenerateImage, userSe
               background: "linear-gradient(90deg, transparent, rgba(144,102,212,0.5))",
             }} />
             <span style={{
-              fontSize: 10, letterSpacing: 4, color: "#9066d4",
+              fontSize: 10, letterSpacing: 4,
               textTransform: "uppercase",
+              background: "linear-gradient(90deg, #9066d4 0%, #c8a040 25%, #e8c860 50%, #c8a040 75%, #9066d4 100%)",
+              backgroundSize: "200% auto",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+              animation: "rm-goldShimmer 4s linear infinite",
             }}>
               The Shepherd's Reflection
             </span>
@@ -192,7 +223,7 @@ export default function ReadingModal({ reading, onClose, onGenerateImage, userSe
             }} />
           </div>
 
-          {/* Interpretation text */}
+          {/* Interpretation text with blur reveal */}
           {showText && (
             <p style={{
               fontSize: 16, color: "#f0dfa0", lineHeight: 1.9,
@@ -200,9 +231,8 @@ export default function ReadingModal({ reading, onClose, onGenerateImage, userSe
               textShadow: "0 1px 12px rgba(200,160,30,0.2)",
               letterSpacing: 0.2,
               whiteSpace: "pre-wrap",
-              animation: "rm-textFadeIn 0.8s ease both",
             }}>
-              {interpretation}
+              <BlurReveal text={interpretation} baseDelay={0} />
             </p>
           )}
 
@@ -214,8 +244,14 @@ export default function ReadingModal({ reading, onClose, onGenerateImage, userSe
                 background: "linear-gradient(90deg, transparent, rgba(144,102,212,0.35), transparent)",
               }} />
               <div style={{
-                fontSize: 9, letterSpacing: 3, color: "#6b4da0",
+                fontSize: 9, letterSpacing: 3,
                 textTransform: "uppercase", marginBottom: 10,
+                background: "linear-gradient(90deg, #6b4da0 0%, #9066d4 25%, #c4a0ff 50%, #9066d4 75%, #6b4da0 100%)",
+                backgroundSize: "200% auto",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+                animation: "rm-goldShimmer 4s linear infinite",
               }}>
                 Symbols Detected
               </div>
@@ -245,8 +281,14 @@ export default function ReadingModal({ reading, onClose, onGenerateImage, userSe
                 background: "linear-gradient(90deg, transparent, rgba(232,184,64,0.25), transparent)",
               }} />
               <div style={{
-                fontSize: 9, letterSpacing: 3, color: "#8a7540",
+                fontSize: 9, letterSpacing: 3,
                 textTransform: "uppercase", marginBottom: 14,
+                background: "linear-gradient(90deg, #8a7540 0%, #c8a040 25%, #e8c860 50%, #c8a040 75%, #8a7540 100%)",
+                backgroundSize: "200% auto",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+                animation: "rm-goldShimmer 4s linear infinite",
               }}>
                 Dream Themes
               </div>
@@ -261,11 +303,14 @@ export default function ReadingModal({ reading, onClose, onGenerateImage, userSe
                           width: "100%", textAlign: "left",
                           display: "flex", alignItems: "center", gap: 12,
                           background: isExpanded ? "rgba(200,160,30,0.12)" : "rgba(10,6,24,0.6)",
-                          border: `1px solid ${isExpanded ? "rgba(200,160,30,0.4)" : "rgba(200,160,30,0.15)"}`,
+                          border: `1px solid ${isExpanded ? "rgba(232,184,64,0.45)" : "rgba(200,160,30,0.15)"}`,
                           borderRadius: isExpanded ? "16px 16px 0 0" : 16,
                           padding: "14px 16px",
                           cursor: "pointer", fontFamily: "Georgia, serif",
                           transition: "all 0.25s",
+                          boxShadow: isExpanded
+                            ? "0 0 12px rgba(232,184,64,0.15), 0 0 30px rgba(144,102,212,0.1), inset 0 0 20px rgba(232,184,64,0.03)"
+                            : "0 0 8px rgba(144,102,212,0.08)",
                         }}
                       >
                         <span style={{ fontSize: 26, flexShrink: 0 }}>{theme.symbol || "✦"}</span>
@@ -283,11 +328,12 @@ export default function ReadingModal({ reading, onClose, onGenerateImage, userSe
                       {isExpanded && (
                         <div style={{
                           background: "rgba(10,6,24,0.85)",
-                          border: "1px solid rgba(200,160,30,0.2)",
+                          border: "1px solid rgba(232,184,64,0.25)",
                           borderTop: "none",
                           borderRadius: "0 0 16px 16px",
                           padding: "18px 18px 20px",
                           animation: "rm-fadeIn 0.3s ease",
+                          boxShadow: "0 4px 20px rgba(144,102,212,0.08), 0 0 30px rgba(232,184,64,0.05)",
                         }}>
                           {theme.meaning && (
                             <div style={{ marginBottom: 14 }}>
@@ -328,8 +374,14 @@ export default function ReadingModal({ reading, onClose, onGenerateImage, userSe
                 background: "linear-gradient(90deg, transparent, rgba(232,184,64,0.25), transparent)",
               }} />
               <div style={{
-                fontSize: 9, letterSpacing: 3, color: "#8a7540",
+                fontSize: 9, letterSpacing: 3,
                 textTransform: "uppercase", marginBottom: 10,
+                background: "linear-gradient(90deg, #8a7540 0%, #c8a040 25%, #e8c860 50%, #c8a040 75%, #8a7540 100%)",
+                backgroundSize: "200% auto",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+                animation: "rm-goldShimmer 4s linear infinite",
               }}>
                 Symbol Connections
               </div>
