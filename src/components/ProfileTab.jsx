@@ -166,7 +166,7 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
 
       {/* Settings */}
       <div style={card}>
-        <div style={{ fontSize: 13, letterSpacing: 3, color: "#8060cc", textTransform: "uppercase", marginBottom: 20 }}>Settings & Tools</div>
+        <div style={{ fontSize: 13, letterSpacing: 3, color: "#8060cc", textTransform: "uppercase", marginBottom: 20 }}>Settings</div>
 
         <div style={{ marginBottom: 16 }}>
           <label style={{ display: "block", fontSize: 13, color: "#e8b840", marginBottom: 8 }}>Display Name</label>
@@ -211,6 +211,10 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
               outline: "none", colorScheme: "dark"
             }}
           />
+        </div>
+
+        <div style={{ marginBottom: 16 }}>
+          <ExportPDF dreams={dreams} />
         </div>
 
         <div style={{ marginBottom: 20 }}>
@@ -266,14 +270,6 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
           {saved ? "✓ Saved" : saving ? "Saving..." : "Save Settings"}
         </button>
 
-        {/* Tools */}
-        <div style={{
-          marginTop: 24, paddingTop: 20,
-          borderTop: "1px solid rgba(200,160,30,0.1)",
-        }}>
-          <div style={{ fontSize: 12, color: "#6b5c30", marginBottom: 12 }}>Tools</div>
-          <ExportPDF dreams={dreams} />
-        </div>
       </div>
 
       {/* Account */}
