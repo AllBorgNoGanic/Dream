@@ -3,6 +3,7 @@ import { supabase } from "../lib/supabase";
 import ShareButton from "./ShareButton";
 import ExportPDF from "./ExportPDF";
 import { ARCHETYPES } from "../constants/archetypes";
+import { checkContent } from "../utils/moderation";
 
 const FREE_INTERPRETATIONS = 5;
 const MAX_SHARE_BONUS = 3;
@@ -14,6 +15,7 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
   const [reminderEnabled, setReminderEnabled] = useState(userSettings?.reminder_enabled || false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [nameError, setNameError] = useState("");
   const [notifSupported] = useState(() => "Notification" in window && "serviceWorker" in navigator);
   const [notifPermission, setNotifPermission] = useState(() =>
     "Notification" in window ? Notification.permission : "denied"
@@ -27,6 +29,14 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
     : null;
 
   const handleSave = async () => {
+    setNameError("");
+    if (displayName.trim()) {
+      const check = checkContent(displayName.trim());
+      if (!check.clean) {
+        setNameError("Display name contains inappropriate language.");
+        return;
+      }
+    }
     setSaving(true);
     const { data } = await supabase
       .from("user_settings")
@@ -180,6 +190,9 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
               outline: "none", boxSizing: "border-box", fontFamily: "Georgia, serif"
             }}
           />
+          {nameError && (
+            <div style={{ fontSize: 12, color: "#e06050", marginTop: 6 }}>{nameError}</div>
+          )}
         </div>
 
         <div style={{ marginBottom: 16 }}>
