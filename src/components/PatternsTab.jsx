@@ -316,6 +316,44 @@ export default function PatternsTab({ dreams }) {
       .slice(0, 10);
   }, [dreams]);
 
+  // Ongoing guidance aggregation from all interpreted dreams
+  const guidanceData = useMemo(() => {
+    const interpreted = dreams.filter(d => d.generated_themes?.length);
+    if (!interpreted.length) return { recent: [], byTheme: {} };
+
+    // Collect all guidance entries with metadata
+    const allGuidance = [];
+    interpreted.forEach(d => {
+      (d.generated_themes || []).forEach(t => {
+        if (t.guidance) {
+          allGuidance.push({
+            guidance: t.guidance,
+            themeTitle: t.title,
+            symbol: t.symbol,
+            meaning: t.meaning,
+            dreamTheme: d.theme,
+            dreamMood: d.mood,
+            dreamTitle: d.title,
+            date: d.created_at,
+          });
+        }
+      });
+    });
+
+    // Recent wisdom: latest 6 unique guidance entries
+    const recent = allGuidance.slice(0, 6);
+
+    // Group by dream theme category
+    const byTheme = {};
+    allGuidance.forEach(g => {
+      const key = g.dreamTheme || "Other";
+      if (!byTheme[key]) byTheme[key] = [];
+      if (byTheme[key].length < 3) byTheme[key].push(g);
+    });
+
+    return { recent, byTheme };
+  }, [dreams]);
+
   // Pattern insights
   const insights = [];
   Object.entries(symbolMoodMap).forEach(([symbol, moods]) => {
@@ -604,6 +642,87 @@ export default function PatternsTab({ dreams }) {
         ) : (
           <div style={subText}>
             Record more dreams to discover patterns between your symbols and moods.
+          </div>
+        )}
+      </div>
+
+      {/* Ongoing Guidance */}
+      <div style={{ ...cardBase, marginBottom: 22, animationDelay: "0.33s" }}>
+        <h3 style={sectionTitle}>🧭 Ongoing Guidance</h3>
+        {guidanceData.recent.length > 0 ? (
+          <div>
+            <div style={{ ...subText, marginBottom: 16, fontSize: 13 }}>
+              Wisdom gathered from your dream journey, evolving as you record more dreams.
+            </div>
+
+            {/* Recent Wisdom */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {guidanceData.recent.map((g, i) => (
+                <div
+                  key={i}
+                  style={{
+                    background: "rgba(30,12,60,0.4)",
+                    border: "1px solid rgba(200,160,30,0.12)",
+                    borderRadius: 14,
+                    padding: "14px 16px",
+                    transition: "all 0.2s",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                    <span style={{ fontSize: 18 }}>{g.symbol}</span>
+                    <span style={{
+                      fontSize: 13, color: "#c8a040", fontFamily: "Georgia, serif",
+                      fontWeight: 600,
+                    }}>
+                      {g.themeTitle}
+                    </span>
+                    <span style={{ fontSize: 11, color: "#5a4a30", marginLeft: "auto" }}>
+                      {new Date(g.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                    </span>
+                  </div>
+                  <div style={{
+                    fontSize: 14, color: "#c8b080", lineHeight: 1.6,
+                    fontFamily: "Georgia, serif",
+                  }}>
+                    {g.guidance}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Guidance by Theme */}
+            {Object.keys(guidanceData.byTheme).length > 1 && (
+              <div style={{ marginTop: 20 }}>
+                <div style={{
+                  fontSize: 14, color: "#8a7540", marginBottom: 12,
+                  fontFamily: "Georgia, serif", fontWeight: 600,
+                }}>
+                  By Theme
+                </div>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  {Object.entries(guidanceData.byTheme).map(([theme, items]) => (
+                    <div
+                      key={theme}
+                      style={{
+                        background: "rgba(144,102,212,0.08)",
+                        border: "1px solid rgba(144,102,212,0.2)",
+                        borderRadius: 12,
+                        padding: "8px 14px",
+                        fontSize: 13,
+                        color: "#9066d4",
+                        fontFamily: "Georgia, serif",
+                      }}
+                    >
+                      {theme} <span style={{ color: "#5a4a80", fontSize: 11 }}>({items.length})</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div style={subText}>
+            Interpret your dreams to see personalized guidance accumulate here. Each reading adds wisdom to your journey.
           </div>
         )}
       </div>

@@ -385,6 +385,50 @@ export default function DreamJournal() {
     }
   };
 
+  // ── Dream Pattern Context Builder ──────────────────────────────────────────
+  const buildPatternContext = (allDreams) => {
+    const interpreted = allDreams.filter(d => d.generated_themes?.length);
+    if (interpreted.length < 3) return "";
+
+    // Top 3 recurring moods
+    const mc = {};
+    allDreams.forEach(d => { if (d.mood) mc[d.mood] = (mc[d.mood] || 0) + 1; });
+    const topMoods = Object.entries(mc).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([m]) => m);
+
+    // Top 3 recurring themes
+    const tc = {};
+    allDreams.forEach(d => { if (d.theme) tc[d.theme] = (tc[d.theme] || 0) + 1; });
+    const topThemes = Object.entries(tc).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([t]) => t);
+
+    // Last 3 guidance items from most recent interpreted dreams
+    const recentGuidance = interpreted.slice(0, 3)
+      .flatMap(d => d.generated_themes.map(t => t.guidance))
+      .filter(Boolean)
+      .slice(0, 3);
+
+    // Top recurring characters
+    const cc = {};
+    allDreams.forEach(d => {
+      (Array.isArray(d.characters) ? d.characters : []).forEach(c => {
+        cc[c] = (cc[c] || 0) + 1;
+      });
+    });
+    const topChars = Object.entries(cc).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([c]) => c);
+
+    // Lucid percentage
+    const lucidPct = Math.round(allDreams.filter(d => d.is_lucid).length / allDreams.length * 100);
+
+    let ctx = `\n\nDream history context (${allDreams.length} dreams recorded):`;
+    if (topMoods.length) ctx += ` Common moods: ${topMoods.join(", ")}.`;
+    if (topThemes.length) ctx += ` Recurring themes: ${topThemes.join(", ")}.`;
+    if (topChars.length) ctx += ` Recurring characters: ${topChars.join(", ")}.`;
+    if (lucidPct > 0) ctx += ` ${lucidPct}% lucid dreams.`;
+    if (recentGuidance.length) ctx += ` Recent guidance given: ${recentGuidance.join(" | ")}`;
+    ctx += " Build on this history. Reference patterns you notice connecting to previous dreams. Evolve the guidance rather than repeating it.";
+
+    return ctx;
+  };
+
   // ── AI Interpretation ──────────────────────────────────────────────────────
   const interpretDream = async (dream, settings) => {
     try {
@@ -401,6 +445,9 @@ export default function DreamJournal() {
         ? `\n\nDreamer profile: ${profileParts.join(" ")} Use this context to make the interpretation feel personal and resonant, referencing their life stage or patterns where meaningful. Do not simply list these facts -- weave them in naturally.`
         : "";
 
+      // Build pattern context from dream history
+      const patternContext = buildPatternContext(dreams);
+
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/interpret-dream`, {
         method: "POST",
         headers: {
@@ -413,7 +460,7 @@ export default function DreamJournal() {
 Respond ONLY with valid JSON in this exact format (no markdown, no code fences):
 {"interpretation":"A warm, insightful 2-3 sentence interpretation. Be poetic but grounded. Never be alarming. Write in plain flowing prose only.","themes":[{"title":"A unique evocative theme title","symbol":"A single relevant emoji","meaning":"What this theme represents in the dreamer's life","guidance":"Actionable advice or reflection prompt for the dreamer"}]}
 
-Generate 2-3 themes that are specific and unique to this dream. Theme titles should be creative and evocative (e.g. "The Unfinished Bridge", "Voices Behind the Door"). Each theme should feel personally tailored, not generic.${profileContext}`,
+Generate 2-3 themes that are specific and unique to this dream. Theme titles should be creative and evocative (e.g. "The Unfinished Bridge", "Voices Behind the Door"). Each theme should feel personally tailored, not generic.${profileContext}${patternContext}`,
           messages: [{
             role: "user",
             content: `Interpret this dream. Title: "${dream.title}". Mood: ${dream.mood}. Theme: ${dream.theme}. ${dream.is_lucid ? "This was a lucid dream." : ""}${dream.characters?.length ? ` Characters: ${dream.characters.join(", ")}.` : ""}${dream.tags?.length ? ` Tags: ${dream.tags.join(", ")}.` : ""} Dream: "${dream.description}"`,
