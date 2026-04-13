@@ -8,7 +8,6 @@ import DreamForm from "./components/DreamForm";
 import DreamCard from "./components/DreamCard";
 import SearchBar from "./components/SearchBar";
 import StreakBanner from "./components/StreakBanner";
-import ExportPDF from "./components/ExportPDF";
 import PatternsTab from "./components/PatternsTab";
 import CalendarHeatmap from "./components/CalendarHeatmap";
 import CommunityTab from "./components/CommunityTab";
@@ -1057,7 +1056,6 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
                 {dreams.length} dream{dreams.length !== 1 ? "s" : ""} recorded
               </div>
               <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                <ExportPDF dreams={dreams} />
                 <button
                   onClick={() => { setShowForm(!showForm); if (!showForm) setForm(defaultForm); }}
                   style={{

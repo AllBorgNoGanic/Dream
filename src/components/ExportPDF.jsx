@@ -113,14 +113,15 @@ export default function ExportPDF({ dreams }) {
       onClick={generatePDF}
       disabled={dreams.length === 0}
       style={{
-        background: dreams.length === 0 ? "rgba(140,90,5,0.2)" : "linear-gradient(135deg, #7a5200, #c89020)",
-        border: "none", color: dreams.length === 0 ? "#6b5c30" : "white",
-        padding: "10px 22px", borderRadius: 40, fontSize: 13,
+        background: dreams.length === 0 ? "rgba(140,90,5,0.1)" : "rgba(200,160,50,0.08)",
+        border: `1px solid ${dreams.length === 0 ? "rgba(200,160,30,0.1)" : "rgba(200,160,30,0.25)"}`,
+        color: dreams.length === 0 ? "#5a4a30" : "#c8a040",
+        padding: "10px 18px", borderRadius: 12, fontSize: 13,
         cursor: dreams.length === 0 ? "not-allowed" : "pointer",
-        letterSpacing: 0.5, boxShadow: dreams.length > 0 ? "0 4px 20px rgba(160,100,5,0.3)" : "none"
+        fontFamily: "Georgia, serif", transition: "all 0.2s",
       }}
     >
-      Export PDF
+      Export Journal as PDF
     </button>
   );
 }
