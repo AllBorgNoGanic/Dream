@@ -24,6 +24,18 @@ import { useState } from "react";
 import * as AlertDialog from "@radix-ui/react-alert-dialog";
 import { checkFields } from "../utils/moderation";
 
+// Inject delete dialog animation keyframes once
+const DIALOG_STYLES_ID = "dream-delete-dialog-styles";
+if (typeof document !== "undefined" && !document.getElementById(DIALOG_STYLES_ID)) {
+  const style = document.createElement("style");
+  style.id = DIALOG_STYLES_ID;
+  style.textContent = `
+    @keyframes dc-overlayIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes dc-contentIn { from { opacity: 0; transform: translate(-50%, -48%) scale(0.96); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+  `;
+  document.head.appendChild(style);
+}
+
 export default function DreamCard({ dream, isSelected, onSelect, onDelete, onTogglePublic, onInterpret, interpreting, onViewReading }) {
   const needsInterpretation = !dream.interpretation && onInterpret;
   const [showShareConfirm, setShowShareConfirm] = useState(false);
@@ -342,48 +354,59 @@ export default function DreamCard({ dream, isSelected, onSelect, onDelete, onTog
                 <AlertDialog.Overlay
                   onClick={(e) => e.stopPropagation()}
                   style={{
-                    position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)",
-                    backdropFilter: "blur(4px)", zIndex: 100,
+                    position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)",
+                    backdropFilter: "blur(6px)", zIndex: 100,
+                    animation: "dc-overlayIn 0.2s ease",
                   }}
                 />
                 <AlertDialog.Content
                   onClick={(e) => e.stopPropagation()}
                   style={{
                     position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)",
-                    background: "rgba(16,4,40,0.97)", border: "1px solid rgba(255,80,80,0.3)",
-                    borderRadius: 18, padding: 24, maxWidth: 340, width: "90%",
-                    boxShadow: "0 16px 60px rgba(0,0,0,0.6)", animation: "fadeIn 0.2s ease",
-                    zIndex: 101,
+                    background: "linear-gradient(160deg, rgba(22,8,48,0.98) 0%, rgba(12,4,28,0.98) 100%)",
+                    border: "1px solid rgba(200,160,50,0.2)",
+                    borderRadius: 20, padding: "28px 24px", maxWidth: 340, width: "88%",
+                    boxShadow: "0 20px 70px rgba(0,0,0,0.7), 0 0 40px rgba(104,71,192,0.1)",
+                    animation: "dc-contentIn 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
+                    zIndex: 101, outline: "none",
                   }}
                 >
-                  <AlertDialog.Title style={{
-                    fontSize: 16, color: "#f5e4b0", marginBottom: 8, fontFamily: "Georgia, serif",
-                  }}>
-                    Delete this dream?
-                  </AlertDialog.Title>
-                  <AlertDialog.Description style={{
-                    fontSize: 13, color: "#8a7540", lineHeight: 1.6, marginBottom: 20,
-                    fontFamily: "Georgia, serif",
-                  }}>
-                    This will permanently remove this dream and its interpretation. This cannot be undone.
-                  </AlertDialog.Description>
-                  <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+                  <div style={{ textAlign: "center", marginBottom: 16 }}>
+                    <div style={{ fontSize: 32, marginBottom: 12, opacity: 0.8 }}>🌙</div>
+                    <AlertDialog.Title style={{
+                      fontSize: 17, color: "#f5e4b0", marginBottom: 8,
+                      fontFamily: "Georgia, serif", fontWeight: 400,
+                    }}>
+                      Delete this dream?
+                    </AlertDialog.Title>
+                    <AlertDialog.Description style={{
+                      fontSize: 13, color: "#8a7540", lineHeight: 1.6,
+                      fontFamily: "Georgia, serif",
+                    }}>
+                      This will permanently remove this dream and its interpretation. This cannot be undone.
+                    </AlertDialog.Description>
+                  </div>
+                  <div style={{ display: "flex", gap: 10 }}>
                     <AlertDialog.Cancel asChild>
                       <button style={{
-                        background: "none", border: "1px solid rgba(200,160,30,0.2)",
-                        color: "#8a7540", padding: "10px 18px", borderRadius: 12, fontSize: 13,
-                        cursor: "pointer", fontFamily: "Georgia, serif", minHeight: 42,
+                        flex: 1, background: "rgba(200,160,50,0.08)",
+                        border: "1px solid rgba(200,160,30,0.25)",
+                        color: "#c8a040", padding: "12px 16px", borderRadius: 12, fontSize: 14,
+                        cursor: "pointer", fontFamily: "Georgia, serif", minHeight: 44,
+                        transition: "all 0.15s",
                       }}>
-                        Cancel
+                        Keep
                       </button>
                     </AlertDialog.Cancel>
                     <AlertDialog.Action asChild>
                       <button
                         onClick={() => onDelete(dream.id)}
                         style={{
-                          background: "rgba(255,80,80,0.2)", border: "1px solid rgba(255,80,80,0.4)",
-                          color: "#ff8888", padding: "10px 18px", borderRadius: 12, fontSize: 13,
-                          cursor: "pointer", fontFamily: "Georgia, serif", fontWeight: 600, minHeight: 42,
+                          flex: 1, background: "rgba(255,80,80,0.12)",
+                          border: "1px solid rgba(255,80,80,0.3)",
+                          color: "#ff8888", padding: "12px 16px", borderRadius: 12, fontSize: 14,
+                          cursor: "pointer", fontFamily: "Georgia, serif", fontWeight: 600, minHeight: 44,
+                          transition: "all 0.15s",
                         }}
                       >
                         Delete
