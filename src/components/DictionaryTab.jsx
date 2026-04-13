@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "../lib/supabase";
+import * as Tabs from "@radix-ui/react-tabs";
 
 const CATEGORIES = [
   { id: "all", label: "All" },
@@ -227,28 +228,34 @@ export default function DictionaryTab() {
         }}
       />
 
-      {/* Category pills */}
-      <div style={{
-        display: "flex", gap: 8, overflowX: "auto", paddingBottom: 16,
-        marginBottom: 8, scrollbarWidth: "none",
-      }}>
-        {CATEGORIES.map(cat => (
-          <button
-            key={cat.id}
-            onClick={() => setCategory(cat.id)}
-            style={{
-              background: category === cat.id ? "rgba(144,102,212,0.2)" : "rgba(6,12,22,0.5)",
-              border: `1px solid ${category === cat.id ? "rgba(144,102,212,0.4)" : "rgba(200,160,30,0.12)"}`,
-              color: category === cat.id ? "#9066d4" : "#7a6a40",
-              borderRadius: 20, padding: "10px 18px", fontSize: 13, minHeight: 40,
-              cursor: "pointer", fontFamily: "Georgia, serif",
-              whiteSpace: "nowrap", transition: "all 0.2s",
-            }}
-          >
-            {cat.label}
-          </button>
-        ))}
-      </div>
+      {/* Category pills (Radix Tabs for accessibility) */}
+      <Tabs.Root value={category} onValueChange={setCategory}>
+        <Tabs.List
+          aria-label="Symbol categories"
+          style={{
+            display: "flex", gap: 8, overflowX: "auto", paddingBottom: 16,
+            marginBottom: 8, scrollbarWidth: "none",
+          }}
+        >
+          {CATEGORIES.map(cat => (
+            <Tabs.Trigger
+              key={cat.id}
+              value={cat.id}
+              style={{
+                background: category === cat.id ? "rgba(144,102,212,0.2)" : "rgba(6,12,22,0.5)",
+                border: `1px solid ${category === cat.id ? "rgba(144,102,212,0.4)" : "rgba(200,160,30,0.12)"}`,
+                color: category === cat.id ? "#9066d4" : "#7a6a40",
+                borderRadius: 20, padding: "10px 18px", fontSize: 13, minHeight: 40,
+                cursor: "pointer", fontFamily: "Georgia, serif",
+                whiteSpace: "nowrap", transition: "all 0.2s",
+                outline: "none",
+              }}
+            >
+              {cat.label}
+            </Tabs.Trigger>
+          ))}
+        </Tabs.List>
+      </Tabs.Root>
 
       {/* Count */}
       <p style={{

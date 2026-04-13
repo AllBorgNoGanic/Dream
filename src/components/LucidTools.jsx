@@ -1,4 +1,22 @@
 import { useState, useMemo } from "react";
+import * as Accordion from "@radix-ui/react-accordion";
+
+// Inject accordion animation styles once
+const ACCORDION_STYLES_ID = "lucid-accordion-styles";
+if (typeof document !== "undefined" && !document.getElementById(ACCORDION_STYLES_ID)) {
+  const style = document.createElement("style");
+  style.id = ACCORDION_STYLES_ID;
+  style.textContent = `
+    [data-state="open"] > .mild-chevron { transform: rotate(180deg); }
+    [data-state="closed"] > .mild-chevron { transform: rotate(0deg); }
+    [data-state="open"][data-radix-collection-item] + [data-radix-accordion-content] {
+      animation: lt-slideDown 0.3s ease;
+    }
+    @keyframes lt-slideDown { from { height: 0; opacity: 0; } to { height: var(--radix-accordion-content-height); opacity: 1; } }
+    @keyframes lt-slideUp { from { height: var(--radix-accordion-content-height); opacity: 1; } to { height: 0; opacity: 0; } }
+  `;
+  document.head.appendChild(style);
+}
 
 const REALITY_CHECKS = [
   {
@@ -68,7 +86,6 @@ export default function LucidTools({ dreams }) {
   const [practiceCheck, setPracticeCheck] = useState(null);
   const [practiceTimer, setPracticeTimer] = useState(0);
   const [timerInterval, setTimerInterval] = useState(null);
-  const [mildExpanded, setMildExpanded] = useState(false);
 
   const startPractice = (check) => {
     setPracticeCheck(check);
@@ -645,100 +662,107 @@ export default function LucidTools({ dreams }) {
         </div>
       </div>
 
-      {/* ========== MILD TECHNIQUE GUIDE (collapsible, last) ========== */}
+      {/* ========== MILD TECHNIQUE GUIDE (Radix Accordion) ========== */}
       <div style={cardStyle}>
-        <button
-          className="mild-toggle"
-          onClick={() => setMildExpanded(!mildExpanded)}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            width: "100%",
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            padding: "4px 0",
-            borderRadius: 8,
-            transition: "background 0.2s",
-          }}
-        >
-          <div>
-            <div style={sectionTitle}>MILD Technique</div>
-            <div style={{ fontSize: 14, color: "#8a7540", textAlign: "left" }}>
-              Mnemonic Induction of Lucid Dreams
-            </div>
-          </div>
-          <div style={{
-            fontSize: 18,
-            color: "#8a7540",
-            transition: "transform 0.3s ease",
-            transform: mildExpanded ? "rotate(180deg)" : "rotate(0deg)",
-          }}>
-            ▼
-          </div>
-        </button>
-
-        {mildExpanded && (
-          <div style={{ marginTop: 20, animation: "fadeIn 0.3s ease" }}>
-            <div
+        <Accordion.Root type="single" collapsible>
+          <Accordion.Item value="mild">
+            <Accordion.Trigger
               style={{
-                fontSize: 13,
-                color: "#8a7540",
-                marginBottom: 20,
-                lineHeight: 1.6,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                width: "100%",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: "4px 0",
+                borderRadius: 8,
+                transition: "background 0.2s",
               }}
             >
-              A beginner-friendly technique that uses intention and visualization to trigger
-              lucidity during REM sleep.
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {MILD_STEPS.map((step, i) => (
+              <div>
+                <div style={sectionTitle}>MILD Technique</div>
+                <div style={{ fontSize: 14, color: "#8a7540", textAlign: "left" }}>
+                  Mnemonic Induction of Lucid Dreams
+                </div>
+              </div>
+              <div
+                className="mild-chevron"
+                style={{
+                  fontSize: 18,
+                  color: "#8a7540",
+                  transition: "transform 0.3s ease",
+                }}
+              >
+                ▼
+              </div>
+            </Accordion.Trigger>
+            <Accordion.Content
+              style={{
+                overflow: "hidden",
+              }}
+            >
+              <div style={{ marginTop: 20 }}>
                 <div
-                  key={i}
-                  className="step-card"
                   style={{
-                    display: "flex",
-                    gap: 16,
-                    alignItems: "flex-start",
-                    background: "rgba(30,12,60,0.5)",
-                    border: "1px solid rgba(200,160,30,0.1)",
-                    borderRadius: 16,
-                    padding: "16px 20px",
-                    transition: "all 0.2s",
+                    fontSize: 13,
+                    color: "#8a7540",
+                    marginBottom: 20,
+                    lineHeight: 1.6,
                   }}
                 >
-                  <div
-                    style={{
-                      minWidth: 36,
-                      height: 36,
-                      borderRadius: "50%",
-                      background: "linear-gradient(135deg, #7a5200, #c89020)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: 15,
-                      color: "white",
-                      fontWeight: 600,
-                      fontFamily: "sans-serif",
-                      flexShrink: 0,
-                    }}
-                  >
-                    {i + 1}
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 15, color: "#f0d890", marginBottom: 4 }}>
-                      {step.title}
-                    </div>
-                    <div style={{ fontSize: 13, color: "#8a7540", lineHeight: 1.6 }}>
-                      {step.detail}
-                    </div>
-                  </div>
+                  A beginner-friendly technique that uses intention and visualization to trigger
+                  lucidity during REM sleep.
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  {MILD_STEPS.map((step, i) => (
+                    <div
+                      key={i}
+                      className="step-card"
+                      style={{
+                        display: "flex",
+                        gap: 16,
+                        alignItems: "flex-start",
+                        background: "rgba(30,12,60,0.5)",
+                        border: "1px solid rgba(200,160,30,0.1)",
+                        borderRadius: 16,
+                        padding: "16px 20px",
+                        transition: "all 0.2s",
+                      }}
+                    >
+                      <div
+                        style={{
+                          minWidth: 36,
+                          height: 36,
+                          borderRadius: "50%",
+                          background: "linear-gradient(135deg, #7a5200, #c89020)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontSize: 15,
+                          color: "white",
+                          fontWeight: 600,
+                          fontFamily: "sans-serif",
+                          flexShrink: 0,
+                        }}
+                      >
+                        {i + 1}
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 15, color: "#f0d890", marginBottom: 4 }}>
+                          {step.title}
+                        </div>
+                        <div style={{ fontSize: 13, color: "#8a7540", lineHeight: 1.6 }}>
+                          {step.detail}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </Accordion.Content>
+          </Accordion.Item>
+        </Accordion.Root>
       </div>
     </div>
   );
