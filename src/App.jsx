@@ -11,7 +11,6 @@ import StreakBanner from "./components/StreakBanner";
 import ExportPDF from "./components/ExportPDF";
 import PatternsTab from "./components/PatternsTab";
 import CalendarHeatmap from "./components/CalendarHeatmap";
-import LucidTools from "./components/LucidTools";
 import CommunityTab from "./components/CommunityTab";
 import DictionaryTab from "./components/DictionaryTab";
 import OnboardingQuiz from "./components/OnboardingQuiz";
@@ -70,12 +69,6 @@ const defaultForm = {
   theme: "",
   tags: [],
   characters: [],
-  is_lucid: false,
-  lucidity_level: 0,
-  lucid_trigger: "",
-  lucid_activity: "",
-  lucid_duration: "",
-  dream_signs: [],
   sleep_quality: null,
   bed_time: "",
   wake_time: "",
@@ -144,7 +137,7 @@ export default function DreamJournal() {
 
   // Search & filters
   const [searchQuery, setSearchQuery] = useState("");
-  const [filters, setFilters] = useState({ mood: "", theme: "", lucidOnly: false });
+  const [filters, setFilters] = useState({ mood: "", theme: "" });
 
   // Dream form (controlled)
   const [form, setForm] = useState(defaultForm);
@@ -415,14 +408,10 @@ export default function DreamJournal() {
     });
     const topChars = Object.entries(cc).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([c]) => c);
 
-    // Lucid percentage
-    const lucidPct = Math.round(allDreams.filter(d => d.is_lucid).length / allDreams.length * 100);
-
     let ctx = `\n\nDream history context (${allDreams.length} dreams recorded):`;
     if (topMoods.length) ctx += ` Common moods: ${topMoods.join(", ")}.`;
     if (topThemes.length) ctx += ` Recurring themes: ${topThemes.join(", ")}.`;
     if (topChars.length) ctx += ` Recurring characters: ${topChars.join(", ")}.`;
-    if (lucidPct > 0) ctx += ` ${lucidPct}% lucid dreams.`;
     if (recentGuidance.length) ctx += ` Recent guidance given: ${recentGuidance.join(" | ")}`;
     ctx += " Build on this history. Reference patterns you notice connecting to previous dreams. Evolve the guidance rather than repeating it.";
 
@@ -463,7 +452,7 @@ Respond ONLY with valid JSON in this exact format (no markdown, no code fences):
 Generate 2-3 themes that are specific and unique to this dream. Theme titles should be creative and evocative (e.g. "The Unfinished Bridge", "Voices Behind the Door"). Each theme should feel personally tailored, not generic.${profileContext}${patternContext}`,
           messages: [{
             role: "user",
-            content: `Interpret this dream. Title: "${dream.title}". Mood: ${dream.mood}. Theme: ${dream.theme}. ${dream.is_lucid ? "This was a lucid dream." : ""}${dream.characters?.length ? ` Characters: ${dream.characters.join(", ")}.` : ""}${dream.tags?.length ? ` Tags: ${dream.tags.join(", ")}.` : ""} Dream: "${dream.description}"`,
+            content: `Interpret this dream. Title: "${dream.title}". Mood: ${dream.mood}. Theme: ${dream.theme}.${dream.characters?.length ? ` Characters: ${dream.characters.join(", ")}.` : ""}${dream.tags?.length ? ` Tags: ${dream.tags.join(", ")}.` : ""} Dream: "${dream.description}"`,
           }],
           max_tokens: 1200,
         }),
@@ -613,12 +602,6 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
         theme: form.theme || null,
         tags: form.tags || [],
         characters: form.characters || [],
-        is_lucid: form.is_lucid || false,
-        lucidity_level: form.lucidity_level || 0,
-        lucid_trigger: form.is_lucid ? (form.lucid_trigger || null) : null,
-        lucid_activity: form.is_lucid ? (form.lucid_activity || null) : null,
-        lucid_duration: form.is_lucid ? (form.lucid_duration || null) : null,
-        dream_signs: form.dream_signs || [],
         sleep_quality: form.sleep_quality || null,
         bed_time: form.bed_time ? `${today}T${form.bed_time}:00` : null,
         wake_time: form.wake_time ? `${today}T${form.wake_time}:00` : null,
@@ -704,7 +687,6 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
     }
     if (filters.mood) result = result.filter((d) => d.mood === filters.mood);
     if (filters.theme) result = result.filter((d) => d.theme === filters.theme);
-    if (filters.lucidOnly) result = result.filter((d) => d.is_lucid);
     return result;
   }, [dreams, searchQuery, filters]);
 
@@ -1148,19 +1130,12 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
           </div>
         )}
 
-        {/* ── INSIGHTS TAB (Patterns + Lucid) ── */}
+        {/* ── INSIGHTS TAB ── */}
         {tab === "insights" && (
           <div style={{ animation: "fadeIn 0.4s ease" }}>
             <PatternsTab dreams={dreams} userSettings={userSettings} />
             <div style={{ marginTop: 16 }}>
               <CalendarHeatmap dreams={dreams} />
-            </div>
-            <div style={{ marginTop: 28 }}>
-              <div style={{
-                height: 1, marginBottom: 24,
-                background: "linear-gradient(90deg, transparent, rgba(200,160,30,0.2), transparent)",
-              }} />
-              <LucidTools dreams={dreams} />
             </div>
           </div>
         )}

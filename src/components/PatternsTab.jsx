@@ -240,7 +240,6 @@ export default function PatternsTab({ dreams }) {
   const moodCounts = {};
   const themeCounts = {};
   const dayOfWeekCounts = { Sun: 0, Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0 };
-  let lucidCount = 0;
   let totalSleepQuality = 0;
   let sleepQualityCount = 0;
   const sleepQualityMoods = { 1: [], 2: [], 3: [], 4: [], 5: [] };
@@ -252,8 +251,6 @@ export default function PatternsTab({ dreams }) {
 
     const day = DAYS[new Date(d.created_at).getDay()];
     dayOfWeekCounts[day]++;
-
-    if (d.is_lucid || d.lucid) lucidCount++;
 
     const sq = d.sleep_quality || d.sleepQuality;
     if (sq && sq >= 1 && sq <= 5) {
@@ -280,7 +277,6 @@ export default function PatternsTab({ dreams }) {
   const topMood = Object.entries(moodCounts).sort((a, b) => b[1] - a[1])[0];
   const topTheme = Object.entries(themeCounts).sort((a, b) => b[1] - a[1])[0];
   const totalSymbols = Object.values(symbolCounts).reduce((a, b) => a + b, 0);
-  const lucidPct = dreams.length > 0 ? ((lucidCount / dreams.length) * 100).toFixed(0) : 0;
   const avgSleep = sleepQualityCount > 0 ? (totalSleepQuality / sleepQualityCount).toFixed(1) : "N/A";
 
   const _maxMoodCount = Math.max(...Object.values(moodCounts), 1);
@@ -443,8 +439,7 @@ export default function PatternsTab({ dreams }) {
         <StatCard icon="🔣" label="Symbols Found" value={totalSymbols} delay={0.15} />
         <StatCard icon="🔥" label="Current Streak" value={`${streaks.current}d`} delay={0.2} />
         <StatCard icon="🏆" label="Longest Streak" value={`${streaks.longest}d`} delay={0.25} />
-        <StatCard icon="🌙" label="Lucid Dream %" value={`${lucidPct}%`} delay={0.3} />
-        <StatCard icon="😴" label="Avg Sleep Quality" value={avgSleep} delay={0.35} />
+        <StatCard icon="😴" label="Avg Sleep Quality" value={avgSleep} delay={0.3} />
       </div>
 
       {/* Mood Distribution */}

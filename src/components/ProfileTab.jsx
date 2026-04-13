@@ -21,7 +21,6 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
   const archetype = userSettings?.archetype;
   const archetypeData = ARCHETYPES[archetype];
 
-  const lucidCount = dreams.filter(d => d.is_lucid).length;
   const avgSleep = dreams.filter(d => d.sleep_hours).length > 0
     ? (dreams.filter(d => d.sleep_hours).reduce((s, d) => s + Number(d.sleep_hours), 0) / dreams.filter(d => d.sleep_hours).length).toFixed(1)
     : null;
@@ -114,8 +113,8 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 16 }}>
         {[
           { label: "Total Dreams", value: dreams.length, icon: "🌙" },
-          { label: "Lucid Dreams", value: lucidCount, icon: "✨" },
           { label: "Avg Sleep", value: avgSleep ? `${avgSleep}h` : "—", icon: "💤" },
+          { label: "Current Streak", value: `${userSettings?.streak_current || 0}d`, icon: "🔥" },
         ].map(s => (
           <div key={s.label} style={{ background: "rgba(6,12,22,0.7)", border: "1px solid rgba(200,160,30,0.12)", borderRadius: 16, padding: "14px 10px", textAlign: "center" }}>
             <div style={{ fontSize: 24, marginBottom: 6 }}>{s.icon}</div>

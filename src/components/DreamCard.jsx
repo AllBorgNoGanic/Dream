@@ -60,14 +60,6 @@ export default function DreamCard({ dream, isSelected, onSelect, onDelete, onTog
         <div style={{ flex: 1 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
             <span style={{ fontSize: 18, fontWeight: 400, color: "#f0d890" }}>{dream.title}</span>
-            {dream.is_lucid && (
-              <span style={{
-                background: "rgba(100,200,255,0.15)", border: "1px solid rgba(100,200,255,0.3)",
-                borderRadius: 12, padding: "2px 8px", fontSize: 10, color: "#88ccff"
-              }}>
-                LUCID
-              </span>
-            )}
             {needsInterpretation && !isSelected && (
               <span style={{
                 background: "rgba(104,71,192,0.15)", border: "1px solid rgba(144,102,212,0.3)",

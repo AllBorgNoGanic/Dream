@@ -27,9 +27,8 @@ export default function ExportPDF({ dreams }) {
     y = 110;
     doc.setFontSize(10);
     doc.setTextColor(80, 60, 120);
-    const lucidCount = dreams.filter(d => d.is_lucid).length;
     const avgSleep = dreams.filter(d => d.sleep_hours).reduce((sum, d) => sum + Number(d.sleep_hours), 0) / (dreams.filter(d => d.sleep_hours).length || 1);
-    doc.text(`Lucid dreams: ${lucidCount} | Avg sleep: ${avgSleep.toFixed(1)}h`, pageWidth / 2, y, { align: "center" });
+    doc.text(`${dreams.length} dreams | Avg sleep: ${avgSleep.toFixed(1)}h`, pageWidth / 2, y, { align: "center" });
 
     doc.addPage();
     y = 20;
@@ -54,7 +53,7 @@ export default function ExportPDF({ dreams }) {
       // Meta
       doc.setFontSize(9);
       doc.setTextColor(120, 100, 160);
-      const meta = [date, dream.mood, dream.theme, dream.is_lucid ? "Lucid" : null, dream.sleep_hours ? `${dream.sleep_hours}h sleep` : null].filter(Boolean).join(" | ");
+      const meta = [date, dream.mood, dream.theme, dream.sleep_hours ? `${dream.sleep_hours}h sleep` : null].filter(Boolean).join(" | ");
       doc.text(meta, margin, y);
       y += 4;
 

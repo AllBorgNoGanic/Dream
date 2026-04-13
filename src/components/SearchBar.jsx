@@ -52,21 +52,9 @@ export default function SearchBar({ searchQuery, setSearchQuery, filters, setFil
             options={THEMES}
           />
 
-          <label style={{
-            display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#7a6a40", cursor: "pointer"
-          }}>
-            <input
-              type="checkbox"
-              checked={filters.lucidOnly || false}
-              onChange={e => setFilters(f => ({ ...f, lucidOnly: e.target.checked }))}
-              style={{ accentColor: "#c89020" }}
-            />
-            Lucid only
-          </label>
-
-          {(filters.mood || filters.theme || filters.lucidOnly) && (
+          {(filters.mood || filters.theme) && (
             <button
-              onClick={() => setFilters({ mood: "", theme: "", lucidOnly: false })}
+              onClick={() => setFilters({ mood: "", theme: "" })}
               style={{
                 background: "none", border: "1px solid rgba(255,100,100,0.3)",
                 color: "#ff9999", padding: "8px 16px", borderRadius: 20,
