@@ -26,7 +26,7 @@ const KEYFRAMES = `
 @keyframes rm-ringPulse { 0%,100% { box-shadow: 0 0 20px rgba(144,102,212,0.2); } 50% { box-shadow: 0 0 60px rgba(144,102,212,0.5), 0 0 100px rgba(232,184,64,0.15); } }
 @keyframes rm-badgeIn   { from { opacity: 0; transform: scale(0.7) translateY(6px); } to { opacity: 1; transform: scale(1) translateY(0); } }
 @keyframes rm-textFadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes rm-blurIn { from { opacity: 0; filter: blur(8px); transform: translateY(4px); } to { opacity: 1; filter: blur(0px); transform: translateY(0); } }
+@keyframes rm-blurIn { from { opacity: 0; filter: blur(4px); } to { opacity: 1; filter: blur(0px); } }
 @keyframes rm-goldShimmer { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
 @keyframes rm-borderGlow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 `;
@@ -43,7 +43,7 @@ function BlurReveal({ text, baseDelay = 0 }) {
           style={{
             display: "inline",
             opacity: 0,
-            animation: `rm-blurIn 0.5s ease ${baseDelay + (i * 0.04)}s forwards`,
+            animation: `rm-blurIn 0.2s ease ${baseDelay + (i * 0.008)}s forwards`,
           }}
         >
           {word}
