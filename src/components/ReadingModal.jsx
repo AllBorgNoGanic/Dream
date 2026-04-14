@@ -31,24 +31,16 @@ const KEYFRAMES = `
 @keyframes rm-borderGlow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 `;
 
-// BlurReveal: splits text into words and animates each from blurred to sharp
+// BlurReveal: fades entire text from blurred to sharp
 function BlurReveal({ text, baseDelay = 0 }) {
   if (!text) return null;
-  const words = text.split(/(\s+)/);
   return (
-    <span>
-      {words.map((word, i) => (
-        <span
-          key={i}
-          style={{
-            display: "inline",
-            opacity: 0,
-            animation: `rm-blurIn 0.2s ease ${baseDelay + (i * 0.008)}s forwards`,
-          }}
-        >
-          {word}
-        </span>
-      ))}
+    <span style={{
+      display: "inline",
+      opacity: 0,
+      animation: `rm-blurIn 0.6s ease ${baseDelay}s forwards`,
+    }}>
+      {text}
     </span>
   );
 }
