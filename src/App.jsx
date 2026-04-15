@@ -957,16 +957,7 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
         </svg>
       );
       case "journal": return (
-        <svg viewBox="0 0 24 24" fill="none" style={s}>
-          <ellipse cx="12" cy="13" rx="7" ry="5" stroke={color} strokeWidth="1.5"/>
-          <circle cx="8" cy="11" r="2.5" stroke={color} strokeWidth="1.2"/>
-          <circle cx="16" cy="11" r="2.5" stroke={color} strokeWidth="1.2"/>
-          <circle cx="12" cy="9.5" r="2.5" stroke={color} strokeWidth="1.2"/>
-          <ellipse cx="18.5" cy="10" rx="2.2" ry="2.8" stroke={color} strokeWidth="1.5"/>
-          <circle cx="19.2" cy="9.5" r="0.6" fill={color}/>
-          <line x1="9" y1="17" x2="9" y2="20" stroke={color} strokeWidth="1.3" strokeLinecap="round"/>
-          <line x1="15" y1="17" x2="15" y2="20" stroke={color} strokeWidth="1.3" strokeLinecap="round"/>
-        </svg>
+        <img src="/sheep.svg" alt="Journal" style={{ width: 38, height: 38, display: "block", marginTop: -7, filter: active ? "brightness(0) saturate(100%) invert(78%) sepia(40%) saturate(600%) hue-rotate(5deg) brightness(95%)" : "brightness(0) saturate(100%) invert(30%) sepia(15%) saturate(500%) hue-rotate(10deg) brightness(95%)" }} />
       );
       case "library": return (
         <svg viewBox="0 0 496 496" fill={color} style={s}>
