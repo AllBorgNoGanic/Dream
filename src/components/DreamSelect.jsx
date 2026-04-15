@@ -2,7 +2,7 @@ import * as Select from "@radix-ui/react-select";
 
 export default function DreamSelect({ value, onValueChange, placeholder, options }) {
   return (
-    <Select.Root value={value || ""} onValueChange={onValueChange}>
+    <Select.Root value={value || "__all__"} onValueChange={(v) => onValueChange(v === "__all__" ? "" : v)}>
       <Select.Trigger
         style={{
           display: "inline-flex", alignItems: "center", justifyContent: "space-between",
@@ -29,7 +29,7 @@ export default function DreamSelect({ value, onValueChange, placeholder, options
           }}
         >
           <Select.Viewport>
-            <SelectItem value="">{placeholder}</SelectItem>
+            <SelectItem value="__all__">{placeholder}</SelectItem>
             {options.map((opt) => {
               const val = typeof opt === "string" ? opt : opt.value;
               const label = typeof opt === "string" ? opt : opt.label;
