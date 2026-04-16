@@ -17,6 +17,8 @@ import ProfileTab from "./components/ProfileTab";
 import GalleryTab from "./components/GalleryTab";
 import ShareButton from "./components/ShareButton";
 import ReadingModal from "./components/ReadingModal";
+import ErrorBoundary from "./components/ErrorBoundary";
+import { useToast } from "./components/Toast";
 import Landing from "./Landing";
 
 // ─── Constants ─────────────────────────────────────────────────────────────
@@ -103,6 +105,8 @@ const globalStyles = (
 
 // ─── Main Component ─────────────────────────────────────────────────────────
 export default function DreamJournal() {
+  const toast = useToast();
+
   // Auth
   const [user, setUser] = useState(null);
   const [authMode, setAuthMode] = useState("login");
@@ -551,6 +555,7 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
       const result = await interpretDream(dream, userSettings);
       if (!result) {
         setInterpretingId(null);
+        toast.error("Couldn't interpret your dream right now. Try again in a moment.");
         return; // API failed silently -- keep the button available to retry
       }
       const { interpretation, generated_themes } = result;
@@ -634,26 +639,42 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
       await loadUserSettings();
       setForm(defaultForm);
       setShowForm(false);
+      toast.success(form.interpret_on_save ? "Dream saved and interpreted" : "Dream saved");
     } catch (err) {
       console.error("Error saving dream:", err);
+      toast.error("Couldn't save your dream. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   const handleDeleteDream = async (dreamId) => {
-    await supabase.from("dreams").delete().eq("id", dreamId);
-    setDreams((d) => d.filter((x) => x.id !== dreamId));
-    if (selectedDream?.id === dreamId) setSelectedDream(null);
+    try {
+      const { error } = await supabase.from("dreams").delete().eq("id", dreamId);
+      if (error) throw error;
+      setDreams((d) => d.filter((x) => x.id !== dreamId));
+      if (selectedDream?.id === dreamId) setSelectedDream(null);
+      toast.success("Dream removed");
+    } catch (err) {
+      console.error("Error deleting dream:", err);
+      toast.error("Couldn't remove the dream. Please try again.");
+    }
   };
 
   const handleTogglePublic = async (dreamId) => {
     const dream = dreams.find((d) => d.id === dreamId);
     if (!dream) return;
     const newValue = !dream.is_public;
-    await supabase.from("dreams").update({ is_public: newValue }).eq("id", dreamId);
-    setDreams((prev) => prev.map((d) => d.id === dreamId ? { ...d, is_public: newValue } : d));
-    if (selectedDream?.id === dreamId) setSelectedDream((s) => ({ ...s, is_public: newValue }));
+    try {
+      const { error } = await supabase.from("dreams").update({ is_public: newValue }).eq("id", dreamId);
+      if (error) throw error;
+      setDreams((prev) => prev.map((d) => d.id === dreamId ? { ...d, is_public: newValue } : d));
+      if (selectedDream?.id === dreamId) setSelectedDream((s) => ({ ...s, is_public: newValue }));
+      toast.success(newValue ? "Dream shared with the community" : "Dream made private");
+    } catch (err) {
+      console.error("Error toggling visibility:", err);
+      toast.error("Couldn't update visibility. Please try again.");
+    }
   };
 
   // ── Upgrade ────────────────────────────────────────────────────────────────
@@ -666,7 +687,10 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
       });
       const { url } = await res.json();
       if (url) window.location.href = url;
-    } catch {
+      else throw new Error("No checkout URL returned");
+    } catch (err) {
+      console.error("Upgrade failed:", err);
+      toast.error("Couldn't open checkout. Please try again.");
       setShowUpgradeModal(true);
     }
   };
@@ -1036,6 +1060,7 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
         {/* ── JOURNAL TAB ── */}
         {tab === "journal" && (
           <div style={{ animation: "fadeIn 0.4s ease" }}>
+            <ErrorBoundary label="Journal">
             <StreakBanner
               streak={userSettings?.streak_current || 0}
               longestStreak={userSettings?.streak_longest || 0}
@@ -1116,65 +1141,75 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
                 }}
               />
             ))}
+            </ErrorBoundary>
           </div>
         )}
 
         {/* ── INSIGHTS TAB ── */}
         {tab === "insights" && (
           <div style={{ animation: "fadeIn 0.4s ease" }}>
-            <PatternsTab dreams={dreams} userSettings={userSettings} />
-            <div style={{ marginTop: 16 }}>
-              <CalendarHeatmap dreams={dreams} />
-            </div>
+            <ErrorBoundary label="Insights">
+              <PatternsTab dreams={dreams} userSettings={userSettings} />
+              <div style={{ marginTop: 16 }}>
+                <CalendarHeatmap dreams={dreams} />
+              </div>
+            </ErrorBoundary>
           </div>
         )}
 
         {/* ── LIBRARY TAB ── */}
         {tab === "library" && (
           <div style={{ animation: "fadeIn 0.4s ease" }}>
-            <DictionaryTab />
+            <ErrorBoundary label="Library">
+              <DictionaryTab />
+            </ErrorBoundary>
           </div>
         )}
 
         {/* ── COMMUNITY TAB ── */}
         {tab === "community" && (
           <div style={{ animation: "fadeIn 0.4s ease" }}>
-            <CommunityTab
-              user={user}
-              supabase={supabase}
-            />
+            <ErrorBoundary label="Community">
+              <CommunityTab
+                user={user}
+                supabase={supabase}
+              />
+            </ErrorBoundary>
           </div>
         )}
 
         {/* ── PROFILE TAB (includes Gallery + Library subsections) ── */}
         {tab === "profile" && (
           <div style={{ animation: "fadeIn 0.4s ease" }}>
-            <ProfileTab
-              user={user}
-              userSettings={userSettings}
-              onSettingsUpdate={setUserSettings}
-              dreams={dreams}
-              onUpgrade={() => setShowUpgradeModal(true)}
-              onRetakeQuiz={() => setShowQuiz(true)}
-            />
-
-            {/* Gallery subsection */}
-            <div style={{ marginTop: 28 }}>
-              <div style={{
-                height: 1, marginBottom: 24,
-                background: "linear-gradient(90deg, transparent, rgba(200,160,30,0.2), transparent)",
-              }} />
-              <GalleryTab
+            <ErrorBoundary label="Profile">
+              <ProfileTab
                 user={user}
+                userSettings={userSettings}
+                onSettingsUpdate={setUserSettings}
                 dreams={dreams}
-                onViewReading={async (d) => {
-                  const themes = await fetchDreamThemesCache();
-                  const themeConnections = detectThemeConnections(d.description, themes);
-                  setReadingModal({ interpretation: d.interpretation, symbols: d.symbols || [], dreamTitle: d.title, themeConnections, generatedThemes: d.generated_themes || [], dream: d });
-                }}
+                onUpgrade={() => setShowUpgradeModal(true)}
+                onRetakeQuiz={() => setShowQuiz(true)}
               />
-            </div>
 
+              {/* Gallery subsection */}
+              <div style={{ marginTop: 28 }}>
+                <div style={{
+                  height: 1, marginBottom: 24,
+                  background: "linear-gradient(90deg, transparent, rgba(200,160,30,0.2), transparent)",
+                }} />
+                <ErrorBoundary label="Gallery">
+                  <GalleryTab
+                    user={user}
+                    dreams={dreams}
+                    onViewReading={async (d) => {
+                      const themes = await fetchDreamThemesCache();
+                      const themeConnections = detectThemeConnections(d.description, themes);
+                      setReadingModal({ interpretation: d.interpretation, symbols: d.symbols || [], dreamTitle: d.title, themeConnections, generatedThemes: d.generated_themes || [], dream: d });
+                    }}
+                  />
+                </ErrorBoundary>
+              </div>
+            </ErrorBoundary>
           </div>
         )}
       </div>
