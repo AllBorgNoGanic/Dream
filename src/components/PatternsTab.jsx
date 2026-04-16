@@ -312,12 +312,12 @@ export default function PatternsTab({ dreams }) {
       .slice(0, 10);
   }, [dreams]);
 
-  // Ongoing guidance aggregation from all interpreted dreams
+  // Evolving guidance - synthesized from all interpreted dreams
   const guidanceData = useMemo(() => {
     const interpreted = dreams.filter(d => d.generated_themes?.length);
-    if (!interpreted.length) return { recent: [], byTheme: {} };
+    if (!interpreted.length) return { insights: [], totalEntries: 0 };
 
-    // Collect all guidance entries with metadata
+    // Step 1: Collect all guidance entries with metadata
     const allGuidance = [];
     interpreted.forEach(d => {
       (d.generated_themes || []).forEach(t => {
@@ -326,9 +326,7 @@ export default function PatternsTab({ dreams }) {
             guidance: t.guidance,
             themeTitle: t.title,
             symbol: t.symbol,
-            meaning: t.meaning,
             dreamTheme: d.theme,
-            dreamMood: d.mood,
             dreamTitle: d.title,
             date: d.created_at,
           });
@@ -336,18 +334,95 @@ export default function PatternsTab({ dreams }) {
       });
     });
 
-    // Recent wisdom: latest 6 unique guidance entries
-    const recent = allGuidance.slice(0, 6);
+    if (!allGuidance.length) return { insights: [], totalEntries: 0 };
 
-    // Group by dream theme category
-    const byTheme = {};
+    // Step 2: Define concept clusters with related keywords
+    const conceptClusters = [
+      { label: "Boundaries & Self-Protection", keywords: ["boundar", "protect", "say no", "guard", "shield", "safe space", "limit", "defend", "stand firm", "assert"] },
+      { label: "Letting Go & Surrender", keywords: ["let go", "letting go", "release", "surrender", "accept", "move on", "forgive", "detach", "leave behind", "shed"] },
+      { label: "Trust & Intuition", keywords: ["trust", "instinct", "intuiti", "inner voice", "gut feel", "listen to your", "inner wisdom", "sense", "faith in"] },
+      { label: "Growth & Transformation", keywords: ["grow", "transform", "evolv", "change", "bloom", "emerge", "develop", "progress", "becom", "unfold", "journey"] },
+      { label: "Connection & Relationships", keywords: ["connect", "relationship", "loved one", "bond", "communit", "together", "companion", "friend", "family", "support"] },
+      { label: "Fear & Courage", keywords: ["fear", "courage", "brave", "afraid", "confront", "face your", "overcome", "strength", "bold", "resilien"] },
+      { label: "Self-Discovery & Identity", keywords: ["self", "identity", "discover", "who you", "authenti", "true nature", "inner", "purpose", "calling", "reflect"] },
+      { label: "Rest & Renewal", keywords: ["rest", "heal", "renew", "recharge", "peace", "calm", "still", "pause", "nurtur", "recover", "restore", "slow down"] },
+      { label: "Ambition & Direction", keywords: ["goal", "path", "direction", "ambiti", "pursue", "aspir", "dream", "vision", "plan", "focus", "commit", "determin"] },
+      { label: "Communication & Expression", keywords: ["speak", "voice", "express", "communicat", "tell", "share your", "open up", "honest", "articulat", "listen"] },
+      { label: "Control & Freedom", keywords: ["control", "freedom", "free", "independen", "autonm", "choic", "liberat", "empower", "agency", "unchain"] },
+      { label: "Loss & Grief", keywords: ["loss", "grief", "mourn", "miss", "gone", "absence", "hollow", "ache", "sorrow", "goodbye"] },
+    ];
+
+    // Step 3: Score each guidance entry against concept clusters
+    const clusterMatches = {};
     allGuidance.forEach(g => {
-      const key = g.dreamTheme || "Other";
-      if (!byTheme[key]) byTheme[key] = [];
-      if (byTheme[key].length < 3) byTheme[key].push(g);
+      const text = g.guidance.toLowerCase();
+      conceptClusters.forEach(cluster => {
+        const matched = cluster.keywords.some(kw => text.includes(kw));
+        if (matched) {
+          if (!clusterMatches[cluster.label]) {
+            clusterMatches[cluster.label] = { entries: [], latestDate: null };
+          }
+          clusterMatches[cluster.label].entries.push(g);
+          const d = new Date(g.date);
+          if (!clusterMatches[cluster.label].latestDate || d > clusterMatches[cluster.label].latestDate) {
+            clusterMatches[cluster.label].latestDate = d;
+          }
+        }
+      });
     });
 
-    return { recent, byTheme };
+    // Step 4: Also catch unclustered guidance as "Other Wisdom"
+    const clusteredTexts = new Set();
+    Object.values(clusterMatches).forEach(c => {
+      c.entries.forEach(e => clusteredTexts.add(e.guidance));
+    });
+    const unclustered = allGuidance.filter(g => !clusteredTexts.has(g.guidance));
+    if (unclustered.length > 0) {
+      clusterMatches["Other Wisdom"] = {
+        entries: unclustered,
+        latestDate: new Date(Math.max(...unclustered.map(u => new Date(u.date)))),
+      };
+    }
+
+    // Step 5: Score clusters by frequency * recency and sort
+    const now = Date.now();
+    const insights = Object.entries(clusterMatches)
+      .map(([label, data]) => {
+        const count = data.entries.length;
+        const daysSinceLast = (now - data.latestDate.getTime()) / (1000 * 60 * 60 * 24);
+        const recencyBoost = Math.max(0.3, 1 - daysSinceLast / 90); // decays over 90 days
+        const score = count * recencyBoost;
+
+        // Pick the most recent entry as representative text
+        const sorted = [...data.entries].sort((a, b) => new Date(b.date) - new Date(a.date));
+        const representative = sorted[0];
+
+        // Collect unique symbols
+        const symbols = [...new Set(data.entries.map(e => e.symbol).filter(Boolean))].slice(0, 3);
+
+        // Strength label
+        let strength;
+        if (count >= 5) strength = "Strong pattern";
+        else if (count >= 3) strength = "Growing pattern";
+        else if (count >= 2) strength = "Emerging";
+        else strength = "New insight";
+
+        return {
+          label,
+          count,
+          score,
+          strength,
+          symbols,
+          representative: representative.guidance,
+          latestDate: data.latestDate,
+          dreamTitles: [...new Set(sorted.slice(0, 3).map(e => e.dreamTitle).filter(Boolean))],
+        };
+      })
+      .filter(i => i.label !== "Other Wisdom" || i.count >= 2) // only show "Other" if 2+
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 5); // Top 5 evolving insights
+
+    return { insights, totalEntries: allGuidance.length };
   }, [dreams]);
 
   // Pattern insights
@@ -644,76 +719,98 @@ export default function PatternsTab({ dreams }) {
       {/* Ongoing Guidance */}
       <div style={{ ...cardBase, marginBottom: 22, animationDelay: "0.33s" }}>
         <h3 style={sectionTitle}>🧭 Ongoing Guidance</h3>
-        {guidanceData.recent.length > 0 ? (
+        {guidanceData.insights.length > 0 ? (
           <div>
             <div style={{ ...subText, marginBottom: 16, fontSize: 13 }}>
-              Wisdom gathered from your dream journey, evolving as you record more dreams.
+              The strongest threads of wisdom emerging from your dreams, evolving as you record more.
             </div>
 
-            {/* Recent Wisdom */}
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {guidanceData.recent.map((g, i) => (
-                <div
-                  key={i}
-                  style={{
-                    background: "rgba(30,12,60,0.4)",
-                    border: "1px solid rgba(200,160,30,0.12)",
-                    borderRadius: 14,
-                    padding: "14px 16px",
-                    transition: "all 0.2s",
-                  }}
-                >
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                    <span style={{ fontSize: 18 }}>{g.symbol}</span>
-                    <span style={{
-                      fontSize: 13, color: "#c8a040", fontFamily: "Georgia, serif",
-                      fontWeight: 600,
+              {guidanceData.insights.map((insight, i) => {
+                const strengthColor =
+                  insight.strength === "Strong pattern" ? "#e8b840" :
+                  insight.strength === "Growing pattern" ? "#c8a040" :
+                  insight.strength === "Emerging" ? "#9066d4" : "#7a6040";
+                const strengthBg =
+                  insight.strength === "Strong pattern" ? "rgba(232,184,64,0.15)" :
+                  insight.strength === "Growing pattern" ? "rgba(200,160,64,0.12)" :
+                  insight.strength === "Emerging" ? "rgba(144,102,212,0.12)" : "rgba(122,96,64,0.1)";
+                return (
+                  <div
+                    key={i}
+                    style={{
+                      background: "rgba(30,12,60,0.4)",
+                      border: "1px solid rgba(200,160,30,0.12)",
+                      borderRadius: 14,
+                      padding: "16px 18px",
+                      transition: "all 0.2s",
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10, flexWrap: "wrap" }}>
+                      {insight.symbols.length > 0 && (
+                        <span style={{ fontSize: 20 }}>
+                          {insight.symbols.join(" ")}
+                        </span>
+                      )}
+                      <span style={{
+                        fontSize: 15, color: "#f5e4b0", fontFamily: "Georgia, serif",
+                        fontWeight: 600, flex: 1, minWidth: 0,
+                      }}>
+                        {insight.label}
+                      </span>
+                      <span style={{
+                        fontSize: 11,
+                        color: strengthColor,
+                        background: strengthBg,
+                        padding: "3px 10px",
+                        borderRadius: 20,
+                        fontFamily: "Georgia, serif",
+                        fontWeight: 600,
+                        border: `1px solid ${strengthColor}33`,
+                      }}>
+                        {insight.strength}
+                      </span>
+                    </div>
+                    <div style={{
+                      fontSize: 14, color: "#c8b080", lineHeight: 1.6,
+                      fontFamily: "Georgia, serif", marginBottom: 10,
+                      fontStyle: "italic",
                     }}>
-                      {g.themeTitle}
-                    </span>
-                    <span style={{ fontSize: 11, color: "#5a4a30", marginLeft: "auto" }}>
-                      {new Date(g.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                    </span>
+                      "{insight.representative}"
+                    </div>
+                    <div style={{
+                      display: "flex", alignItems: "center", gap: 12,
+                      fontSize: 11, color: "#7a6040",
+                      fontFamily: "Georgia, serif", flexWrap: "wrap",
+                    }}>
+                      <span>
+                        {insight.count} {insight.count === 1 ? "dream" : "dreams"} reinforce this
+                      </span>
+                      <span style={{ color: "#5a4a30" }}>•</span>
+                      <span>
+                        Last seen {new Date(insight.latestDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                      </span>
+                      {insight.dreamTitles.length > 0 && (
+                        <>
+                          <span style={{ color: "#5a4a30" }}>•</span>
+                          <span style={{ fontStyle: "italic", color: "#8a7550" }}>
+                            {insight.dreamTitles.slice(0, 2).join(", ")}
+                            {insight.dreamTitles.length > 2 ? "..." : ""}
+                          </span>
+                        </>
+                      )}
+                    </div>
                   </div>
-                  <div style={{
-                    fontSize: 14, color: "#c8b080", lineHeight: 1.6,
-                    fontFamily: "Georgia, serif",
-                  }}>
-                    {g.guidance}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
-            {/* Guidance by Theme */}
-            {Object.keys(guidanceData.byTheme).length > 1 && (
-              <div style={{ marginTop: 20 }}>
-                <div style={{
-                  fontSize: 14, color: "#8a7540", marginBottom: 12,
-                  fontFamily: "Georgia, serif", fontWeight: 600,
-                }}>
-                  By Theme
-                </div>
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                  {Object.entries(guidanceData.byTheme).map(([theme, items]) => (
-                    <div
-                      key={theme}
-                      style={{
-                        background: "rgba(144,102,212,0.08)",
-                        border: "1px solid rgba(144,102,212,0.2)",
-                        borderRadius: 12,
-                        padding: "8px 14px",
-                        fontSize: 13,
-                        color: "#9066d4",
-                        fontFamily: "Georgia, serif",
-                      }}
-                    >
-                      {theme} <span style={{ color: "#5a4a80", fontSize: 11 }}>({items.length})</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            <div style={{
+              marginTop: 14, fontSize: 11, color: "#5a4a30",
+              textAlign: "center", fontFamily: "Georgia, serif", fontStyle: "italic",
+            }}>
+              Synthesized from {guidanceData.totalEntries} guidance {guidanceData.totalEntries === 1 ? "entry" : "entries"} across your journey
+            </div>
           </div>
         ) : (
           <div style={subText}>
