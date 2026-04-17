@@ -18,7 +18,9 @@ import GalleryTab from "./components/GalleryTab";
 import ShareButton from "./components/ShareButton";
 import ReadingModal from "./components/ReadingModal";
 import ErrorBoundary from "./components/ErrorBoundary";
+import OfflineBanner from "./components/OfflineBanner";
 import { useToast } from "./components/Toast";
+import useOffline from "./hooks/useOffline";
 import Landing from "./Landing";
 
 // ─── Constants ─────────────────────────────────────────────────────────────
@@ -106,6 +108,7 @@ const globalStyles = (
 // ─── Main Component ─────────────────────────────────────────────────────────
 export default function DreamJournal() {
   const toast = useToast();
+  const offline = useOffline();
 
   // Auth
   const [user, setUser] = useState(null);
@@ -213,6 +216,18 @@ export default function DreamJournal() {
     }
   }, []);
 
+  // ── Offline: auto-sync when coming back online ──────────────────────────────
+  useEffect(() => {
+    if (!offline.isOnline || !user) return;
+    if (offline.pendingCount > 0 && !offline.syncing) {
+      offline.syncAll(supabase, user.id, async () => {
+        await loadDreams();
+        await loadUserSettings();
+        toast.success("Offline dreams synced successfully");
+      });
+    }
+  }, [offline.isOnline, user]); // eslint-disable-line
+
   // ── Dream reminder notifications ────────────────────────────────────────────
   useEffect(() => {
     if (!userSettings?.reminder_enabled) return;
@@ -249,12 +264,24 @@ export default function DreamJournal() {
 
   // ── Data loaders ───────────────────────────────────────────────────────────
   const loadDreams = async () => {
+    if (!navigator.onLine) {
+      // Offline: load from IndexedDB cache
+      try {
+        const cached = await offline.loadCachedDreams();
+        if (cached.length) setDreams(cached);
+      } catch { /* ignore */ }
+      return;
+    }
     const { data, error } = await supabase
       .from("dreams")
       .select("*, dream_images(id, image_url, created_at)")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
-    if (!error && data) setDreams(data);
+    if (!error && data) {
+      setDreams(data);
+      // Cache for offline viewing (fire-and-forget)
+      offline.cacheDreamList(data);
+    }
   };
 
   const loadUserSettings = async () => {
@@ -617,6 +644,25 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
         symbols,
       };
 
+      // ── Offline path: queue locally and show in list ──
+      if (!navigator.onLine) {
+        const offlineId = await offline.queueDream(dreamPayload);
+        // Show the dream locally immediately so the user sees it
+        const localDream = {
+          ...dreamPayload,
+          id: offlineId,
+          created_at: new Date().toISOString(),
+          _offlineCreated: true,
+        };
+        setDreams((prev) => [localDream, ...prev]);
+        setForm(defaultForm);
+        setShowForm(false);
+        toast.info("Dream saved offline. It will sync when you're back online.");
+        setLoading(false);
+        return;
+      }
+
+      // ── Online path: normal Supabase insert ──
       const { data: inserted, error } = await supabase.from("dreams").insert(dreamPayload).select().single();
       if (error) throw error;
 
@@ -645,7 +691,36 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
       toast.success(form.interpret_on_save ? "Dream saved and interpreted" : "Dream saved");
     } catch (err) {
       console.error("Error saving dream:", err);
-      toast.error("Couldn't save your dream. Please try again.");
+      // If online save fails due to network, fall back to offline queue
+      if (!navigator.onLine || err?.message?.includes("fetch") || err?.message?.includes("network")) {
+        try {
+          const symbols = detectSymbols(form.description);
+          let sleep_hours = null;
+          if (form.bed_time && form.wake_time) {
+            const [bh, bm] = form.bed_time.split(":").map(Number);
+            const [wh, wm] = form.wake_time.split(":").map(Number);
+            let hours = wh + wm / 60 - (bh + bm / 60);
+            if (hours < 0) hours += 24;
+            sleep_hours = Math.round(hours * 100) / 100;
+          }
+          const today = new Date().toISOString().split("T")[0];
+          const fallbackPayload = {
+            user_id: user.id, title: form.title, description: form.description,
+            mood: form.mood || null, theme: form.theme || null, tags: form.tags || [],
+            characters: form.characters || [], sleep_quality: form.sleep_quality || null,
+            bed_time: form.bed_time ? `${today}T${form.bed_time}:00` : null,
+            wake_time: form.wake_time ? `${today}T${form.wake_time}:00` : null,
+            sleep_hours, is_public: form.is_public || false, symbols,
+          };
+          const offlineId = await offline.queueDream(fallbackPayload);
+          setDreams((prev) => [{ ...fallbackPayload, id: offlineId, created_at: new Date().toISOString(), _offlineCreated: true }, ...prev]);
+          setForm(defaultForm);
+          setShowForm(false);
+          toast.info("Connection lost. Dream saved offline and will sync later.");
+        } catch { /* IndexedDB also failed, nothing we can do */ }
+      } else {
+        toast.error("Couldn't save your dream. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -1116,6 +1191,20 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
             Sign Out
           </button>
         </div>
+
+        {/* Offline status banner */}
+        <OfflineBanner
+          isOnline={offline.isOnline}
+          pendingCount={offline.pendingCount}
+          syncing={offline.syncing}
+          onSync={() =>
+            user && offline.syncAll(supabase, user.id, async () => {
+              await loadDreams();
+              await loadUserSettings();
+              toast.success("Offline dreams synced");
+            })
+          }
+        />
 
         {/* ── JOURNAL TAB ── */}
         {tab === "journal" && (

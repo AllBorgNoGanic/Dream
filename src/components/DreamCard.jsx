@@ -58,9 +58,18 @@ export default function DreamCard({ dream, isSelected, onSelect, onDelete, onTog
     >
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
         <div style={{ flex: 1 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" }}>
             <span style={{ fontSize: 18, fontWeight: 400, color: "#f0d890" }}>{dream.title}</span>
-            {needsInterpretation && !isSelected && (
+            {dream._offlineCreated && (
+              <span style={{
+                background: "rgba(200,160,30,0.12)", border: "1px solid rgba(200,160,30,0.3)",
+                borderRadius: 12, padding: "2px 8px", fontSize: 10, color: "#e8b840",
+                letterSpacing: 0.5,
+              }}>
+                ☁️ Pending sync
+              </span>
+            )}
+            {needsInterpretation && !isSelected && !dream._offlineCreated && (
               <span style={{
                 background: "rgba(104,71,192,0.15)", border: "1px solid rgba(144,102,212,0.3)",
                 borderRadius: 12, padding: "2px 8px", fontSize: 10, color: "#b08aee",
