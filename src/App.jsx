@@ -1106,19 +1106,7 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
         </svg>
       );
       case "insights": return (
-        <svg viewBox="0 0 24 24" fill="none" style={s}>
-          <path d="M9 4c0-1.5 1.3-2.5 3-2.5s3 1 3 2.5" stroke={color} strokeWidth="1" strokeLinecap="round"/>
-          <rect x="8" y="4" width="8" height="2" rx="0.8" stroke={color} strokeWidth="1"/>
-          <path d="M8.5 6v10c0 1 1.5 2 3.5 2s3.5-1 3.5-2V6" stroke={color} strokeWidth="1.2"/>
-          <line x1="12" y1="6" x2="12" y2="18" stroke={color} strokeWidth="0.7" opacity="0.3"/>
-          <line x1="8.5" y1="11" x2="15.5" y2="11" stroke={color} strokeWidth="0.7" opacity="0.3"/>
-          <path d="M12 9c-0.8 1-1.2 2-1 3s0.6 1.5 1 1.5s0.8-0.5 1-1.5s-0.2-2-1-3z" stroke={color} strokeWidth="0.8" fill={color} fillOpacity="0.2"/>
-          <rect x="8" y="18" width="8" height="1.5" rx="0.8" stroke={color} strokeWidth="1"/>
-          <line x1="5" y1="11" x2="6.5" y2="11" stroke={color} strokeWidth="0.6" opacity="0.3" strokeLinecap="round"/>
-          <line x1="17.5" y1="11" x2="19" y2="11" stroke={color} strokeWidth="0.6" opacity="0.3" strokeLinecap="round"/>
-          <line x1="6" y1="7" x2="7.2" y2="8" stroke={color} strokeWidth="0.6" opacity="0.25" strokeLinecap="round"/>
-          <line x1="18" y1="7" x2="16.8" y2="8" stroke={color} strokeWidth="0.6" opacity="0.25" strokeLinecap="round"/>
-        </svg>
+        <img src="/constellation.svg" alt="Patterns" style={{ width: 24, height: 24, display: "block", filter: active ? "brightness(0) saturate(100%) invert(78%) sepia(40%) saturate(600%) hue-rotate(5deg) brightness(95%)" : "brightness(0) saturate(100%) invert(30%) sepia(15%) saturate(500%) hue-rotate(10deg) brightness(95%)" }} />
       );
       case "journal": return (
         <img src="/sheep.svg" alt="Journal" style={{ width: 38, height: 38, display: "block", marginTop: -7, filter: active ? "brightness(0) saturate(100%) invert(78%) sepia(40%) saturate(600%) hue-rotate(5deg) brightness(95%)" : "brightness(0) saturate(100%) invert(30%) sepia(15%) saturate(500%) hue-rotate(10deg) brightness(95%)" }} />
