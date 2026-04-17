@@ -19,6 +19,7 @@ import ShareButton from "./components/ShareButton";
 import ReadingModal from "./components/ReadingModal";
 import ErrorBoundary from "./components/ErrorBoundary";
 import OfflineBanner from "./components/OfflineBanner";
+import { SkeletonCard } from "./components/Skeleton";
 import { useToast } from "./components/Toast";
 import useOffline from "./hooks/useOffline";
 import Landing from "./Landing";
@@ -124,6 +125,7 @@ export default function DreamJournal() {
   // Data
   const [userSettings, setUserSettings] = useState(null);
   const [dreams, setDreams] = useState([]);
+  const [dreamsLoaded, setDreamsLoaded] = useState(false);
 
   // UI
   const [tab, setTab] = useState("journal");
@@ -186,6 +188,7 @@ export default function DreamJournal() {
       }
     } else {
       setDreams([]);
+      setDreamsLoaded(false);
       setUserSettings(null);
       setShowQuiz(false);
     }
@@ -270,6 +273,7 @@ export default function DreamJournal() {
         const cached = await offline.loadCachedDreams();
         if (cached.length) setDreams(cached);
       } catch { /* ignore */ }
+      setDreamsLoaded(true);
       return;
     }
     const { data, error } = await supabase
@@ -282,6 +286,7 @@ export default function DreamJournal() {
       // Cache for offline viewing (fire-and-forget)
       offline.cacheDreamList(data);
     }
+    setDreamsLoaded(true);
   };
 
   const loadUserSettings = async () => {
@@ -1214,6 +1219,8 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
               streak={userSettings?.streak_current || 0}
               longestStreak={userSettings?.streak_longest || 0}
               lastDreamDate={userSettings?.last_dream_date}
+              dreams={dreams}
+              onRecordDream={() => { setShowForm(true); setForm(defaultForm); }}
             />
 
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
@@ -1263,7 +1270,16 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
               />
             )}
 
-            {dreams.length === 0 && !showForm && (
+            {/* Skeleton loading state */}
+            {!dreamsLoaded && dreams.length === 0 && (
+              <div>
+                <SkeletonCard delay={0} />
+                <SkeletonCard delay={0.08} />
+                <SkeletonCard delay={0.16} />
+              </div>
+            )}
+
+            {dreams.length === 0 && dreamsLoaded && !showForm && (
               <div style={{ textAlign: "center", padding: "60px 0", color: "#6b5c30" }}>
                 <div style={{ fontSize: 48, marginBottom: 16 }}>🐑</div>
                 <div style={{ fontSize: 16, color: "#7a6a40", marginBottom: 8 }}>Your dream journal awaits</div>
