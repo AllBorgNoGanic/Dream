@@ -1106,48 +1106,22 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
         </svg>
       );
       case "insights": return (
-        /* Constellation / star-map — feels like patterns emerging from the night */
         <svg viewBox="0 0 24 24" fill="none" style={s}>
-          {/* Connector lines */}
-          <line x1="6" y1="17" x2="10" y2="11" stroke={color} strokeWidth="1" strokeLinecap="round" opacity="0.55"/>
-          <line x1="10" y1="11" x2="15" y2="14" stroke={color} strokeWidth="1" strokeLinecap="round" opacity="0.55"/>
-          <line x1="15" y1="14" x2="18" y2="7" stroke={color} strokeWidth="1" strokeLinecap="round" opacity="0.55"/>
-          <line x1="10" y1="11" x2="14" y2="6" stroke={color} strokeWidth="1" strokeLinecap="round" opacity="0.35"/>
-          <line x1="6" y1="17" x2="12" y2="19" stroke={color} strokeWidth="1" strokeLinecap="round" opacity="0.35"/>
-          {/* Star nodes */}
-          <circle cx="6"  cy="17" r="2"   fill={color} opacity="0.9"/>
-          <circle cx="10" cy="11" r="2.2" fill={color} opacity="1"/>
-          <circle cx="15" cy="14" r="1.6" fill={color} opacity="0.8"/>
-          <circle cx="18" cy="7"  r="1.8" fill={color} opacity="0.9"/>
-          <circle cx="14" cy="6"  r="1.2" fill={color} opacity="0.6"/>
-          <circle cx="12" cy="19" r="1.2" fill={color} opacity="0.5"/>
+          <path d="M9 4c0-1.5 1.3-2.5 3-2.5s3 1 3 2.5" stroke={color} strokeWidth="1" strokeLinecap="round"/>
+          <rect x="8" y="4" width="8" height="2" rx="0.8" stroke={color} strokeWidth="1"/>
+          <path d="M8.5 6v10c0 1 1.5 2 3.5 2s3.5-1 3.5-2V6" stroke={color} strokeWidth="1.2"/>
+          <line x1="12" y1="6" x2="12" y2="18" stroke={color} strokeWidth="0.7" opacity="0.3"/>
+          <line x1="8.5" y1="11" x2="15.5" y2="11" stroke={color} strokeWidth="0.7" opacity="0.3"/>
+          <path d="M12 9c-0.8 1-1.2 2-1 3s0.6 1.5 1 1.5s0.8-0.5 1-1.5s-0.2-2-1-3z" stroke={color} strokeWidth="0.8" fill={color} fillOpacity="0.2"/>
+          <rect x="8" y="18" width="8" height="1.5" rx="0.8" stroke={color} strokeWidth="1"/>
+          <line x1="5" y1="11" x2="6.5" y2="11" stroke={color} strokeWidth="0.6" opacity="0.3" strokeLinecap="round"/>
+          <line x1="17.5" y1="11" x2="19" y2="11" stroke={color} strokeWidth="0.6" opacity="0.3" strokeLinecap="round"/>
+          <line x1="6" y1="7" x2="7.2" y2="8" stroke={color} strokeWidth="0.6" opacity="0.25" strokeLinecap="round"/>
+          <line x1="18" y1="7" x2="16.8" y2="8" stroke={color} strokeWidth="0.6" opacity="0.25" strokeLinecap="round"/>
         </svg>
       );
       case "journal": return (
-        /* Sheep face — purpose-built 24×24 icon, stroke-based like other tabs */
-        <svg viewBox="0 0 24 24" fill="none" style={{ ...s, width: 26, height: 26 }}>
-          {/* Fluffy body / wool — three overlapping circles */}
-          <circle cx="8"  cy="13" r="3.8" stroke={color} strokeWidth="1.5" fill={color} fillOpacity="0.12"/>
-          <circle cx="12" cy="11" r="4.2" stroke={color} strokeWidth="1.5" fill={color} fillOpacity="0.12"/>
-          <circle cx="16" cy="13" r="3.8" stroke={color} strokeWidth="1.5" fill={color} fillOpacity="0.12"/>
-          <circle cx="10" cy="15" r="3.2" stroke={color} strokeWidth="1.5" fill={color} fillOpacity="0.12"/>
-          <circle cx="14" cy="15" r="3.2" stroke={color} strokeWidth="1.5" fill={color} fillOpacity="0.12"/>
-          {/* Face */}
-          <ellipse cx="12" cy="16.5" rx="3" ry="2.5" fill={color} fillOpacity="0.25" stroke={color} strokeWidth="1.2"/>
-          {/* Eyes */}
-          <circle cx="10.8" cy="16" r="0.6" fill={color}/>
-          <circle cx="13.2" cy="16" r="0.6" fill={color}/>
-          {/* Legs */}
-          <line x1="9.5"  y1="19" x2="9"   y2="22" stroke={color} strokeWidth="1.4" strokeLinecap="round"/>
-          <line x1="11"   y1="19" x2="10.8" y2="22" stroke={color} strokeWidth="1.4" strokeLinecap="round"/>
-          <line x1="13"   y1="19" x2="13.2" y2="22" stroke={color} strokeWidth="1.4" strokeLinecap="round"/>
-          <line x1="14.5" y1="19" x2="15"   y2="22" stroke={color} strokeWidth="1.4" strokeLinecap="round"/>
-          {/* Ears */}
-          <ellipse cx="8.2"  cy="11.5" rx="1.2" ry="1.8" stroke={color} strokeWidth="1.2" transform="rotate(-20 8.2 11.5)"/>
-          <ellipse cx="15.8" cy="11.5" rx="1.2" ry="1.8" stroke={color} strokeWidth="1.2" transform="rotate(20 15.8 11.5)"/>
-          {/* Tiny nose */}
-          <path d="M11.4 17.2 Q12 17.7 12.6 17.2" stroke={color} strokeWidth="0.8" strokeLinecap="round"/>
-        </svg>
+        <img src="/sheep.svg" alt="Journal" style={{ width: 38, height: 38, display: "block", marginTop: -7, filter: active ? "brightness(0) saturate(100%) invert(78%) sepia(40%) saturate(600%) hue-rotate(5deg) brightness(95%)" : "brightness(0) saturate(100%) invert(30%) sepia(15%) saturate(500%) hue-rotate(10deg) brightness(95%)" }} />
       );
       case "library": return (
         <svg viewBox="0 0 496 496" fill={color} style={s}>
