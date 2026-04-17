@@ -140,7 +140,10 @@ export default function DreamJournal() {
 
   // Search & filters
   const [searchQuery, setSearchQuery] = useState("");
-  const [filters, setFilters] = useState({ mood: "", theme: "" });
+  const [filters, setFilters] = useState({ mood: "", theme: "", dateRange: "", interpretation: "" });
+  const [sortBy, setSortBy] = useState("Newest first");
+  const [visibleCount, setVisibleCount] = useState(20);
+  const PAGE_SIZE = 20;
 
   // Dream form (controlled)
   const [form, setForm] = useState(defaultForm);
@@ -695,23 +698,80 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
     }
   };
 
-  // ── Filtered dreams ────────────────────────────────────────────────────────
+  // ── Filtered & sorted dreams ───────────────────────────────────────────────
   const filteredDreams = useMemo(() => {
     let result = dreams;
+
+    // Full-text search across all relevant fields
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
-      result = result.filter(
-        (d) =>
-          d.title?.toLowerCase().includes(q) ||
-          d.description?.toLowerCase().includes(q) ||
-          d.tags?.some((t) => t.toLowerCase().includes(q)) ||
-          d.characters?.some((c) => c.toLowerCase().includes(q))
-      );
+      result = result.filter((d) => {
+        if (d.title?.toLowerCase().includes(q)) return true;
+        if (d.description?.toLowerCase().includes(q)) return true;
+        if (d.interpretation?.toLowerCase().includes(q)) return true;
+        if (d.mood?.toLowerCase().includes(q)) return true;
+        if (d.theme?.toLowerCase().includes(q)) return true;
+        if (d.tags?.some((t) => t.toLowerCase().includes(q))) return true;
+        if (d.characters?.some((c) => c.toLowerCase().includes(q))) return true;
+        if (d.symbols?.some((s) => s.toLowerCase().includes(q))) return true;
+        if (d.generated_themes?.some((t) =>
+          t.title?.toLowerCase().includes(q) ||
+          t.guidance?.toLowerCase().includes(q)
+        )) return true;
+        return false;
+      });
     }
+
     if (filters.mood) result = result.filter((d) => d.mood === filters.mood);
     if (filters.theme) result = result.filter((d) => d.theme === filters.theme);
-    return result;
-  }, [dreams, searchQuery, filters]);
+
+    if (filters.dateRange) {
+      const now = Date.now();
+      const dayMs = 24 * 60 * 60 * 1000;
+      let cutoff = null;
+      if (filters.dateRange === "Last 7 days") cutoff = now - 7 * dayMs;
+      else if (filters.dateRange === "Last 30 days") cutoff = now - 30 * dayMs;
+      else if (filters.dateRange === "Last 90 days") cutoff = now - 90 * dayMs;
+      else if (filters.dateRange === "This year") {
+        cutoff = new Date(new Date().getFullYear(), 0, 1).getTime();
+      }
+      if (cutoff !== null) {
+        result = result.filter((d) => new Date(d.created_at).getTime() >= cutoff);
+      }
+    }
+
+    if (filters.interpretation === "Has interpretation") {
+      result = result.filter((d) => !!d.interpretation);
+    } else if (filters.interpretation === "Awaiting reflection") {
+      result = result.filter((d) => !d.interpretation);
+    }
+
+    // Sort
+    const sorted = [...result];
+    if (sortBy === "Oldest first") {
+      sorted.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    } else if (sortBy === "Longest sleep") {
+      sorted.sort((a, b) => (b.sleep_hours || 0) - (a.sleep_hours || 0));
+    } else if (sortBy === "Best sleep quality") {
+      sorted.sort((a, b) => (b.sleep_quality || 0) - (a.sleep_quality || 0));
+    } else {
+      // Newest first (default)
+      sorted.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    }
+
+    return sorted;
+  }, [dreams, searchQuery, filters, sortBy]);
+
+  // Reset pagination whenever the visible result set changes
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [searchQuery, filters, sortBy]);
+
+  const visibleDreams = useMemo(
+    () => filteredDreams.slice(0, visibleCount),
+    [filteredDreams, visibleCount]
+  );
+  const hasMore = visibleCount < filteredDreams.length;
 
   // ── Stars layer ────────────────────────────────────────────────────────────
   const starsLayer = (
@@ -1107,6 +1167,10 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
                 setSearchQuery={setSearchQuery}
                 filters={filters}
                 setFilters={setFilters}
+                sortBy={sortBy}
+                setSortBy={setSortBy}
+                resultCount={filteredDreams.length}
+                totalCount={dreams.length}
               />
             )}
 
@@ -1124,7 +1188,7 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
               </div>
             )}
 
-            {filteredDreams.map((dream) => (
+            {visibleDreams.map((dream) => (
               <DreamCard
                 key={dream.id}
                 dream={dream}
@@ -1141,6 +1205,38 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
                 }}
               />
             ))}
+
+            {hasMore && (
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 16, marginBottom: 8 }}>
+                <button
+                  onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
+                  style={{
+                    background: "rgba(200,160,30,0.1)",
+                    border: "1px solid rgba(200,160,30,0.3)",
+                    color: "#e8b840",
+                    padding: "12px 32px",
+                    borderRadius: 40,
+                    fontSize: 13,
+                    cursor: "pointer",
+                    fontFamily: "Georgia, serif",
+                    letterSpacing: 0.5,
+                    transition: "all 0.2s",
+                    minHeight: 44,
+                  }}
+                >
+                  Load {Math.min(PAGE_SIZE, filteredDreams.length - visibleCount)} more
+                </button>
+                <div style={{ marginTop: 8, fontSize: 11, color: "#5a4a30", fontFamily: "Georgia, serif" }}>
+                  {visibleCount} of {filteredDreams.length} shown
+                </div>
+              </div>
+            )}
+
+            {!hasMore && filteredDreams.length > PAGE_SIZE && (
+              <div style={{ textAlign: "center", marginTop: 16, fontSize: 11, color: "#5a4a30", fontFamily: "Georgia, serif", fontStyle: "italic" }}>
+                ✦ End of dreams ✦
+              </div>
+            )}
             </ErrorBoundary>
           </div>
         )}
