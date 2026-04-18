@@ -21,6 +21,8 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import OfflineBanner from "./components/OfflineBanner";
 import { SkeletonCard } from "./components/Skeleton";
 import { useToast } from "./components/Toast";
+import FirstTimeJourney from "./components/FirstTimeJourney";
+import InterpretationOverlay from "./components/InterpretationOverlay";
 import useOffline from "./hooks/useOffline";
 import Landing from "./Landing";
 
@@ -1268,16 +1270,41 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
             )}
 
             {dreams.length === 0 && dreamsLoaded && !showForm && (
-              <div style={{ textAlign: "center", padding: "60px 0", color: "#6b5c30" }}>
-                <div style={{ fontSize: 48, marginBottom: 16 }}>🐑</div>
-                <div style={{ fontSize: 16, color: "#7a6a40", marginBottom: 8 }}>Your dream journal awaits</div>
-                <div style={{ fontSize: 13 }}>Tap "+ Record Dream" to begin capturing your dreams</div>
-              </div>
+              <FirstTimeJourney
+                onStart={() => { setShowForm(true); setForm(defaultForm); }}
+              />
             )}
 
             {dreams.length > 0 && filteredDreams.length === 0 && (
-              <div style={{ textAlign: "center", padding: "40px 0", color: "#6b5c30", fontSize: 13 }}>
-                No dreams match your search
+              <div style={{ textAlign: "center", padding: "40px 16px", color: "#6b5c30" }}>
+                <div style={{ fontSize: 36, marginBottom: 12, opacity: 0.7 }}>🌫️</div>
+                <div style={{ fontSize: 14, color: "#9a8050", marginBottom: 4, fontFamily: "Georgia, serif" }}>
+                  No dreams match your filters
+                </div>
+                <div style={{ fontSize: 12, color: "#6b5c30", marginBottom: 18, fontFamily: "Georgia, serif" }}>
+                  Try adjusting the search or clearing filters.
+                </div>
+                <button
+                  onClick={() => {
+                    setSearchQuery("");
+                    setFilters({ mood: "", theme: "", dateRange: "", interpretation: "" });
+                    setSortBy("newest");
+                  }}
+                  style={{
+                    background: "rgba(200,160,30,0.1)",
+                    border: "1px solid rgba(200,160,30,0.3)",
+                    color: "#e8b840",
+                    padding: "10px 22px",
+                    borderRadius: 30,
+                    fontSize: 12,
+                    cursor: "pointer",
+                    fontFamily: "Georgia, serif",
+                    letterSpacing: 0.5,
+                    minHeight: 40,
+                  }}
+                >
+                  Clear search & filters
+                </button>
               </div>
             )}
 
@@ -1413,6 +1440,12 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
           onUpgrade={handleUpgrade}
         />
       )}
+
+      {/* ── Interpretation loading overlay ── */}
+      <InterpretationOverlay
+        open={!!interpretingId}
+        dreamTitle={dreams.find((d) => d.id === interpretingId)?.title || ""}
+      />
 
       {/* ── Bottom Tab Bar ── */}
       <nav style={{

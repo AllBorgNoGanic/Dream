@@ -23,6 +23,8 @@ const getMoodEmoji = (mood) => mood?.split(" ")[0] || "💭";
 import { useState } from "react";
 import * as AlertDialog from "@radix-ui/react-alert-dialog";
 import { checkFields } from "../utils/moderation";
+import DreamActionSheet from "./DreamActionSheet";
+import useLongPress from "../hooks/useLongPress";
 
 // Inject delete dialog animation keyframes once
 const DIALOG_STYLES_ID = "dream-delete-dialog-styles";
@@ -40,11 +42,61 @@ export default function DreamCard({ dream, isSelected, onSelect, onDelete, onTog
   const needsInterpretation = !dream.interpretation && onInterpret;
   const [showShareConfirm, setShowShareConfirm] = useState(false);
   const [shareError, setShareError] = useState("");
+  const [actionSheetOpen, setActionSheetOpen] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  const longPress = useLongPress(() => setActionSheetOpen(true), { delay: 480 });
+
+  // Build the action sheet menu
+  const sheetActions = [
+    {
+      label: dream.interpretation ? "View interpretation" : "Interpret dream",
+      icon: dream.interpretation ? "📖" : "✦",
+      onClick: () => {
+        if (dream.interpretation) onViewReading?.(dream);
+        else if (onInterpret) onInterpret(dream);
+      },
+      hidden: !onInterpret && !dream.interpretation,
+    },
+    {
+      label: dream.is_public ? "Remove from community" : "Share to community",
+      icon: dream.is_public ? "🔒" : "🌐",
+      onClick: () => {
+        if (dream.is_public) onTogglePublic?.(dream.id);
+        else {
+          // Re-use the existing in-card share confirmation
+          if (!isSelected) onSelect(dream);
+          setShareError("");
+          setShowShareConfirm(true);
+        }
+      },
+      hidden: !onTogglePublic,
+    },
+    {
+      label: "Delete dream",
+      icon: "🗑️",
+      onClick: () => setShowDeleteConfirm(true),
+      danger: true,
+      hidden: !onDelete,
+    },
+  ];
 
   return (
     <div
       className="dream-card"
-      onClick={() => onSelect(dream)}
+      onClick={(e) => {
+        // Suppress the tap if a long-press just fired
+        if (longPress.didTrigger()) {
+          e.preventDefault();
+          return;
+        }
+        onSelect(dream);
+      }}
+      onPointerDown={longPress.onPointerDown}
+      onPointerMove={longPress.onPointerMove}
+      onPointerUp={longPress.onPointerUp}
+      onPointerCancel={longPress.onPointerCancel}
+      onContextMenu={longPress.onContextMenu}
       style={{
         background: "rgba(6,12,22,0.7)",
         border: isSelected
@@ -53,10 +105,37 @@ export default function DreamCard({ dream, isSelected, onSelect, onDelete, onTog
             ? "1px solid rgba(144,102,212,0.2)"
             : "1px solid rgba(200,160,30,0.15)",
         borderRadius: 18, padding: 24, marginBottom: 16, cursor: "pointer",
-        boxShadow: "0 4px 20px rgba(20,15,5,0.4)", position: "relative"
+        boxShadow: "0 4px 20px rgba(20,15,5,0.4)", position: "relative",
+        WebkitTouchCallout: "none",
+        WebkitUserSelect: "none",
+        userSelect: "none",
       }}
     >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
+      {/* Kebab menu button (always-visible discoverable trigger) */}
+      <button
+        aria-label="Dream actions"
+        onClick={(e) => {
+          e.stopPropagation();
+          setActionSheetOpen(true);
+        }}
+        style={{
+          position: "absolute", top: 14, right: 14,
+          width: 32, height: 32, borderRadius: 16,
+          background: "rgba(200,160,30,0.06)",
+          border: "1px solid rgba(200,160,30,0.15)",
+          color: "#9a8050", cursor: "pointer",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: 16, lineHeight: 1, padding: 0,
+          transition: "background 0.15s",
+          zIndex: 2,
+        }}
+        onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(200,160,30,0.16)"; }}
+        onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(200,160,30,0.06)"; }}
+      >
+        ⋯
+      </button>
+
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10, paddingRight: 36 }}>
         <div style={{ flex: 1 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" }}>
             <span style={{ fontSize: 18, fontWeight: 400, color: "#f0d890" }}>{dream.title}</span>
@@ -338,87 +417,100 @@ export default function DreamCard({ dream, isSelected, onSelect, onDelete, onTog
             </>
           )}
           {onDelete && (
-            <AlertDialog.Root>
-              <AlertDialog.Trigger asChild>
-                <button
-                  onClick={(e) => e.stopPropagation()}
-                  style={{
-                    background: "rgba(255,80,80,0.1)", border: "1px solid rgba(255,80,80,0.2)",
-                    color: "#ff8888", padding: "6px 14px", borderRadius: 20, fontSize: 11,
-                    cursor: "pointer"
-                  }}
-                >
-                  Delete
-                </button>
-              </AlertDialog.Trigger>
-              <AlertDialog.Portal>
-                <AlertDialog.Overlay
-                  onClick={(e) => e.stopPropagation()}
-                  style={{
-                    position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)",
-                    backdropFilter: "blur(6px)", zIndex: 100,
-                    animation: "dc-overlayIn 0.2s ease",
-                  }}
-                />
-                <AlertDialog.Content
-                  onClick={(e) => e.stopPropagation()}
-                  style={{
-                    position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)",
-                    background: "linear-gradient(160deg, rgba(22,8,48,0.98) 0%, rgba(12,4,28,0.98) 100%)",
-                    border: "1px solid rgba(200,160,50,0.2)",
-                    borderRadius: 20, padding: "28px 24px", maxWidth: 340, width: "88%",
-                    boxShadow: "0 20px 70px rgba(0,0,0,0.7), 0 0 40px rgba(104,71,192,0.1)",
-                    animation: "dc-contentIn 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
-                    zIndex: 101, outline: "none",
-                  }}
-                >
-                  <div style={{ textAlign: "center", marginBottom: 16 }}>
-                    <div style={{ fontSize: 32, marginBottom: 12, opacity: 0.8 }}>🌙</div>
-                    <AlertDialog.Title style={{
-                      fontSize: 17, color: "#f5e4b0", marginBottom: 8,
-                      fontFamily: "Georgia, serif", fontWeight: 400,
-                    }}>
-                      Delete this dream?
-                    </AlertDialog.Title>
-                    <AlertDialog.Description style={{
-                      fontSize: 13, color: "#8a7540", lineHeight: 1.6,
-                      fontFamily: "Georgia, serif",
-                    }}>
-                      This will permanently remove this dream and its interpretation. This cannot be undone.
-                    </AlertDialog.Description>
-                  </div>
-                  <div style={{ display: "flex", gap: 10 }}>
-                    <AlertDialog.Cancel asChild>
-                      <button style={{
-                        flex: 1, background: "rgba(200,160,50,0.08)",
-                        border: "1px solid rgba(200,160,30,0.25)",
-                        color: "#c8a040", padding: "12px 16px", borderRadius: 12, fontSize: 14,
-                        cursor: "pointer", fontFamily: "Georgia, serif", minHeight: 44,
-                        transition: "all 0.15s",
-                      }}>
-                        Keep
-                      </button>
-                    </AlertDialog.Cancel>
-                    <AlertDialog.Action asChild>
-                      <button
-                        onClick={() => onDelete(dream.id)}
-                        style={{
-                          flex: 1, background: "rgba(255,80,80,0.12)",
-                          border: "1px solid rgba(255,80,80,0.3)",
-                          color: "#ff8888", padding: "12px 16px", borderRadius: 12, fontSize: 14,
-                          cursor: "pointer", fontFamily: "Georgia, serif", fontWeight: 600, minHeight: 44,
-                          transition: "all 0.15s",
-                        }}
-                      >
-                        Delete
-                      </button>
-                    </AlertDialog.Action>
-                  </div>
-                </AlertDialog.Content>
-              </AlertDialog.Portal>
-            </AlertDialog.Root>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowDeleteConfirm(true);
+              }}
+              style={{
+                background: "rgba(255,80,80,0.1)", border: "1px solid rgba(255,80,80,0.2)",
+                color: "#ff8888", padding: "6px 14px", borderRadius: 20, fontSize: 11,
+                cursor: "pointer"
+              }}
+            >
+              Delete
+            </button>
           )}
         </div>
+      )}
+
+      {/* Long-press / kebab action sheet */}
+      <DreamActionSheet
+        open={actionSheetOpen}
+        onOpenChange={setActionSheetOpen}
+        dream={dream}
+        actions={sheetActions}
+      />
+
+      {/* Controlled delete confirmation (opened from inline button or action sheet) */}
+      {onDelete && (
+        <AlertDialog.Root open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+          <AlertDialog.Portal>
+            <AlertDialog.Overlay
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)",
+                backdropFilter: "blur(6px)", zIndex: 100,
+                animation: "dc-overlayIn 0.2s ease",
+              }}
+            />
+            <AlertDialog.Content
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)",
+                background: "linear-gradient(160deg, rgba(22,8,48,0.98) 0%, rgba(12,4,28,0.98) 100%)",
+                border: "1px solid rgba(200,160,50,0.2)",
+                borderRadius: 20, padding: "28px 24px", maxWidth: 340, width: "88%",
+                boxShadow: "0 20px 70px rgba(0,0,0,0.7), 0 0 40px rgba(104,71,192,0.1)",
+                animation: "dc-contentIn 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
+                zIndex: 101, outline: "none",
+              }}
+            >
+              <div style={{ textAlign: "center", marginBottom: 16 }}>
+                <div style={{ fontSize: 32, marginBottom: 12, opacity: 0.8 }}>🌙</div>
+                <AlertDialog.Title style={{
+                  fontSize: 17, color: "#f5e4b0", marginBottom: 8,
+                  fontFamily: "Georgia, serif", fontWeight: 400,
+                }}>
+                  Delete this dream?
+                </AlertDialog.Title>
+                <AlertDialog.Description style={{
+                  fontSize: 13, color: "#8a7540", lineHeight: 1.6,
+                  fontFamily: "Georgia, serif",
+                }}>
+                  This will permanently remove this dream and its interpretation. This cannot be undone.
+                </AlertDialog.Description>
+              </div>
+              <div style={{ display: "flex", gap: 10 }}>
+                <AlertDialog.Cancel asChild>
+                  <button style={{
+                    flex: 1, background: "rgba(200,160,50,0.08)",
+                    border: "1px solid rgba(200,160,30,0.25)",
+                    color: "#c8a040", padding: "12px 16px", borderRadius: 12, fontSize: 14,
+                    cursor: "pointer", fontFamily: "Georgia, serif", minHeight: 44,
+                    transition: "all 0.15s",
+                  }}>
+                    Keep
+                  </button>
+                </AlertDialog.Cancel>
+                <AlertDialog.Action asChild>
+                  <button
+                    onClick={() => onDelete(dream.id)}
+                    style={{
+                      flex: 1, background: "rgba(255,80,80,0.12)",
+                      border: "1px solid rgba(255,80,80,0.3)",
+                      color: "#ff8888", padding: "12px 16px", borderRadius: 12, fontSize: 14,
+                      cursor: "pointer", fontFamily: "Georgia, serif", fontWeight: 600, minHeight: 44,
+                      transition: "all 0.15s",
+                    }}
+                  >
+                    Delete
+                  </button>
+                </AlertDialog.Action>
+              </div>
+            </AlertDialog.Content>
+          </AlertDialog.Portal>
+        </AlertDialog.Root>
       )}
     </div>
   );
