@@ -1106,7 +1106,7 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
         </svg>
       );
       case "insights": return (
-        <img src="/constellation.svg" alt="Patterns" style={{ width: 24, height: 24, display: "block", filter: active ? "brightness(0) saturate(100%) invert(78%) sepia(40%) saturate(600%) hue-rotate(5deg) brightness(95%)" : "brightness(0) saturate(100%) invert(30%) sepia(15%) saturate(500%) hue-rotate(10deg) brightness(95%)" }} />
+        <img src="/moon-fog.svg" alt="Patterns" style={{ width: 24, height: 24, display: "block", filter: active ? "brightness(0) saturate(100%) invert(78%) sepia(40%) saturate(600%) hue-rotate(5deg) brightness(95%)" : "brightness(0) saturate(100%) invert(30%) sepia(15%) saturate(500%) hue-rotate(10deg) brightness(95%)" }} />
       );
       case "journal": return (
         <img src="/sheep.svg" alt="Journal" style={{ width: 38, height: 38, display: "block", marginTop: -7, filter: active ? "brightness(0) saturate(100%) invert(78%) sepia(40%) saturate(600%) hue-rotate(5deg) brightness(95%)" : "brightness(0) saturate(100%) invert(30%) sepia(15%) saturate(500%) hue-rotate(10deg) brightness(95%)" }} />
