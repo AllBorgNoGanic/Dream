@@ -9,7 +9,6 @@ import DreamCard from "./components/DreamCard";
 import SearchBar from "./components/SearchBar";
 import StreakBanner from "./components/StreakBanner";
 import PatternsTab from "./components/PatternsTab";
-import CalendarHeatmap from "./components/CalendarHeatmap";
 import CommunityTab from "./components/CommunityTab";
 import DictionaryTab from "./components/DictionaryTab";
 import OnboardingQuiz from "./components/OnboardingQuiz";
@@ -1358,10 +1357,14 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
         {tab === "insights" && (
           <div style={{ animation: "fadeIn 0.4s ease" }}>
             <ErrorBoundary label="Insights">
-              <PatternsTab dreams={dreams} userSettings={userSettings} />
-              <div style={{ marginTop: 16 }}>
-                <CalendarHeatmap dreams={dreams} />
-              </div>
+              <PatternsTab
+                dreams={dreams}
+                userSettings={userSettings}
+                onNavigateJournal={({ search }) => {
+                  if (search) setSearchQuery(search);
+                  setTab("journal");
+                }}
+              />
             </ErrorBoundary>
           </div>
         )}
