@@ -103,7 +103,6 @@ const globalStyles = (
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: rgba(200,160,30,0.3); border-radius: 2px; }
     .dream-card:active { border-color: rgba(200,160,30,0.35) !important; }
-    .logout-btn:active { background: rgba(255,255,255,0.08) !important; color: #e8b840 !important; }
     input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(0.8); }
   `}</style>
 );
@@ -1179,12 +1178,6 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
               </span>
             )}
           </div>
-          <button className="logout-btn" onClick={handleLogout} style={{
-            background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)",
-            color: "#7a6a40", padding: "10px 16px", borderRadius: 40, fontSize: 13, cursor: "pointer", minHeight: 44,
-          }}>
-            Sign Out
-          </button>
         </div>
 
         {/* Offline status banner */}
@@ -1405,6 +1398,7 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
                 dreams={dreams}
                 onUpgrade={() => setShowUpgradeModal(true)}
                 onRetakeQuiz={() => setShowQuiz(true)}
+                onSignOut={handleLogout}
               />
 
               {/* Gallery subsection */}
