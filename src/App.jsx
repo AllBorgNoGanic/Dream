@@ -100,6 +100,7 @@ const globalStyles = (
   <style>{`
     @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes twinkle { 0%,100% { opacity: 0.3; } 50% { opacity: 0.9; } }
+    @keyframes bethlehem-pulse { 0%,100% { opacity: 0.88; filter: brightness(1) drop-shadow(0 0 6px rgba(160,215,255,0.7)); } 50% { opacity: 1; filter: brightness(1.3) drop-shadow(0 0 18px rgba(160,215,255,1)); } }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     button, a, [role="button"] { touch-action: manipulation; }
     ::-webkit-scrollbar { width: 4px; }
@@ -861,6 +862,60 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
   const starsLayer = (
     <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 0, willChange: "transform", transform: "translateZ(0)" }}>
       <StarField count={220} animation="twinkle" />
+
+      {/* Star of Bethlehem — upper left, pale blue 4-pointed */}
+      <div style={{
+        position: "absolute", left: "6%", top: "4%",
+        width: 60, height: 60,
+        animation: "bethlehem-pulse 3s ease-in-out infinite",
+      }}>
+        {/* Outer glow halo */}
+        <div style={{
+          position: "absolute", inset: -32,
+          borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(160,215,255,0.22) 0%, rgba(120,190,255,0.08) 55%, transparent 75%)",
+        }} />
+        {/* Vertical ray — dramatically elongated to match reference image */}
+        <div style={{
+          position: "absolute", left: "50%", top: "50%",
+          width: 8, height: 320,
+          background: "radial-gradient(ellipse at center, rgba(255,255,255,1) 0%, rgba(200,235,255,0.9) 12%, rgba(160,215,255,0.5) 40%, rgba(120,190,255,0.15) 65%, transparent 82%)",
+          transform: "translate(-50%, -50%)",
+          borderRadius: "50%",
+        }} />
+        {/* Horizontal ray — shorter than vertical, as in reference */}
+        <div style={{
+          position: "absolute", left: "50%", top: "50%",
+          width: 90, height: 6,
+          background: "radial-gradient(ellipse at center, rgba(255,255,255,1) 0%, rgba(200,235,255,0.85) 15%, rgba(160,215,255,0.4) 50%, transparent 80%)",
+          transform: "translate(-50%, -50%)",
+          borderRadius: "50%",
+        }} />
+        {/* Diagonal ray NE–SW — subtle */}
+        <div style={{
+          position: "absolute", left: "50%", top: "50%",
+          width: 3, height: 60,
+          background: "radial-gradient(ellipse at center, rgba(220,240,255,0.6) 0%, rgba(160,215,255,0.25) 45%, transparent 75%)",
+          transform: "translate(-50%, -50%) rotate(45deg)",
+          borderRadius: "50%",
+        }} />
+        {/* Diagonal ray NW–SE — subtle */}
+        <div style={{
+          position: "absolute", left: "50%", top: "50%",
+          width: 3, height: 60,
+          background: "radial-gradient(ellipse at center, rgba(220,240,255,0.6) 0%, rgba(160,215,255,0.25) 45%, transparent 75%)",
+          transform: "translate(-50%, -50%) rotate(-45deg)",
+          borderRadius: "50%",
+        }} />
+        {/* Center bright core */}
+        <div style={{
+          position: "absolute", left: "50%", top: "50%",
+          width: 14, height: 14, borderRadius: "50%",
+          background: "radial-gradient(circle, #ffffff 0%, #ddf0ff 40%, rgba(140,210,255,0) 100%)",
+          transform: "translate(-50%, -50%)",
+          boxShadow: "0 0 16px 7px rgba(160,215,255,0.95), 0 0 36px 14px rgba(100,180,255,0.4)",
+        }} />
+      </div>
     </div>
   );
 
