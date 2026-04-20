@@ -59,7 +59,7 @@ const RANGES = [
 const SUBTABS = [
   { key: "overview", label: "Overview", icon: "📊" },
   { key: "symbols", label: "Symbols", icon: "🔣" },
-  { key: "wisdom", label: "Wisdom", icon: "🧭" },
+  { key: "wisdom", label: "Advice", icon: "🧭" },
 ];
 
 const STOP_WORDS = new Set([
