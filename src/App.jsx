@@ -63,8 +63,13 @@ const DREAM_DICTIONARY = {
 };
 
 const detectSymbols = (text) => {
+  if (!text) return [];
   const lower = text.toLowerCase();
-  return Object.keys(DREAM_DICTIONARY).filter((k) => lower.includes(k));
+  return Object.keys(DREAM_DICTIONARY).filter((k) => {
+    // Match whole words only (allow optional trailing 's' for plurals)
+    const re = new RegExp(`\\b${k}s?\\b`, "i");
+    return re.test(lower);
+  });
 };
 
 const defaultForm = {
