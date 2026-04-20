@@ -89,7 +89,7 @@ const defaultForm = {
 // ─── Shared Styles ──────────────────────────────────────────────────────────
 const sharedBackground = {
   minHeight: "100vh",
-  background: "linear-gradient(160deg, #020c18 0%, #0a1428 50%, #020c18 100%)",
+  background: "#020c18",
   fontFamily: "Georgia, serif",
   color: "#f5e4b0",
   position: "relative",
