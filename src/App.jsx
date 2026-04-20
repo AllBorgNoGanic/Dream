@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { supabase } from "./lib/supabase";
 import StarField from "./components/StarField";
+import AmbientBackground from "./components/AmbientBackground";
 
 // Components
 import DreamForm from "./components/DreamForm";
@@ -89,15 +90,18 @@ const defaultForm = {
 // ─── Shared Styles ──────────────────────────────────────────────────────────
 const sharedBackground = {
   minHeight: "100vh",
-  background: "linear-gradient(160deg, #020c18 0%, #0a1428 50%, #020c18 100%)",
+  background: "transparent",
   fontFamily: "Georgia, serif",
   color: "#f5e4b0",
   position: "relative",
+  zIndex: 1,
   overflowX: "hidden",
 };
 
 const globalStyles = (
-  <style>{`
+  <>
+    <AmbientBackground />
+    <style>{`
     @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes twinkle { 0%,100% { opacity: 0.3; } 50% { opacity: 0.9; } }
     @keyframes bethlehem-pulse { 0%,100% { opacity: 0.88; filter: brightness(1) drop-shadow(0 0 6px rgba(160,215,255,0.7)); } 50% { opacity: 1; filter: brightness(1.3) drop-shadow(0 0 18px rgba(160,215,255,1)); } }
@@ -109,6 +113,7 @@ const globalStyles = (
     .dream-card:active { border-color: rgba(200,160,30,0.35) !important; }
     input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(0.8); }
   `}</style>
+  </>
 );
 
 // ─── Main Component ─────────────────────────────────────────────────────────
