@@ -47,14 +47,26 @@ const STAGES = [
   { icon: "📜", text: "Writing your reflection", sub: "Shaping a guidance offered with care" },
 ];
 
+const VERSES = [
+  { text: "In the night also my heart instructs me.", ref: "Psalm 16:7" },
+  { text: "He gives to his beloved sleep.", ref: "Psalm 127:2" },
+  { text: "Do not interpretations belong to God?", ref: "Genesis 40:8" },
+  { text: "Your young men shall see visions, your old men shall dream dreams.", ref: "Joel 2:28" },
+  { text: "I speak with him in a dream.", ref: "Numbers 12:6" },
+  { text: "When thou liest down, thy sleep shall be sweet.", ref: "Proverbs 3:24" },
+];
+
 export default function InterpretationOverlay({ open, dreamTitle = "" }) {
   const [stage, setStage] = useState(0);
+  const [verse, setVerse] = useState(VERSES[0]);
 
   useEffect(() => {
     if (!open) {
       setStage(0);
       return undefined;
     }
+    // Pick a fresh verse each time the overlay opens
+    setVerse(VERSES[Math.floor(Math.random() * VERSES.length)]);
     // Cycle stages every ~3.5 seconds, looping at the last one
     const id = setInterval(() => {
       setStage((s) => (s < STAGES.length - 1 ? s + 1 : s));
@@ -223,6 +235,31 @@ export default function InterpretationOverlay({ open, dreamTitle = "" }) {
               </div>
             </div>
           )}
+
+          {/* Rotating verse */}
+          <div style={{
+            marginTop: 28,
+            paddingTop: 18,
+            borderTop: "1px solid rgba(232,184,64,0.10)",
+            textAlign: "center",
+            maxWidth: 300,
+            animation: "io-textIn 0.7s ease-out",
+          }}>
+            <div style={{
+              fontFamily: "Georgia, serif", fontSize: 12.5,
+              color: "#7a6840", fontStyle: "italic", lineHeight: 1.6,
+              marginBottom: 6,
+            }}>
+              "{verse.text}"
+            </div>
+            <div style={{
+              fontFamily: "Georgia, serif", fontSize: 10.5,
+              color: "#4a3e22", letterSpacing: 1.5,
+              textTransform: "uppercase",
+            }}>
+              {verse.ref}
+            </div>
+          </div>
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>

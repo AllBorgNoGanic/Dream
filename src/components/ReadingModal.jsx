@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import StarField from "./StarField";
+import ReportDialog from "./ReportDialog";
 
 const DREAM_DICTIONARY = {
   flying: { symbol: "✈️" }, falling: { symbol: "⬇️" }, water: { symbol: "🌊" },
@@ -620,6 +621,27 @@ export default function ReadingModal({ reading, onClose, onGenerateImage, userSe
               }}>
                 Press ESC to dismiss
               </div>
+
+              {/* Report this interpretation (Apple Guideline 1.2 / 4.7) */}
+              {dream?.id && (
+                <div style={{ marginTop: 18 }}>
+                  <ReportDialog
+                    targetType="interpretation"
+                    dreamId={dream.id}
+                    trigger={
+                      <button style={{
+                        background: "none", border: "none",
+                        color: "#5a4870", fontSize: 11,
+                        textDecoration: "underline",
+                        cursor: "pointer", fontFamily: "Georgia, serif",
+                        letterSpacing: 0.5, padding: "6px 10px",
+                      }}>
+                        Report this interpretation
+                      </button>
+                    }
+                  />
+                </div>
+              )}
             </div>
           )}
         </div>

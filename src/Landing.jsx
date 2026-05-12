@@ -1,6 +1,6 @@
 import StarField from "./components/StarField";
 
-export default function Landing({ onSignIn: _onSignIn }) {
+export default function Landing({ onSignIn }) {
 
   return (
     <div style={{
@@ -43,7 +43,7 @@ export default function Landing({ onSignIn: _onSignIn }) {
           fontSize: 11, letterSpacing: 6, color: "#8a7540",
           textTransform: "uppercase", marginBottom: 16,
         }}>
-          Your dreams have meaning
+          Where Scripture meets the night
         </div>
 
         {/* Title */}
@@ -116,9 +116,25 @@ export default function Landing({ onSignIn: _onSignIn }) {
 
         {/* Divider */}
         <div style={{
-          height: 1, maxWidth: 120, margin: "0 auto 24px",
+          height: 1, maxWidth: 120, margin: "0 auto 20px",
           background: "linear-gradient(90deg, transparent, rgba(200,160,30,0.3), transparent)",
         }} />
+
+        {/* Sign in link for returning web visitors */}
+        <div style={{ marginBottom: 22, fontSize: 13, color: "#6b5c30" }}>
+          Already have an account?{" "}
+          <button
+            onClick={onSignIn}
+            style={{
+              background: "none", border: "none", padding: 0,
+              color: "#c8a040", fontFamily: "Georgia, serif",
+              fontSize: 13, textDecoration: "underline",
+              cursor: "pointer", letterSpacing: 0.3,
+            }}
+          >
+            Sign in
+          </button>
+        </div>
 
         {/* Footer links */}
         <div style={{ display: "flex", justifyContent: "center", gap: 24, marginBottom: 16 }}>

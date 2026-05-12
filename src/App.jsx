@@ -24,42 +24,46 @@ import FirstTimeJourney from "./components/FirstTimeJourney";
 import InterpretationOverlay from "./components/InterpretationOverlay";
 import useOffline from "./hooks/useOffline";
 import Landing from "./Landing";
+import { checkContent } from "./utils/moderation";
 
 // ─── Constants ─────────────────────────────────────────────────────────────
 const FREE_INTERPRETATIONS = 5;
 const MAX_SHARE_BONUS = 3;
 
 const DREAM_DICTIONARY = {
-  flying: { symbol: "✈️", meaning: "Freedom, ambition, or desire to escape responsibilities." },
+  flying: { symbol: "✈️", meaning: "Freedom, ambition, or a desire to rise above what feels heavy." },
   falling: { symbol: "⬇️", meaning: "Loss of control, insecurity, or anxiety about failure." },
-  water: { symbol: "🌊", meaning: "Emotions, renewal, and spiritual cleansing." },
-  fire: { symbol: "🔥", meaning: "Purification, passion, and the Holy Spirit." },
-  death: { symbol: "💀", meaning: "Endings and new beginnings — rarely literal." },
+  water: { symbol: "🌊", meaning: "Emotions, renewal, and cleansing. Water often marks moments of transformation in Scripture, from the Red Sea to baptism." },
+  fire: { symbol: "🔥", meaning: "Purification and divine presence. Recalls the burning bush, the pillar of fire, and tongues of flame at Pentecost." },
+  death: { symbol: "💀", meaning: "Endings and new beginnings. Rarely literal." },
   teeth: { symbol: "🦷", meaning: "Anxiety about appearance, communication, or loss." },
   chase: { symbol: "🏃", meaning: "Avoidance of a person, situation, or emotion." },
-  house: { symbol: "🏠", meaning: "The self or psyche. Different rooms = different aspects of mind." },
-  snake: { symbol: "🐍", meaning: "Hidden fears, transformation, or wisdom." },
-  ocean: { symbol: "🌊", meaning: "The vast unconscious mind, depth of emotion." },
-  forest: { symbol: "🌲", meaning: "The unconscious, mystery, and the unknown." },
+  house: { symbol: "🏠", meaning: "The self or psyche. Different rooms reflect different aspects of mind." },
+  snake: { symbol: "🐍", meaning: "Hidden fears, deception, or transformation. The serpent carries weight from Genesis through Revelation." },
+  ocean: { symbol: "🌊", meaning: "The vast unconscious mind, depth of emotion, and what lies beyond the known shore." },
+  forest: { symbol: "🌲", meaning: "The unconscious, mystery, and the unknown. A place of wandering and formation, as in the wilderness." },
   school: { symbol: "🏫", meaning: "Learning, judgment, or feeling unprepared." },
-  baby: { symbol: "👶", meaning: "New beginnings, vulnerability, or a project in early stages." },
+  baby: { symbol: "👶", meaning: "New beginnings, vulnerability, or something in its earliest stage." },
   car: { symbol: "🚗", meaning: "Control over your life's direction." },
   mirror: { symbol: "🪞", meaning: "Self-reflection, identity, and how you see yourself." },
   clock: { symbol: "⏰", meaning: "Anxiety about time, deadlines, or mortality." },
   bird: { symbol: "🐦", meaning: "Freedom, perspective, and aspirations." },
-  door: { symbol: "🚪", meaning: "Opportunities, transitions, and new phases." },
+  door: { symbol: "🚪", meaning: "Opportunities, transitions, and new phases. 'Behold, I have set before you an open door' (Revelation 3:8)." },
   rain: { symbol: "🌧️", meaning: "Cleansing, renewal, or emotional release." },
-  mountain: { symbol: "⛰️", meaning: "Obstacles, achievement, and spiritual growth." },
-  moon: { symbol: "🌙", meaning: "Intuition, femininity, and hidden aspects of self." },
-  sun: { symbol: "☀️", meaning: "Consciousness, vitality, and truth." },
-  bridge: { symbol: "🌉", meaning: "Transitions, connections, and decisions." },
-  key: { symbol: "🔑", meaning: "Solutions, secrets, and knowledge." },
-  dove: { symbol: "🕊️", meaning: "Peace, the Holy Spirit, and new beginnings." },
-  lamb: { symbol: "🐑", meaning: "Innocence, sacrifice, and divine love." },
-  bread: { symbol: "🍞", meaning: "Provision, communion, and spiritual nourishment." },
-  cross: { symbol: "✝️", meaning: "Sacrifice, redemption, and hope." },
-  light: { symbol: "💡", meaning: "Revelation, truth, and divine presence." },
-  angel: { symbol: "👼", meaning: "Divine messenger, guidance, and protection." },
+  mountain: { symbol: "⛰️", meaning: "Encounter with God, vantage point, transcendence. Sinai, Carmel, and the Mount of Olives were each places of meeting." },
+  moon: { symbol: "🌙", meaning: "Intuition, the hidden, and the rhythms of the inner life." },
+  sun: { symbol: "☀️", meaning: "Consciousness, vitality, and truth made visible." },
+  bridge: { symbol: "🌉", meaning: "Transitions, connections, and decisions to cross." },
+  key: { symbol: "🔑", meaning: "Solutions, secrets, and the authority to open and shut." },
+  dove: { symbol: "🕊️", meaning: "Peace and the Holy Spirit. 'The Spirit of God descended like a dove' (Matthew 3:16)." },
+  lamb: { symbol: "🐑", meaning: "Innocence, gentleness, and sacrifice. A central image of Christ, the Lamb of God (John 1:29)." },
+  bread: { symbol: "🍞", meaning: "Provision, communion, and daily sustenance. 'Give us this day our daily bread' (Matthew 6:11)." },
+  cross: { symbol: "✝️", meaning: "Sacrifice, redemption, and hope. The intersection where suffering becomes meaning." },
+  light: { symbol: "💡", meaning: "Revelation, truth, and divine presence. 'Thy word is a lamp unto my feet' (Psalm 119:105)." },
+  angel: { symbol: "👼", meaning: "Divine messenger, guidance, and protection. Often appears in Scripture announcing or comforting." },
+  shepherd: { symbol: "🐑", meaning: "Guidance, care, and protection. 'The Lord is my shepherd' (Psalm 23). 'I am the good shepherd' (John 10:11)." },
+  desert: { symbol: "🏜️", meaning: "Testing, solitude, and formation. Moses, Elijah, and Christ each spent time in the wilderness." },
+  stars: { symbol: "✨", meaning: "Promise and inheritance. 'Look toward heaven, and number the stars' (Genesis 15:5)." },
 };
 
 const detectSymbols = (text) => {
@@ -357,7 +361,42 @@ export default function DreamJournal() {
     setTab("journal");
   };
 
-  // ── Archetype quiz ─────────────────────────────────────────────────────────
+  // Permanent in-app account deletion (App Store Guideline 5.1.1(v))
+  const handleDeleteAccount = async () => {
+    // Try the SECURITY DEFINER RPC first (no service role key needed in app)
+    const { error: rpcErr } = await supabase.rpc("delete_my_account");
+
+    if (rpcErr) {
+      // Fallback to the Vercel function path
+      const { data: sess } = await supabase.auth.getSession();
+      const token = sess?.session?.access_token;
+      if (!token) throw new Error("Not signed in");
+
+      const res = await fetch("/api/delete-account", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || "Account deletion failed");
+      }
+    }
+
+    // Clear local state and route home
+    try {
+      localStorage.removeItem(`onboarding_done_${user.id}`);
+    } catch { /* ignore */ }
+    await supabase.auth.signOut();
+    setDreams([]);
+    setUserSettings(null);
+    setTab("journal");
+    toast.success("Your account has been deleted.");
+  };
+
+  // ── Onboarding quiz completion ─────────────────────────────────────────────
   const handleQuizComplete = async ({ displayName, profile, sleep, emotional, recurringThemes, recentDream, interpretation, aiThemes, skipped }) => {
     quizDoneRef.current = true;
     setShowQuiz(false);
@@ -372,7 +411,7 @@ export default function DreamJournal() {
           { description: recentDream },
           { archetype_data: { profile, sleep, emotional, recurringThemes } }
         );
-        if (result) {
+        if (result && !result.blocked) {
           finalInterpretation = result.interpretation;
           finalGeneratedThemes = result.generated_themes || [];
         }
@@ -463,6 +502,14 @@ export default function DreamJournal() {
 
   // ── AI Interpretation ──────────────────────────────────────────────────────
   const interpretDream = async (dream, settings) => {
+    // Pre-flight content moderation (Apple Guideline 1.2 input filtering).
+    // Block obvious slurs and profanity before they reach the AI provider.
+    const titleCheck = checkContent(dream.title || "");
+    const descCheck = checkContent(dream.description || "");
+    if (!titleCheck.clean || !descCheck.clean) {
+      return { blocked: true };
+    }
+
     try {
       // Build personal context from the user's onboarding profile
       const ad = settings?.archetype_data;
@@ -487,12 +534,16 @@ export default function DreamJournal() {
           "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
         },
         body: JSON.stringify({
-          system: `You are a wise, empathetic dream interpreter drawing from psychology, symbolism, and spiritual traditions including Biblical wisdom. Dreams hold meaning across many traditions, and in scripture figures like Joseph, Daniel, and Jacob received divine insight through dreams.
+          system: `You are a wise, empathetic dream interpreter rooted in the Christian tradition. Throughout Scripture, God spoke to people through dreams. Joseph interpreted Pharaoh's. Daniel discerned Nebuchadnezzar's. Jacob saw the ladder. Joseph the husband of Mary was warned in his sleep. Peter saw the sheet from heaven. You stand in that lineage as a thoughtful shepherd, not a pastor on a pulpit.
+
+Draw on biblical wisdom, depth psychology, and dream symbolism. Speak gently and concretely. When relevant, reference Scripture naturally in passing (e.g., "A dove often recalls Matthew 3:16, where the Spirit descended at Christ's baptism"). Do not quote large passages. Do not be preachy, do not moralize, do not assume the dreamer is in sin or crisis. Never use em dashes. Never be alarming.
+
+If the dreamer's content reflects faith, lean into it. If it does not, stay respectful and quietly grounded in the same wisdom without proselytizing.
 
 Respond ONLY with valid JSON in this exact format (no markdown, no code fences):
-{"interpretation":"A warm, insightful 2-3 sentence interpretation. Be poetic but grounded. Never be alarming. Write in plain flowing prose only.","themes":[{"title":"A unique evocative theme title","symbol":"A single relevant emoji","meaning":"What this theme represents in the dreamer's life","guidance":"Actionable advice or reflection prompt for the dreamer"}]}
+{"interpretation":"A warm, insightful 2-3 sentence interpretation. Be poetic but grounded. Write in plain flowing prose only.","themes":[{"title":"A unique evocative theme title","symbol":"A single relevant emoji","meaning":"What this theme represents in the dreamer's life","guidance":"Actionable advice or reflection prompt for the dreamer"}]}
 
-Generate 2-3 themes that are specific and unique to this dream. Theme titles should be creative and evocative (e.g. "The Unfinished Bridge", "Voices Behind the Door"). Each theme should feel personally tailored, not generic.${profileContext}${patternContext}`,
+Generate 2-3 themes that are specific and unique to this dream. Theme titles should be creative and evocative (e.g. "The Unfinished Bridge", "Voices Behind the Door", "The Lamp in the Window"). Each theme should feel personally tailored, not generic.${profileContext}${patternContext}`,
           messages: [{
             role: "user",
             content: `Interpret this dream. Title: "${dream.title}". Mood: ${dream.mood}. Theme: ${dream.theme}.${dream.characters?.length ? ` Characters: ${dream.characters.join(", ")}.` : ""}${dream.tags?.length ? ` Tags: ${dream.tags.join(", ")}.` : ""} Dream: "${dream.description}"`,
@@ -597,6 +648,11 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
         setInterpretingId(null);
         toast.error("Couldn't interpret your dream right now. Try again in a moment.");
         return; // API failed silently -- keep the button available to retry
+      }
+      if (result.blocked) {
+        setInterpretingId(null);
+        toast.error("This dream contains language we can't process. Please edit it and try again.");
+        return; // Moderation block -- no AI call, no count consumed
       }
       const { interpretation, generated_themes } = result;
       await supabase.from("dreams").update({ interpretation, generated_themes: generated_themes || [] }).eq("id", dream.id);
@@ -959,7 +1015,10 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
       <div style={{ ...sharedBackground, display: "flex", alignItems: "center", justifyContent: "center" }}>
         {starsLayer}
         {globalStyles}
-        <div style={{ position: "relative", zIndex: 1, width: "100%", maxWidth: 400, padding: "0 24px" }}>
+        <div style={{
+          position: "relative", zIndex: 1, width: "100%", maxWidth: 400, padding: "0 24px",
+          animation: "fadeIn 0.55s ease-out",
+        }}>
           <div style={{ textAlign: "center", marginBottom: 40 }}>
             <div style={{ fontSize: 52, marginBottom: 12 }}>🐑</div>
             <h1 style={{ fontSize: 36, fontWeight: 400, margin: "0 0 8px", background: "linear-gradient(135deg, #f5e4b0, #e8b840, #a07010)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
@@ -975,16 +1034,16 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
                 background: "rgba(104,71,192,0.08)", border: "1px solid rgba(144,102,212,0.25)",
                 borderRadius: 14,
               }}>
-                <div style={{ fontSize: 13, color: "#9066d4", marginBottom: 4 }}>
-                  Your dream profile is ready
+                <div style={{ fontSize: 14, color: "#b08aee", marginBottom: 4 }}>
+                  ✦ Your reading is ready
                 </div>
                 <div style={{ fontSize: 12, color: "#8a7540" }}>
-                  Create an account to unlock your personalized dream reflection
+                  Create a free account to see what your dream means
                 </div>
               </div>
             )}
             <div style={{ fontSize: 15, color: "#e8b840", textAlign: "center", marginBottom: 24 }}>
-              {pendingQuizDataRef.current ? "Sign up to unlock your dream reflection" : authMode === "login" ? "Welcome back" : "Begin your journey"}
+              {pendingQuizDataRef.current ? "Sign up to see your reading" : authMode === "login" ? "Welcome back" : "Begin your journey"}
             </div>
 
             {/* OAuth buttons */}
@@ -1061,7 +1120,7 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
                 {authMode === "login" ? "Sign up free" : "Sign in"}
               </button>
             </div>
-            {/* Discover Archetype CTA for new users */}
+            {/* Try-before-signup CTA for new users */}
             {!pendingQuizDataRef.current && authMode !== "login" && (
               <div style={{ textAlign: "center", marginTop: 20, paddingTop: 16, borderTop: "1px solid rgba(200,160,30,0.1)" }}>
                 <button
@@ -1073,10 +1132,10 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
                     letterSpacing: 0.5, width: "100%",
                   }}
                 >
-                  🐑 Take the Dream Quiz
+                  ✦ Try a dream interpretation first
                 </button>
                 <p style={{ fontSize: 11, color: "#6a5030", marginTop: 8, marginBottom: 0 }}>
-                  Answer a few questions to personalize your experience
+                  Share a dream and see what it means before signing up
                 </p>
               </div>
             )}
@@ -1405,8 +1464,8 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
                 onSettingsUpdate={setUserSettings}
                 dreams={dreams}
                 onUpgrade={() => setShowUpgradeModal(true)}
-                onRetakeQuiz={() => setShowQuiz(true)}
                 onSignOut={handleLogout}
+                onDeleteAccount={handleDeleteAccount}
               />
 
               {/* Gallery subsection */}

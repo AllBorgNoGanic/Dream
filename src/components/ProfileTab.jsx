@@ -3,7 +3,7 @@ import * as AlertDialog from "@radix-ui/react-alert-dialog";
 import { supabase } from "../lib/supabase";
 import ShareButton from "./ShareButton";
 import ExportPDF from "./ExportPDF";
-import { ARCHETYPES } from "../constants/archetypes";
+import PersonalizationCard from "./PersonalizationCard";
 import { checkContent } from "../utils/moderation";
 
 // Inject animation keyframes once
@@ -21,7 +21,7 @@ if (typeof document !== "undefined" && !document.getElementById(PROFILE_DIALOG_S
 const FREE_INTERPRETATIONS = 5;
 const MAX_SHARE_BONUS = 3;
 
-export default function ProfileTab({ user, userSettings, onSettingsUpdate, dreams, onUpgrade, onRetakeQuiz, onSignOut }) {
+export default function ProfileTab({ user, userSettings, onSettingsUpdate, dreams, onUpgrade, onSignOut, onDeleteAccount }) {
   const [displayName, setDisplayName] = useState(userSettings?.display_name || "");
   const [age, setAge] = useState(userSettings?.age || "");
   const [wakeTime, setWakeTime] = useState(userSettings?.wake_time || "07:00");
@@ -29,13 +29,13 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [nameError, setNameError] = useState("");
+  const [deleteText, setDeleteText] = useState("");
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
   const [notifSupported] = useState(() => "Notification" in window && "serviceWorker" in navigator);
   const [notifPermission, setNotifPermission] = useState(() =>
     "Notification" in window ? Notification.permission : "denied"
   );
-
-  const archetype = userSettings?.archetype;
-  const archetypeData = ARCHETYPES[archetype];
 
   const avgSleep = dreams.filter(d => d.sleep_hours).length > 0
     ? (dreams.filter(d => d.sleep_hours).reduce((s, d) => s + Number(d.sleep_hours), 0) / dreams.filter(d => d.sleep_hours).length).toFixed(1)
@@ -73,65 +73,12 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
 
   return (
     <div style={{ animation: "fadeIn 0.4s ease" }}>
-      {/* Archetype card */}
-      {userSettings?.onboarding_completed ? (
-        archetype && archetypeData ? (
-          <div style={{ ...card, border: `1px solid ${archetypeData.border}`, background: archetypeData.bg, marginBottom: 20 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 16 }}>
-              <div style={{ fontSize: 48 }}>{archetypeData.emoji}</div>
-              <div>
-                <div style={{ fontSize: 11, letterSpacing: 3, color: "#8a7540", textTransform: "uppercase", marginBottom: 4 }}>Your Dream Archetype</div>
-                <div style={{ fontSize: 26, color: archetypeData.color, fontWeight: 400 }}>{archetype}</div>
-              </div>
-            </div>
-            <p style={{ fontSize: 14, color: "#c8a040", lineHeight: 1.7, margin: "0 0 12px" }}>{archetypeData.description}</p>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              {archetypeData.traits.map(t => (
-                <span key={t} style={{
-                  background: "rgba(200,160,30,0.12)", border: `1px solid ${archetypeData.border}`,
-                  borderRadius: 20, padding: "4px 12px", fontSize: 12, color: archetypeData.color
-                }}>{t}</span>
-              ))}
-            </div>
-            <button onClick={onRetakeQuiz} style={{
-              marginTop: 16, background: "none", border: "1px solid rgba(200,160,30,0.25)",
-              color: "#7a6a40", padding: "10px 18px", borderRadius: 20, fontSize: 13, minHeight: 44,
-              cursor: "pointer", letterSpacing: 0.5
-            }}>
-              Retake Quiz
-            </button>
-          </div>
-        ) : (
-          <div style={{ ...card, marginBottom: 20 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div style={{ fontSize: 13, color: "#9a8050" }}>Dream profile completed</div>
-              <button onClick={onRetakeQuiz} style={{
-                background: "none", border: "1px solid rgba(200,160,30,0.25)",
-                color: "#7a6a40", padding: "10px 18px", borderRadius: 20, fontSize: 13, minHeight: 44,
-                cursor: "pointer", letterSpacing: 0.5
-              }}>
-                Retake Quiz
-              </button>
-            </div>
-          </div>
-        )
-      ) : (
-        <div style={{ ...card, border: "1px solid rgba(168,85,247,0.25)", background: "rgba(124,58,237,0.06)", marginBottom: 20, textAlign: "center" }}>
-          <div style={{ fontSize: 40, marginBottom: 12 }}>🐑</div>
-          <div style={{ fontSize: 16, color: "#f5e4b0", marginBottom: 6 }}>Complete Your Dream Profile</div>
-          <p style={{ fontSize: 13, color: "#9a8050", lineHeight: 1.6, margin: "0 0 16px" }}>
-            Take the dream quiz to unlock personalized insights and more accurate interpretations.
-          </p>
-          <button onClick={onRetakeQuiz} style={{
-            background: "linear-gradient(135deg, #6847c0, #9066d4)",
-            border: "none", color: "#fff", padding: "14px 24px", borderRadius: 14, minHeight: 48,
-            fontSize: 14, cursor: "pointer", fontFamily: "Georgia, serif", fontWeight: 600,
-            boxShadow: "0 0 20px rgba(168,85,247,0.3)",
-          }}>
-            Take the Quiz
-          </button>
-        </div>
-      )}
+      {/* Personalization card */}
+      <PersonalizationCard
+        user={user}
+        userSettings={userSettings}
+        onSettingsUpdate={onSettingsUpdate}
+      />
 
       {/* Stats */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 16 }}>
@@ -299,7 +246,7 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
       </div>
 
       {/* Account */}
-      <div style={{ ...card, textAlign: "center" }}>
+      <div style={{ ...card, textAlign: "center", marginBottom: 16 }}>
         <div style={{ fontSize: 12, color: "#5040a0", marginBottom: 4 }}>Signed in as</div>
         <div style={{ fontSize: 13, color: "#7a6a40", marginBottom: onSignOut ? 18 : 0 }}>{user.email}</div>
 
@@ -378,6 +325,142 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
           </AlertDialog.Root>
         )}
       </div>
+
+      {/* Danger zone (App Store Guideline 5.1.1(v): in-app account deletion) */}
+      {onDeleteAccount && (
+        <div style={{
+          ...card,
+          background: "rgba(80,12,12,0.18)",
+          border: "1px solid rgba(255,80,80,0.18)",
+          marginBottom: 24,
+        }}>
+          <div style={{ fontSize: 13, letterSpacing: 3, color: "#c06060", textTransform: "uppercase", marginBottom: 10 }}>
+            Danger Zone
+          </div>
+          <p style={{ fontSize: 13, color: "#a07070", lineHeight: 1.7, margin: "0 0 16px" }}>
+            Delete your account and all your dreams, interpretations, and settings. This action cannot be undone.
+          </p>
+
+          <AlertDialog.Root onOpenChange={(o) => { if (!o) { setDeleteText(""); setDeleteError(""); } }}>
+            <AlertDialog.Trigger asChild>
+              <button style={{
+                background: "rgba(255,80,80,0.08)",
+                border: "1px solid rgba(255,80,80,0.3)",
+                color: "#e08888",
+                padding: "11px 22px", borderRadius: 40, fontSize: 13,
+                cursor: "pointer", fontFamily: "Georgia, serif",
+                letterSpacing: 0.5, minHeight: 40,
+                transition: "background 0.15s",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,80,80,0.16)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,80,80,0.08)"; }}
+              >
+                Delete account
+              </button>
+            </AlertDialog.Trigger>
+            <AlertDialog.Portal>
+              <AlertDialog.Overlay style={{
+                position: "fixed", inset: 0, background: "rgba(0,0,0,0.65)",
+                backdropFilter: "blur(6px)", zIndex: 100,
+                animation: "pt-overlayIn 0.2s ease",
+              }} />
+              <AlertDialog.Content style={{
+                position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)",
+                background: "linear-gradient(160deg, rgba(40,8,12,0.98) 0%, rgba(18,4,8,0.98) 100%)",
+                border: "1px solid rgba(255,80,80,0.3)",
+                borderRadius: 20, padding: "28px 24px", maxWidth: 380, width: "92%",
+                boxShadow: "0 20px 70px rgba(0,0,0,0.7), 0 0 40px rgba(180,40,40,0.15)",
+                animation: "pt-contentIn 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
+                zIndex: 101, outline: "none", fontFamily: "Georgia, serif",
+              }}>
+                <div style={{ textAlign: "center", marginBottom: 16 }}>
+                  <div style={{ fontSize: 32, marginBottom: 12 }}>⚠️</div>
+                  <AlertDialog.Title style={{
+                    fontSize: 18, color: "#f5d4b0", marginBottom: 10,
+                    fontFamily: "Georgia, serif", fontWeight: 400,
+                  }}>
+                    Permanently delete your account?
+                  </AlertDialog.Title>
+                  <AlertDialog.Description style={{
+                    fontSize: 13, color: "#b89090", lineHeight: 1.7,
+                    fontFamily: "Georgia, serif",
+                  }}>
+                    This will erase all your dreams, interpretations, sleep logs, and profile data. We cannot recover any of it once deleted.
+                  </AlertDialog.Description>
+                </div>
+
+                <div style={{ marginBottom: 16 }}>
+                  <label style={{ display: "block", fontSize: 12, color: "#c8a040", marginBottom: 8 }}>
+                    Type <span style={{ color: "#e08888", fontWeight: 600 }}>DELETE</span> to confirm
+                  </label>
+                  <input
+                    value={deleteText}
+                    onChange={(e) => setDeleteText(e.target.value)}
+                    placeholder="DELETE"
+                    style={{
+                      width: "100%", boxSizing: "border-box",
+                      background: "rgba(5,10,18,0.9)",
+                      border: "1px solid rgba(255,80,80,0.3)",
+                      borderRadius: 10, padding: "11px 14px",
+                      color: "#f5e4b0", fontSize: 14,
+                      outline: "none", fontFamily: "Georgia, serif",
+                      letterSpacing: 1,
+                    }}
+                  />
+                  {deleteError && (
+                    <div style={{ fontSize: 12, color: "#e06050", marginTop: 8 }}>{deleteError}</div>
+                  )}
+                </div>
+
+                <div style={{ display: "flex", gap: 10 }}>
+                  <AlertDialog.Cancel asChild>
+                    <button style={{
+                      flex: 1, background: "rgba(200,160,50,0.08)",
+                      border: "1px solid rgba(200,160,30,0.25)",
+                      color: "#c8a040", padding: "12px 16px", borderRadius: 12, fontSize: 14,
+                      cursor: "pointer", fontFamily: "Georgia, serif", minHeight: 44,
+                    }}>
+                      Cancel
+                    </button>
+                  </AlertDialog.Cancel>
+                  <button
+                    onClick={async (e) => {
+                      e.preventDefault();
+                      if (deleteText.trim() !== "DELETE") {
+                        setDeleteError('Please type "DELETE" exactly to confirm.');
+                        return;
+                      }
+                      setDeleting(true);
+                      setDeleteError("");
+                      try {
+                        await onDeleteAccount();
+                      } catch (err) {
+                        setDeleteError(err?.message || "Could not delete account. Please try again.");
+                        setDeleting(false);
+                      }
+                    }}
+                    disabled={deleting || deleteText.trim() !== "DELETE"}
+                    style={{
+                      flex: 1,
+                      background: deleteText.trim() === "DELETE"
+                        ? "linear-gradient(135deg, #a04040, #c85050)"
+                        : "rgba(120,40,40,0.4)",
+                      border: "none",
+                      color: "#fff",
+                      padding: "12px 16px", borderRadius: 12, fontSize: 14,
+                      cursor: deleting || deleteText.trim() !== "DELETE" ? "not-allowed" : "pointer",
+                      fontFamily: "Georgia, serif", fontWeight: 600, minHeight: 44,
+                      opacity: deleteText.trim() === "DELETE" ? 1 : 0.6,
+                    }}
+                  >
+                    {deleting ? "Deleting..." : "Permanently delete"}
+                  </button>
+                </div>
+              </AlertDialog.Content>
+            </AlertDialog.Portal>
+          </AlertDialog.Root>
+        </div>
+      )}
     </div>
   );
 }

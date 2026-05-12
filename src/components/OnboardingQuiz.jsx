@@ -1,60 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import StarField from "./StarField";
 
-// ── Dream Themes (for recurring themes grid) ────────────────────────────────
-const DREAM_THEMES = [
-  { id: "flying", label: "Flying", emoji: "🦅" },
-  { id: "falling", label: "Falling", emoji: "🌀" },
-  { id: "being-chased", label: "Being Chased", emoji: "🏃" },
-  { id: "water-ocean", label: "Water / Ocean", emoji: "🌊" },
-  { id: "teeth", label: "Teeth Falling Out", emoji: "🦷" },
-  { id: "being-lost", label: "Being Lost", emoji: "🗺️" },
-  { id: "death", label: "Death / Dying", emoji: "💀" },
-  { id: "animals", label: "Animals", emoji: "🐾" },
-  { id: "school-exams", label: "School / Exams", emoji: "📝" },
-  { id: "being-late", label: "Being Late", emoji: "⏰" },
-  { id: "naked-public", label: "Naked in Public", emoji: "😳" },
-  { id: "natural-disaster", label: "Natural Disasters", emoji: "🌪️" },
-  { id: "monsters", label: "Monsters / Creatures", emoji: "👹" },
-  { id: "loved-ones", label: "Loved Ones", emoji: "❤️" },
-  { id: "travel", label: "Travel / Journey", emoji: "✈️" },
-  { id: "war-conflict", label: "War / Conflict", emoji: "⚔️" },
-  { id: "fire", label: "Fire", emoji: "🔥" },
-  { id: "heights", label: "Heights / Climbing", emoji: "🧗" },
-  { id: "trapped", label: "Trapped / Confined", emoji: "🔒" },
-  { id: "magic", label: "Magic / Supernatural", emoji: "✨" },
-  { id: "romance", label: "Romance / Love", emoji: "💕" },
-  { id: "childhood", label: "Childhood Places", emoji: "🏠" },
-  { id: "cant-move", label: "Paralysis / Can't Move", emoji: "🧊" },
-  { id: "darkness", label: "Darkness / Shadows", emoji: "🌑" },
-];
-
-// ── Options ─────────────────────────────────────────────────────────────────
-const AGE_RANGES = ["Under 18", "18–24", "25–34", "35–44", "45–54", "55+"];
-const GENDERS = ["Male", "Female", "Non-binary", "Prefer not to say"];
-const SLEEP_HOURS = ["Less than 5", "5–6 hours", "6–7 hours", "7–8 hours", "8+ hours"];
-const SLEEP_QUALITY = [
-  { id: 1, label: "Very Poor", emoji: "😫" },
-  { id: 2, label: "Poor", emoji: "😔" },
-  { id: 3, label: "Fair", emoji: "😐" },
-  { id: 4, label: "Good", emoji: "😊" },
-  { id: 5, label: "Excellent", emoji: "😴" },
-];
-const STRESS_LEVELS = [
-  { id: "low", label: "Low", emoji: "😌" },
-  { id: "moderate", label: "Moderate", emoji: "😐" },
-  { id: "high", label: "High", emoji: "😰" },
-  { id: "very-high", label: "Very High", emoji: "🤯" },
-];
-const MOOD_OPTIONS = [
-  { id: "happy", label: "Happy", emoji: "😊" },
-  { id: "calm", label: "Calm", emoji: "😌" },
-  { id: "neutral", label: "Neutral", emoji: "😐" },
-  { id: "anxious", label: "Anxious", emoji: "😟" },
-  { id: "sad", label: "Sad", emoji: "😢" },
-  { id: "overwhelmed", label: "Overwhelmed", emoji: "😩" },
-];
-
 // ── Keyframe CSS (injected once) ─────────────────────────────────────────────
 const KEYFRAMES = `
 @keyframes onb-slideInRight  { from { transform: translateX(50px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
@@ -66,12 +12,8 @@ const KEYFRAMES = `
 @keyframes onb-staggerUp     { from { opacity: 0; transform: translateY(24px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
 @keyframes onb-popIn         { 0% { opacity: 0; transform: scale(0.5); } 70% { transform: scale(1.08); } 100% { opacity: 1; transform: scale(1); } }
 @keyframes onb-shimmer       { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
-@keyframes onb-ringExpand    { 0% { transform: translate(-50%,-50%) scale(0.3); opacity: 0.8; } 100% { transform: translate(-50%,-50%) scale(2.5); opacity: 0; } }
-@keyframes onb-glow          { 0%, 100% { box-shadow: 0 0 20px rgba(144,102,212,0.15); } 50% { box-shadow: 0 0 40px rgba(144,102,212,0.4), 0 0 80px rgba(232,184,64,0.15); } }
-@keyframes onb-revealUp      { from { opacity: 0; transform: translateY(40px) scale(0.9); } to { opacity: 1; transform: translateY(0) scale(1); } }
-@keyframes onb-traitSlide    { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
 @keyframes onb-gradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-@keyframes onb-rotateGlow    { 0% { transform: translate(-50%,-50%) rotate(0deg); } 100% { transform: translate(-50%,-50%) rotate(360deg); } }
+@keyframes onb-revealUp      { from { opacity: 0; transform: translateY(40px) scale(0.9); } to { opacity: 1; transform: translateY(0) scale(1); } }
 @keyframes onb-twinkle       { 0%,100% { opacity: 0.2; } 50% { opacity: 0.9; } }
 @keyframes onb-particle0 { 0% { opacity:0; transform:scale(0); } 30% { opacity:1; transform:scale(1); } 100% { opacity:0; transform:translate(70px,0px) scale(0); } }
 @keyframes onb-particle1 { 0% { opacity:0; transform:scale(0); } 30% { opacity:1; transform:scale(1); } 100% { opacity:0; transform:translate(49px,49px) scale(0); } }
@@ -82,38 +24,31 @@ const KEYFRAMES = `
 `;
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// Short onboarding quiz: Welcome → Dream entry → (Reveal, post-auth only)
+// Pre-auth mode (before signup) stops after Dream entry and stashes the dream
+// for the parent to use after sign-up completes.
+// ═══════════════════════════════════════════════════════════════════════════════
 export default function OnboardingQuiz({ onComplete, preAuth = false }) {
-  const TOTAL_STEPS = preAuth ? 5 : 6; // preAuth: 0-4 (no AI screen), post-auth: 0-5
-
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState("right");
   const [animKey, setAnimKey] = useState(0);
-
-  // Screen 2: About You
-  const [name, setName] = useState("");
-  const [ageRange, setAgeRange] = useState("");
-  const [gender, setGender] = useState("");
-
-  // Screen 3: Your Inner World (merged sleep + emotional)
-  const [sleepHours, setSleepHours] = useState("");
-  const [sleepQuality, setSleepQuality] = useState(0);
-  const [stressLevel, setStressLevel] = useState("");
-  const [mood, setMood] = useState("");
-
-  // Screen 4: Recurring Themes
-  const [themes, setThemes] = useState([]);
-
-  // Screen 1: Recent Dream
   const [recentDream, setRecentDream] = useState("");
-
-  // Screen 5: AI Processing + Result (post-auth only)
   const [interpretation, setInterpretation] = useState(null);
   const [aiThemes, setAiThemes] = useState([]);
   const [processing, setProcessing] = useState(false);
-
+  const [leaving, setLeaving] = useState(false);
   const styleInjected = useRef(false);
 
-  // Stars rendered via StarField component
+  // Wrap any onComplete-callsite so the quiz fades out gracefully before
+  // unmounting, which lets the auth screen fade in instead of "flashing" on.
+  const finishWithFade = (payload) => {
+    if (leaving) return;
+    setLeaving(true);
+    setTimeout(() => onComplete(payload), 380);
+  };
+
+  // Post-auth has an extra reveal screen
+  const REVEAL_STEP = 2;
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -139,26 +74,32 @@ export default function OnboardingQuiz({ onComplete, preAuth = false }) {
         },
         body: JSON.stringify({
           max_tokens: 1500,
-          system: `You are a wise, empathetic dream interpreter drawing from psychology, symbolism, and spiritual traditions including Biblical wisdom. Dreams hold meaning across many traditions, and in scripture figures like Joseph, Daniel, and Jacob received divine insight through dreams. The user is completing onboarding for a dream journal app. Analyze their profile, sleep patterns, emotional state, and recent dream to provide a personalized interpretation. Write 2-3 paragraphs of warm, poetic but grounded prose. Never be alarming. Do not use markdown formatting, headers, bullet points, or code blocks — plain flowing prose only. Do not include any JSON or structured data.`,
+          system: `You are a wise, empathetic dream interpreter rooted in the Christian tradition. Throughout Scripture, God spoke to people through dreams. Joseph interpreted Pharaoh's. Daniel discerned Nebuchadnezzar's. Jacob saw the ladder. You stand in that lineage as a thoughtful shepherd, not a pastor on a pulpit.
+
+Draw on biblical wisdom, depth psychology, and dream symbolism. Speak gently and concretely. When relevant, reference Scripture naturally in passing. Do not quote large passages. Do not be preachy, do not moralize, do not assume the dreamer is in sin or crisis. Never use em dashes. Never be alarming.
+
+Write 2 to 3 paragraphs of warm, poetic but grounded prose. Plain flowing prose only. No markdown, no headers, no bullet points, no JSON.`,
           messages: [{
             role: "user",
-            content: `My name is ${name || "Anonymous"}. Age: ${ageRange || "not provided"}. Gender: ${gender || "not provided"}. Sleep: ${sleepHours || "not provided"}, quality: ${SLEEP_QUALITY.find(s => s.id === sleepQuality)?.label || "not provided"}. Stress: ${stressLevel || "not provided"}. Mood: ${mood || "not provided"}. Recurring dream themes I experience: ${themes.length > 0 ? themes.join(", ") : "none selected"}. My most recent dream: "${recentDream || "No dream provided"}"`,
+            content: `My most recent dream: "${recentDream || "No dream provided"}"`,
           }],
         }),
       });
       const data = await response.json();
       const text = (data.content?.map((b) => b.text || "").join("") || "").trim();
       setInterpretation(text || "Your dreams hold deep personal meaning. As you journal more, patterns will emerge that reveal the wisdom within your dreams.");
-      setAiThemes(themes.slice(0, 5));
+      // We aren't collecting recurring themes upfront anymore. The reveal screen
+      // can show a short, generic set if helpful, or omit themes entirely.
+      setAiThemes([]);
     } catch {
       setInterpretation("Your shepherd is preparing your reflection. As you begin journaling, your dream patterns will unfold and reveal their meaning.");
-      setAiThemes(themes.slice(0, 3));
+      setAiThemes([]);
     }
   };
 
-  // AI interpretation when entering step 5 (post-auth only)
+  // Kick off AI when entering the reveal step (post-auth only)
   useEffect(() => {
-    if (!preAuth && step === 5 && !processing && !interpretation) {
+    if (!preAuth && step === REVEAL_STEP && !processing && !interpretation) {
       setProcessing(true);
       runInterpretation().then(() => setProcessing(false));
     }
@@ -176,21 +117,15 @@ export default function OnboardingQuiz({ onComplete, preAuth = false }) {
     setStep((s) => s - 1);
   };
 
-  const canContinue = () => {
-    if (step === 1) return true; // dream text optional
-    if (step === 2) return name.trim() !== ""; // age + gender optional
-    if (step === 3) return sleepHours !== "" && sleepQuality > 0 && stressLevel !== "" && mood !== "";
-    if (step === 4) return true; // themes optional
-    return true;
-  };
-
   const handleComplete = () => {
-    onComplete({
-      displayName: name,
-      profile: { name, ageRange, gender },
-      sleep: { sleepHours, sleepQuality },
-      emotional: { stressLevel, mood },
-      recurringThemes: themes,
+    // Maintain the existing onComplete payload shape so App.jsx's
+    // handleQuizComplete continues to work without changes.
+    finishWithFade({
+      displayName: "",
+      profile: { name: "", ageRange: "", gender: "" },
+      sleep: { sleepHours: "", sleepQuality: 0 },
+      emotional: { stressLevel: "", mood: "" },
+      recurringThemes: [],
       recentDream,
       interpretation,
       aiThemes,
@@ -198,7 +133,7 @@ export default function OnboardingQuiz({ onComplete, preAuth = false }) {
   };
 
   const handleSkip = () => {
-    onComplete({
+    finishWithFade({
       displayName: "",
       profile: { name: "", ageRange: "", gender: "" },
       sleep: { sleepHours: "", sleepQuality: 0 },
@@ -211,10 +146,19 @@ export default function OnboardingQuiz({ onComplete, preAuth = false }) {
     });
   };
 
-  const toggleTheme = (id) => {
-    setThemes((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-    );
+  // Pre-auth Continue: stash the dream and let the parent route to signup.
+  // The actual interpretation will be generated post-signup in App.jsx.
+  const handlePreAuthContinue = () => {
+    finishWithFade({
+      displayName: "",
+      profile: { name: "", ageRange: "", gender: "" },
+      sleep: { sleepHours: "", sleepQuality: 0 },
+      emotional: { stressLevel: "", mood: "" },
+      recurringThemes: [],
+      recentDream,
+      interpretation: null,
+      aiThemes: [],
+    });
   };
 
   // ── Shared styles ──────────────────────────────────────────────────────────
@@ -237,7 +181,7 @@ export default function OnboardingQuiz({ onComplete, preAuth = false }) {
       animation: `${direction === "right" ? "onb-slideInRight" : "onb-slideInLeft"} 0.35s ease-out`,
     },
     title: {
-      fontSize: 28, fontWeight: 400, margin: "0 0 14px", color: "#f5e4b0",
+      fontSize: 32, fontWeight: 400, margin: "0 0 14px", color: "#f5e4b0",
       lineHeight: 1.3,
     },
     subtitle: {
@@ -254,6 +198,11 @@ export default function OnboardingQuiz({ onComplete, preAuth = false }) {
       boxShadow: enabled ? "0 0 30px rgba(144,102,212,0.4)" : "none",
       transition: "all 0.25s ease",
     }),
+    skipButton: {
+      background: "none", border: "none", cursor: "pointer",
+      color: "#9a8050", fontSize: 13, fontFamily: "Georgia, serif",
+      marginTop: 16, padding: "8px 16px",
+    },
     backButton: {
       position: "absolute", top: 24, left: 24,
       background: "none", border: "1px solid rgba(255,255,255,0.15)",
@@ -267,28 +216,12 @@ export default function OnboardingQuiz({ onComplete, preAuth = false }) {
     sectionSub: {
       fontSize: 14, color: "#9a8050", margin: "0 0 28px",
     },
-    label: {
-      fontSize: 14, color: "#c8a030", marginBottom: 8, textAlign: "left", display: "block",
-    },
     input: {
       width: "100%", padding: "14px 18px", borderRadius: 14, fontSize: 16,
       fontFamily: "Georgia, serif", background: "rgba(255,255,255,0.06)",
       border: "1.5px solid rgba(144,102,212,0.3)", color: "#f5e4b0",
       outline: "none", boxSizing: "border-box",
       transition: "border-color 0.2s",
-    },
-    pillButton: (selected) => ({
-      padding: "12px 18px", borderRadius: 30, fontSize: 14, minHeight: 44,
-      fontFamily: "Georgia, serif", cursor: "pointer",
-      background: selected ? "rgba(124,58,237,0.25)" : "rgba(255,255,255,0.04)",
-      border: `1.5px solid ${selected ? "rgba(144,102,212,0.7)" : "rgba(255,255,255,0.1)"}`,
-      color: selected ? "#d4b0ff" : "#c8a030",
-      boxShadow: selected ? "0 0 16px rgba(144,102,212,0.3)" : "none",
-      transition: "all 0.25s ease",
-      transform: selected ? "scale(1.05)" : "scale(1)",
-    }),
-    divider: {
-      height: 1, background: "rgba(232,184,64,0.15)", margin: "24px 0",
     },
   };
 
@@ -303,74 +236,49 @@ export default function OnboardingQuiz({ onComplete, preAuth = false }) {
       }} />
       <div style={{
         position: "absolute", bottom: "-10%", left: "-15%", width: 350, height: 350,
-        borderRadius: "50%", background: "radial-gradient(circle, rgba(200,160,48,0.08) 0%, transparent 70%)",
-        animation: "onb-float 8s ease-in-out infinite 1s",
-      }} />
-      <div style={{
-        position: "absolute", top: "30%", left: "50%", width: 250, height: 250,
-        borderRadius: "50%", background: "radial-gradient(circle, rgba(100,180,255,0.06) 0%, transparent 70%)",
-        transform: "translateX(-50%)",
-        animation: "onb-float 7s ease-in-out infinite 2s",
+        borderRadius: "50%", background: "radial-gradient(circle, rgba(232,184,64,0.08) 0%, transparent 70%)",
+        animation: "onb-float 8s ease-in-out infinite reverse",
       }} />
     </div>
   );
 
-  // ── Progress bar ──────────────────────────────────────────────────────────
-  const progressBar = (
-    <div style={{
-      position: "fixed", bottom: 0, left: 0, right: 0,
-      height: 4, background: "rgba(255,255,255,0.06)", zIndex: 10,
-    }}>
-      <div style={{
-        height: "100%",
-        width: `${((step + 1) / TOTAL_STEPS) * 100}%`,
-        background: "linear-gradient(90deg, #6847c0, #e8b840)",
-        borderRadius: "0 2px 2px 0",
-        transition: "width 0.4s ease",
-      }} />
-    </div>
-  );
-
-  // ── Render each screen ─────────────────────────────────────────────────────
+  // ── Screen renderer ────────────────────────────────────────────────────────
   const renderScreen = () => {
     switch (step) {
-      // ── Screen 0: Welcome ──────────────────────────────────────────────────
+      // ── Screen 0: Welcome ────────────────────────────────────────────────
       case 0:
         return (
-          <div key={animKey} style={{ ...S.container, animation: "onb-fadeIn 0.6s ease-out" }}>
+          <div key={animKey} style={S.container}>
             <div style={{
-              fontSize: 80, marginBottom: 24,
-              animation: "onb-pulse 3s ease-in-out infinite",
+              fontSize: 64, marginBottom: 20,
+              animation: "onb-float 4s ease-in-out infinite",
+              filter: "drop-shadow(0 0 30px rgba(232,184,64,0.4))",
+            }}>🐑</div>
+            <h1 style={{ ...S.title, animation: "onb-fadeIn 0.5s ease-out" }}>
+              Welcome to Dream Shepherd
+            </h1>
+            <p style={{
+              fontSize: 14, color: "#8a7540", letterSpacing: 4,
+              textTransform: "uppercase", marginBottom: 28,
+              animation: "onb-fadeIn 0.5s ease-out 0.05s both",
             }}>
-              🐑
-            </div>
-            <h1 style={{ ...S.title, fontSize: 32 }}>Welcome to Dream Shepherd</h1>
-            <p style={S.subtitle}>
-              Your faithful companion for understanding what your dreams may be telling you.
-              Let us get to know you in a few simple steps.
+              Where Scripture meets the night
+            </p>
+            <p style={{
+              ...S.subtitle,
+              animation: "onb-fadeIn 0.5s ease-out 0.15s both",
+              maxWidth: 340, margin: "0 auto 32px",
+            }}>
+              Let's start with a dream. Even a fragment is enough.
             </p>
 
-            {/* Value prop bullets */}
-            <div style={{ marginBottom: 32, animation: "onb-staggerUp 0.5s ease-out 0.2s both" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, justifyContent: "center", marginBottom: 10 }}>
-                <span style={{ fontSize: 18 }}>📖</span>
-                <span style={{ fontSize: 14, color: "#9a8050" }}>Record dreams before they fade</span>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, justifyContent: "center" }}>
-                <span style={{ fontSize: 18 }}>✦</span>
-                <span style={{ fontSize: 14, color: "#9a8050" }}>Discover patterns and meaning with guided reflection</span>
-              </div>
-            </div>
-
             <button style={{ ...S.ctaButton(), animation: "onb-staggerUp 0.5s ease-out 0.3s both" }} onClick={goForward}>
-              Get Started
+              Tell me about a dream
             </button>
             <button
               onClick={handleSkip}
               style={{
-                background: "none", border: "none", cursor: "pointer",
-                color: "#9a8050", fontSize: 13, fontFamily: "Georgia, serif",
-                marginTop: 16, padding: "8px 16px",
+                ...S.skipButton,
                 animation: "onb-fadeIn 0.5s ease-out 0.6s both",
               }}
             >
@@ -379,8 +287,24 @@ export default function OnboardingQuiz({ onComplete, preAuth = false }) {
           </div>
         );
 
-      // ── Screen 1: Your First Dream ─────────────────────────────────────────
-      case 1:
+      // ── Screen 1: Dream entry ─────────────────────────────────────────────
+      case 1: {
+        const len = recentDream.trim().length;
+        const tooShort = len > 0 && len < 30;
+        const ready = len >= 30;
+        const continueLabel = preAuth ? "See what it means" : "Continue";
+        const onContinueClick = () => {
+          if (tooShort) return;
+          if (!ready) {
+            // No dream entered, treat as skip
+            handleSkip();
+            return;
+          }
+          // Both preAuth and post-auth flows advance to the next screen.
+          // PreAuth lands on a bridge screen, post-auth on the AI reveal.
+          goForward();
+        };
+
         return (
           <div key={animKey} style={S.container}>
             <div style={{
@@ -388,9 +312,11 @@ export default function OnboardingQuiz({ onComplete, preAuth = false }) {
               animation: "onb-popIn 0.5s ease-out",
               filter: "drop-shadow(0 0 16px rgba(232,184,64,0.4))",
             }}>💭</div>
-            <h2 style={{ ...S.sectionTitle, animation: "onb-fadeIn 0.5s ease-out" }}>Your First Dream</h2>
+            <h2 style={{ ...S.sectionTitle, animation: "onb-fadeIn 0.5s ease-out" }}>
+              Was there a recent dream you remember?
+            </h2>
             <p style={{ ...S.sectionSub, animation: "onb-fadeIn 0.5s ease-out 0.1s both" }}>
-              Describe a recent dream in a few words or sentences
+              A fragment is fine. We'll help you see what it might mean.
             </p>
 
             <div style={{ animation: "onb-staggerUp 0.5s ease-out 0.2s both", marginBottom: 28 }}>
@@ -401,24 +327,24 @@ export default function OnboardingQuiz({ onComplete, preAuth = false }) {
                 rows={5}
                 style={{
                   ...S.input,
-                  resize: "vertical", minHeight: 120, maxHeight: 250,
+                  resize: "vertical", minHeight: 140, maxHeight: 280,
                   lineHeight: 1.6, fontSize: 15,
-                  borderColor: recentDream.trim().length > 0 && recentDream.trim().length < 30
+                  borderColor: tooShort
                     ? "rgba(255,180,60,0.4)"
                     : "rgba(200,160,30,0.3)",
                 }}
               />
-              {recentDream.trim().length > 0 && recentDream.trim().length < 30 ? (
+              {tooShort ? (
                 <div style={{
                   display: "flex", justifyContent: "space-between", alignItems: "center",
                   marginTop: 6, fontSize: 12, color: "#c89040",
                 }}>
-                  <span>Add more detail for a richer interpretation</span>
-                  <span style={{ color: "#6b5c30" }}>{recentDream.trim().length}/30</span>
+                  <span>Add a few more words for a richer reading</span>
+                  <span style={{ color: "#6b5c30" }}>{len}/30</span>
                 </div>
               ) : (
                 <p style={{ fontSize: 12, color: "#6a5030", marginTop: 8, textAlign: "right" }}>
-                  {recentDream.length > 0 ? `${recentDream.length} characters` : "Optional but recommended"}
+                  {len > 0 ? `${recentDream.length} characters` : "Optional but recommended"}
                 </p>
               )}
             </div>
@@ -427,256 +353,105 @@ export default function OnboardingQuiz({ onComplete, preAuth = false }) {
               style={{
                 ...S.ctaButton(),
                 animation: "onb-staggerUp 0.4s ease-out 0.35s both",
-                opacity: recentDream.trim().length > 0 && recentDream.trim().length < 30 ? 0.6 : 1,
-                cursor: recentDream.trim().length > 0 && recentDream.trim().length < 30 ? "not-allowed" : "pointer",
+                opacity: tooShort ? 0.6 : 1,
+                cursor: tooShort ? "not-allowed" : "pointer",
               }}
-              onClick={() => {
-                if (recentDream.trim().length > 0 && recentDream.trim().length < 30) return;
-                goForward();
-              }}
+              onClick={onContinueClick}
             >
-              {recentDream.trim() ? "Continue" : "Skip"}
+              {ready ? continueLabel : "Skip for now"}
             </button>
           </div>
         );
+      }
 
-      // ── Screen 2: About You ────────────────────────────────────────────────
-      case 2:
-        return (
-          <div key={animKey} style={S.container}>
-            <div style={{
-              fontSize: 48, marginBottom: 16,
-              animation: "onb-popIn 0.5s ease-out",
-            }}>👤</div>
-            <h2 style={{ ...S.sectionTitle, animation: "onb-fadeIn 0.5s ease-out" }}>Tell us about yourself</h2>
-            <p style={{ ...S.sectionSub, animation: "onb-fadeIn 0.5s ease-out 0.1s both" }}>This helps personalize your experience</p>
+      // ── Screen 2: Bridge to signup (pre-auth) OR AI reveal (post-auth) ────
+      case 2: {
+        // ── Pre-auth bridge: prepare the user for the signup handoff ───────
+        if (preAuth) {
+          // Show a fragment of the dream they just shared so the transition
+          // feels continuous, then explain what happens next.
+          const preview = recentDream.trim();
+          const previewSnippet = preview.length > 140 ? preview.slice(0, 140) + "..." : preview;
 
-            {/* Name */}
-            <div style={{ marginBottom: 20, animation: "onb-staggerUp 0.4s ease-out 0.15s both" }}>
-              <label style={S.label}>Your name</label>
-              <input
-                type="text"
-                placeholder="Enter your name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                style={S.input}
-              />
-            </div>
+          return (
+            <div key={`${animKey}-bridge`} style={{ ...S.container, animation: "onb-revealUp 0.6s ease-out" }}>
+              <div style={{
+                fontSize: 44, marginBottom: 18,
+                animation: "onb-float 4s ease-in-out infinite",
+                filter: "drop-shadow(0 0 18px rgba(232,184,64,0.4))",
+              }}>📜</div>
 
-            {/* Age Range */}
-            <div style={{ marginBottom: 20, animation: "onb-staggerUp 0.4s ease-out 0.25s both" }}>
-              <label style={S.label}>Age range <span style={{ color: "#6a5030", fontSize: 12 }}>(optional)</span></label>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center" }}>
-                {AGE_RANGES.map((age) => (
-                  <button key={age} onClick={() => setAgeRange(age)} style={S.pillButton(ageRange === age)}>
-                    {age}
-                  </button>
-                ))}
-              </div>
-            </div>
+              <h2 style={{ ...S.sectionTitle, animation: "onb-fadeIn 0.5s ease-out" }}>
+                Your reading is ready
+              </h2>
+              <p style={{
+                ...S.sectionSub,
+                animation: "onb-fadeIn 0.5s ease-out 0.1s both",
+                maxWidth: 340, margin: "0 auto 22px",
+              }}>
+                Create a free account to see the Shepherd's reflection and save your dream to your journal.
+              </p>
 
-            {/* Gender */}
-            <div style={{ marginBottom: 28, animation: "onb-staggerUp 0.4s ease-out 0.35s both" }}>
-              <label style={S.label}>Gender <span style={{ color: "#6a5030", fontSize: 12 }}>(optional)</span></label>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center" }}>
-                {GENDERS.map((g) => (
-                  <button key={g} onClick={() => setGender(g)} style={S.pillButton(gender === g)}>
-                    {g}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <button
-              style={{ ...S.ctaButton(canContinue()), animation: "onb-staggerUp 0.4s ease-out 0.45s both" }}
-              onClick={canContinue() ? goForward : undefined}
-            >
-              Continue
-            </button>
-          </div>
-        );
-
-      // ── Screen 3: Your Inner World (sleep + emotional merged) ────────────
-      case 3:
-        return (
-          <div key={animKey} style={S.container}>
-            <div style={{
-              fontSize: 48, marginBottom: 16,
-              animation: "onb-popIn 0.5s ease-out",
-              filter: "drop-shadow(0 0 12px rgba(144,102,212,0.4))",
-            }}>🌙</div>
-            <h2 style={{ ...S.sectionTitle, animation: "onb-fadeIn 0.5s ease-out" }}>Your Inner World</h2>
-            <p style={{ ...S.sectionSub, animation: "onb-fadeIn 0.5s ease-out 0.1s both" }}>Sleep and emotional patterns shape your dreams</p>
-
-            {/* Sleep Hours */}
-            <div style={{ marginBottom: 20, animation: "onb-staggerUp 0.4s ease-out 0.15s both" }}>
-              <label style={S.label}>How many hours do you usually sleep?</label>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center" }}>
-                {SLEEP_HOURS.map((h) => (
-                  <button key={h} onClick={() => setSleepHours(h)} style={S.pillButton(sleepHours === h)}>
-                    {h}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Sleep Quality */}
-            <div style={{ marginBottom: 20, animation: "onb-staggerUp 0.4s ease-out 0.25s both" }}>
-              <label style={S.label}>How would you rate your sleep quality?</label>
-              <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
-                {SLEEP_QUALITY.map((sq) => (
-                  <button key={sq.id} onClick={() => setSleepQuality(sq.id)} style={{
-                    ...S.pillButton(sleepQuality === sq.id),
-                    display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
-                    padding: "12px 10px", minWidth: 52,
+              {previewSnippet && (
+                <div style={{
+                  background: "rgba(255,255,255,0.03)",
+                  border: "1px solid rgba(144,102,212,0.25)",
+                  borderRadius: 16, padding: "14px 18px",
+                  textAlign: "left", marginBottom: 28,
+                  animation: "onb-fadeIn 0.5s ease-out 0.2s both",
+                }}>
+                  <div style={{
+                    fontSize: 11, letterSpacing: 2.5, color: "#7a6840",
+                    textTransform: "uppercase", marginBottom: 6,
                   }}>
-                    <span style={{ fontSize: 22 }}>{sq.emoji}</span>
-                    <span style={{ fontSize: 11 }}>{sq.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div style={S.divider} />
-
-            {/* Stress Level */}
-            <div style={{ marginBottom: 24, animation: "onb-staggerUp 0.4s ease-out 0.35s both" }}>
-              <label style={S.label}>Current stress level</label>
-              <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
-                {STRESS_LEVELS.map((sl) => (
-                  <button key={sl.id} onClick={() => setStressLevel(sl.id)} style={{
-                    ...S.pillButton(stressLevel === sl.id),
-                    display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
-                    padding: "14px 14px", minWidth: 70,
+                    Your dream
+                  </div>
+                  <p style={{
+                    fontSize: 13.5, color: "#c8a040", lineHeight: 1.6,
+                    margin: 0, fontStyle: "italic",
                   }}>
-                    <span style={{ fontSize: 24 }}>{sl.emoji}</span>
-                    <span style={{ fontSize: 12 }}>{sl.label}</span>
-                  </button>
-                ))}
-              </div>
+                    "{previewSnippet}"
+                  </p>
+                </div>
+              )}
+
+              <button
+                style={{
+                  ...S.ctaButton(),
+                  animation: "onb-staggerUp 0.4s ease-out 0.35s both",
+                }}
+                onClick={handlePreAuthContinue}
+              >
+                Continue to sign up
+              </button>
+              <p style={{
+                fontSize: 11, color: "#6a5030", marginTop: 14, letterSpacing: 0.5,
+                animation: "onb-fadeIn 0.5s ease-out 0.5s both",
+              }}>
+                Takes less than a minute.
+              </p>
             </div>
+          );
+        }
 
-            {/* Mood */}
-            <div style={{ marginBottom: 28, animation: "onb-staggerUp 0.4s ease-out 0.45s both" }}>
-              <label style={S.label}>How has your mood been lately?</label>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center" }}>
-                {MOOD_OPTIONS.map((m) => (
-                  <button key={m.id} onClick={() => setMood(m.id)} style={{
-                    ...S.pillButton(mood === m.id),
-                    display: "flex", alignItems: "center", gap: 8,
-                    padding: "12px 18px",
-                  }}>
-                    <span style={{ fontSize: 20 }}>{m.emoji}</span>
-                    <span>{m.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <button
-              style={{ ...S.ctaButton(canContinue()), animation: "onb-staggerUp 0.4s ease-out 0.55s both" }}
-              onClick={canContinue() ? goForward : undefined}
-            >
-              Continue
-            </button>
-          </div>
-        );
-
-      // ── Screen 4: Recurring Dream Themes ──────────────────────────────────
-      case 4:
-        return (
-          <div key={animKey} style={S.container}>
-            <div style={{
-              fontSize: 48, marginBottom: 16,
-              animation: "onb-popIn 0.5s ease-out",
-            }}>🔄</div>
-            <h2 style={{ ...S.sectionTitle, animation: "onb-fadeIn 0.5s ease-out" }}>Recurring Dream Themes</h2>
-            <p style={{ ...S.sectionSub, animation: "onb-fadeIn 0.5s ease-out 0.1s both" }}>Select any themes you've experienced in dreams</p>
-
-            <div style={{
-              display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8,
-              marginBottom: 28, maxHeight: 380, overflowY: "auto",
-              padding: "4px 2px",
-              scrollbarWidth: "thin",
-              scrollbarColor: "rgba(144,102,212,0.3) transparent",
-            }}>
-              {DREAM_THEMES.map((t, i) => {
-                const selected = themes.includes(t.id);
-                return (
-                  <button key={t.id} onClick={() => toggleTheme(t.id)} style={{
-                    display: "flex", alignItems: "center", gap: 8,
-                    padding: "10px 12px", borderRadius: 12, fontSize: 13,
-                    fontFamily: "Georgia, serif", cursor: "pointer",
-                    background: selected ? "rgba(124,58,237,0.25)" : "rgba(255,255,255,0.04)",
-                    border: `1.5px solid ${selected ? "rgba(144,102,212,0.7)" : "rgba(255,255,255,0.08)"}`,
-                    color: selected ? "#d4b0ff" : "#c8a030",
-                    boxShadow: selected ? "0 0 12px rgba(144,102,212,0.25)" : "none",
-                    transition: "all 0.2s ease",
-                    animation: `onb-staggerUp 0.3s ease-out ${0.12 + i * 0.03}s both`,
-                    textAlign: "left",
-                  }}>
-                    <span style={{
-                      fontSize: 18, flexShrink: 0,
-                      transition: "transform 0.2s",
-                      transform: selected ? "scale(1.2)" : "scale(1)",
-                    }}>{t.emoji}</span>
-                    <span style={{ lineHeight: 1.2 }}>{t.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            <button
-              style={{ ...S.ctaButton(), animation: "onb-staggerUp 0.4s ease-out 0.9s both" }}
-              onClick={preAuth ? handleComplete : goForward}
-            >
-              {preAuth
-                ? (recentDream.trim() ? "Create Account to See Your Reading" : (themes.length === 0 ? "None of these" : `Continue (${themes.length} selected)`))
-                : (themes.length === 0 ? "None of these" : `Continue (${themes.length} selected)`)
-              }
-            </button>
-          </div>
-        );
-
-      // ── Screen 5: AI Processing + Result (post-auth only) ─────────────────
-      case 5:
+        // ── Post-auth: AI processing + reveal ──────────────────────────────
         if (processing) {
           return (
-            <div key={`${animKey}-loading`} style={{ ...S.container, animation: "onb-fadeIn 0.5s ease-out" }}>
-              {/* Expanding rings */}
-              <div style={{ position: "relative", width: 140, height: 140, margin: "0 auto 36px" }}>
-                {[0, 1, 2].map((i) => (
-                  <div key={`ring-${i}`} style={{
-                    position: "absolute", top: "50%", left: "50%",
-                    width: 80, height: 80, borderRadius: "50%",
-                    border: "1.5px solid rgba(144,102,212,0.3)",
-                    animation: `onb-ringExpand 2.4s ease-out infinite`,
-                    animationDelay: `${i * 0.8}s`,
-                  }} />
-                ))}
-                {/* Rotating glow ring */}
+            <div key={`${animKey}-proc`} style={{ ...S.container, animation: "onb-fadeIn 0.5s ease-out" }}>
+              <div style={{
+                position: "relative", width: 120, height: 120,
+                margin: "0 auto 32px",
+                animation: "onb-pulse 2.5s ease-in-out infinite",
+              }}>
                 <div style={{
-                  position: "absolute", top: "50%", left: "50%", width: 100, height: 100,
-                  borderRadius: "50%",
-                  border: "2px solid transparent",
-                  borderTopColor: "rgba(232,184,64,0.6)",
-                  borderRightColor: "rgba(144,102,212,0.3)",
-                  animation: "onb-rotateGlow 2s linear infinite",
+                  position: "absolute", inset: 0, borderRadius: "50%",
+                  background: "radial-gradient(circle at 35% 35%, rgba(232,184,64,0.5), rgba(104,71,192,0.7) 60%, rgba(40,10,80,0.85) 100%)",
+                  boxShadow: "0 0 60px rgba(144,102,212,0.4), inset 0 0 30px rgba(232,184,64,0.15)",
                 }} />
-                {/* Pulsing icon */}
-                <div style={{
-                  fontSize: 52, position: "absolute", inset: 0,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  animation: "onb-pulse 2s ease-in-out infinite",
-                  filter: "drop-shadow(0 0 16px rgba(232,184,64,0.5))",
-                }}>
-                  ✦
-                </div>
-                {/* Orbiting dots */}
-                {[0, 1, 2, 3, 4].map((i) => (
-                  <div key={`dot-${i}`} style={{
+                {[0, 1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} style={{
                     position: "absolute", top: "50%", left: "50%",
-                    width: i % 2 === 0 ? 5 : 7, height: i % 2 === 0 ? 5 : 7, borderRadius: "50%",
+                    width: 6, height: 6, borderRadius: "50%",
                     background: i % 2 === 0 ? "#e8b840" : "#9066d4",
                     animation: `onb-orbit ${1.6 + i * 0.3}s linear infinite`,
                     animationDelay: `${i * 0.35}s`,
@@ -692,10 +467,10 @@ export default function OnboardingQuiz({ onComplete, preAuth = false }) {
                 WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
                 animation: "onb-shimmer 2.5s linear infinite",
               }}>
-                Reflecting on your dream...
+                Consulting the Shepherd...
               </h2>
               <p style={{ ...S.sectionSub, marginTop: 12, animation: "onb-fadeIn 0.8s ease-out 0.3s both" }}>
-                Finding patterns, symbols, and meaning
+                Weighing the symbols and what they may carry
               </p>
               <div style={{
                 width: "60%", maxWidth: 200, height: 3, borderRadius: 2,
@@ -714,9 +489,9 @@ export default function OnboardingQuiz({ onComplete, preAuth = false }) {
           );
         }
 
+        // ── Reveal ────────────────────────────────────────────────────────
         return (
           <div key={`${animKey}-result`} style={{ ...S.container, animation: "onb-revealUp 0.8s ease-out" }}>
-            {/* Sparkle particles */}
             {Array.from({ length: 6 }, (_, i) => (
               <div key={`star-${i}`} style={{
                 position: "absolute", top: "10%", left: "50%",
@@ -728,7 +503,6 @@ export default function OnboardingQuiz({ onComplete, preAuth = false }) {
               }} />
             ))}
 
-            {/* Interpretation card */}
             <div style={{
               background: "rgba(255,255,255,0.03)",
               border: "1px solid rgba(144,102,212,0.3)",
@@ -740,7 +514,7 @@ export default function OnboardingQuiz({ onComplete, preAuth = false }) {
                 textTransform: "uppercase", marginBottom: 8,
                 animation: "onb-fadeIn 0.5s ease-out 0.3s both",
               }}>
-                {name ? `${name}'s Dream Reading` : "Your Dream Reading"}
+                The Shepherd's Reflection
               </div>
 
               <div style={{ animation: "onb-fadeIn 0.5s ease-out 0.4s both", margin: "12px 0" }}>
@@ -749,34 +523,13 @@ export default function OnboardingQuiz({ onComplete, preAuth = false }) {
                   .map((para, i) => (
                     <p key={i} style={{
                       fontSize: 15, color: "#d4c490", lineHeight: 1.7,
-                      margin: i === 0 ? "0 0 14px" : "0 0 14px",
+                      margin: "0 0 14px",
                       fontStyle: "italic",
                     }}>
                       {para.trim()}
                     </p>
                   ))}
               </div>
-
-              {/* AI-found themes */}
-              {aiThemes.length > 0 && (
-                <div style={{ animation: "onb-fadeIn 0.5s ease-out 0.5s both" }}>
-                  <div style={{ fontSize: 12, color: "#9a8050", letterSpacing: 1, textTransform: "uppercase", marginBottom: 10, marginTop: 16 }}>
-                    Themes Found
-                  </div>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                    {aiThemes.map((theme, i) => (
-                      <span key={theme} style={{
-                        padding: "5px 14px", borderRadius: 20, fontSize: 13,
-                        color: "#9066d4", border: "1px solid rgba(144,102,212,0.3)",
-                        background: "rgba(144,102,212,0.1)",
-                        animation: `onb-traitSlide 0.4s ease-out ${0.6 + i * 0.1}s both`,
-                      }}>
-                        {theme}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
 
             <p style={{
@@ -793,6 +546,7 @@ export default function OnboardingQuiz({ onComplete, preAuth = false }) {
             </button>
           </div>
         );
+      }
 
       default:
         return null;
@@ -801,11 +555,19 @@ export default function OnboardingQuiz({ onComplete, preAuth = false }) {
 
   // ── Main render ────────────────────────────────────────────────────────────
   return (
-    <div style={S.overlay}>
+    <div
+      style={{
+        ...S.overlay,
+        opacity: leaving ? 0 : 1,
+        transform: leaving ? "translateY(-12px)" : "translateY(0)",
+        transition: "opacity 0.35s ease, transform 0.4s ease",
+        pointerEvents: leaving ? "none" : "auto",
+      }}
+    >
       {orbs}
 
-      {/* Back button (screens 1-4, not on welcome/processing/result) */}
-      {step >= 1 && step <= 4 && !processing && (
+      {/* Back button on dream-entry and pre-auth bridge screens */}
+      {!processing && !leaving && (step === 1 || (step === 2 && preAuth)) && (
         <button style={S.backButton} onClick={goBack}>
           ← Back
         </button>
@@ -814,8 +576,6 @@ export default function OnboardingQuiz({ onComplete, preAuth = false }) {
       <div style={S.inner}>
         {renderScreen()}
       </div>
-
-      {progressBar}
     </div>
   );
 }
