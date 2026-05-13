@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import StarField from "./StarField";
 import ReportDialog from "./ReportDialog";
+import PrayerOverlay from "./PrayerOverlay";
 
 const DREAM_DICTIONARY = {
   flying: { symbol: "✈️" }, falling: { symbol: "⬇️" }, water: { symbol: "🌊" },
@@ -61,6 +62,7 @@ export default function ReadingModal({ reading, onClose, onGenerateImage, userSe
   const [generatingImage, setGeneratingImage] = useState(false);
   const [showVisualizeConfirm, setShowVisualizeConfirm] = useState(false);
   const [expandedTheme, setExpandedTheme] = useState(null);
+  const [showPrayer, setShowPrayer] = useState(false);
   const styleInjected = useRef(false);
 
   // Stars rendered via StarField component
@@ -604,6 +606,29 @@ export default function ReadingModal({ reading, onClose, onGenerateImage, userSe
               marginTop: 28, textAlign: "center",
               animation: "rm-fadeIn 0.5s ease",
             }}>
+              {/* Pray over this dream */}
+              {interpretation && (
+                <div style={{ marginBottom: 14 }}>
+                  <button
+                    onClick={() => setShowPrayer(true)}
+                    style={{
+                      background: "rgba(232,184,64,0.08)",
+                      border: "1px solid rgba(232,184,64,0.35)",
+                      color: "#e8c860",
+                      padding: "13px 26px", borderRadius: 30, fontSize: 13.5,
+                      cursor: "pointer", fontFamily: "Georgia, serif",
+                      letterSpacing: 1, minHeight: 44,
+                      transition: "background 0.18s",
+                      boxShadow: "0 0 18px rgba(232,184,64,0.12)",
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(232,184,64,0.16)"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(232,184,64,0.08)"; }}
+                  >
+                    ✝ Pray over this dream
+                  </button>
+                </div>
+              )}
+
               <Dialog.Close asChild>
                 <button style={{
                   background: "none",
@@ -655,6 +680,15 @@ export default function ReadingModal({ reading, onClose, onGenerateImage, userSe
       </div>
         </Dialog.Content>
       </Dialog.Portal>
+
+      {/* Pray over this dream — nested overlay above the reading modal */}
+      <PrayerOverlay
+        open={showPrayer}
+        onOpenChange={setShowPrayer}
+        dream={dream}
+        interpretation={interpretation}
+        themes={generatedThemes}
+      />
     </Dialog.Root>
   );
 }
