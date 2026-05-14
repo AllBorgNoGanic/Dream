@@ -389,7 +389,7 @@ Write 2 to 3 paragraphs of warm, poetic but grounded prose. Plain flowing prose 
                 animation: "onb-fadeIn 0.5s ease-out 0.1s both",
                 maxWidth: 340, margin: "0 auto 22px",
               }}>
-                Create a free account to see the Shepherd's reflection and save your dream to your journal.
+                Create a free account to see your Shepherd's reflection and save your dream to your journal.
               </p>
 
               {previewSnippet && (
@@ -514,7 +514,7 @@ Write 2 to 3 paragraphs of warm, poetic but grounded prose. Plain flowing prose 
                 textTransform: "uppercase", marginBottom: 8,
                 animation: "onb-fadeIn 0.5s ease-out 0.3s both",
               }}>
-                The Shepherd's Reflection
+                Your Shepherd's Reflection
               </div>
 
               <div style={{ animation: "onb-fadeIn 0.5s ease-out 0.4s both", margin: "12px 0" }}>

@@ -544,7 +544,7 @@ function DreamCard({ dream, displayName, isPro, user, onBlock }) {
           border: "1px solid rgba(200,160,30,0.2)",
         }}>
           <div style={{ fontSize: 11, color: "#8a7540", letterSpacing: 1, marginBottom: 8, textTransform: "uppercase" }}>
-            The Shepherd's Reflection
+            A Shepherd's Reflection
           </div>
           <div style={{ color: "#f5e4b0", fontSize: 14, lineHeight: 1.7, fontStyle: "italic" }}>
             {dream.interpretation}

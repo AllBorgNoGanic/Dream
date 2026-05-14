@@ -210,7 +210,7 @@ export default function ReadingModal({ reading, onClose, onGenerateImage, userSe
               backgroundClip: "text",
               animation: "rm-goldShimmer 4s linear infinite",
             }}>
-              The Shepherd's Reflection
+              Your Shepherd's Reflection
             </span>
             <div style={{
               flex: 1, height: 1,

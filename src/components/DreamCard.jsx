@@ -248,7 +248,7 @@ export default function DreamCard({ dream, isSelected, onSelect, onDelete, onTog
                 fontSize: 9, letterSpacing: 4, color: "#9066d4",
                 textTransform: "uppercase", fontFamily: "Georgia, serif", fontWeight: 400,
               }}>
-                The Shepherd's Reflection
+                Your Shepherd's Reflection
               </span>
               <div style={{
                 flex: 1, height: 1,

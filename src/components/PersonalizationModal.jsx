@@ -227,7 +227,7 @@ export default function PersonalizationModal({ open, onOpenChange, userSettings,
             <div style={{ textAlign: "center", marginBottom: 4 }}>
               <div style={{ fontSize: 36, marginBottom: 12 }}>💫</div>
             </div>
-            <h2 style={screenTitle}>What's the season of your life?</h2>
+            <h2 style={screenTitle}>How have you been feeling lately?</h2>
             <p style={screenSub}>
               Dreams reflect what we're carrying. This stays private and helps the Shepherd meet you where you are.
             </p>
