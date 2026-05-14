@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import DreamSwitch from "./DreamSwitch";
+import VoiceCapture from "./VoiceCapture";
 // checkFields available if needed for future moderation
 
 const MOODS = [
@@ -248,9 +249,8 @@ export default function DreamForm({
 }) {
   const [tagInput, setTagInput] = useState("");
   const [charInput, setCharInput] = useState("");
-  const [recording, setRecording] = useState(false);
+  const [voiceOpen, setVoiceOpen] = useState(false);
   const [moderationError, setModerationError] = useState("");
-  const recognitionRef = useRef(null);
   const styleInjectedRef = useRef(false);
 
   useEffect(() => {
@@ -269,56 +269,17 @@ export default function DreamForm({
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  // Voice-to-text
-  const toggleRecording = () => {
-    if (recording) {
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
-      }
-      setRecording(false);
-      return;
-    }
-
-    const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      alert("Speech recognition is not supported in this browser.");
-      return;
-    }
-
-    const recognition = new SpeechRecognition();
-    recognition.continuous = true;
-    recognition.interimResults = false;
-    recognition.lang = "en-US";
-
-    recognition.onresult = (event) => {
-      let transcript = "";
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        if (event.results[i].isFinal) {
-          transcript += event.results[i][0].transcript;
-        }
-      }
-      if (transcript) {
-        setForm((prev) => ({
-          ...prev,
-          description: prev.description
-            ? prev.description + " " + transcript
-            : transcript,
-        }));
-      }
-    };
-
-    recognition.onerror = () => {
-      setRecording(false);
-    };
-
-    recognition.onend = () => {
-      setRecording(false);
-    };
-
-    recognitionRef.current = recognition;
-    recognition.start();
-    setRecording(true);
+  // Voice-to-text via the unified VoiceCapture modal (Capacitor native on
+  // iOS/Android, Web Speech API on the web). Result is appended to the
+  // existing description rather than overwriting it.
+  const handleVoiceDone = (transcript) => {
+    if (!transcript) return;
+    setForm((prev) => ({
+      ...prev,
+      description: prev.description
+        ? prev.description.trim() + " " + transcript
+        : transcript,
+    }));
   };
 
   // Chip helpers
@@ -400,11 +361,10 @@ export default function DreamForm({
           </label>
           <button
             type="button"
-            onClick={toggleRecording}
-            style={styles.voiceBtn(recording)}
+            onClick={() => setVoiceOpen(true)}
+            style={styles.voiceBtn(false)}
           >
-            {recording && <span style={styles.pulseIndicator} />}
-            {recording ? "Stop Recording" : "Voice Input"}
+            🎙️ Voice Input
           </button>
         </div>
         <textarea
@@ -629,6 +589,9 @@ export default function DreamForm({
       >
         {loading ? "Saving..." : form.interpret_on_save ? "Save & Interpret" : "Save Dream"}
       </button>
+
+      {/* Voice capture modal (unified Capacitor + Web) */}
+      <VoiceCapture open={voiceOpen} onOpenChange={setVoiceOpen} onDone={handleVoiceDone} />
     </form>
   );
 }
