@@ -405,6 +405,7 @@ export default function DreamJournal() {
     // If we have a dream but no interpretation (pre-auth flow), generate it now
     let finalInterpretation = interpretation;
     let finalGeneratedThemes = [];
+    let finalScriptureRefs = [];
     if (recentDream?.trim() && !interpretation) {
       try {
         const result = await interpretDream(
@@ -414,6 +415,7 @@ export default function DreamJournal() {
         if (result && !result.blocked) {
           finalInterpretation = result.interpretation;
           finalGeneratedThemes = result.generated_themes || [];
+          finalScriptureRefs = result.scripture_refs || [];
         }
       } catch {
         finalInterpretation = null;
@@ -453,6 +455,7 @@ export default function DreamJournal() {
         description: recentDream.trim(),
         interpretation: finalInterpretation,
         generated_themes: finalGeneratedThemes,
+        scripture_refs: finalScriptureRefs,
         mood: emotional?.mood || null,
         created_at: new Date().toISOString(),
       });
@@ -541,9 +544,11 @@ Draw on biblical wisdom, depth psychology, and dream symbolism. Speak gently and
 If the dreamer's content reflects faith, lean into it. If it does not, stay respectful and quietly grounded in the same wisdom without proselytizing.
 
 Respond ONLY with valid JSON in this exact format (no markdown, no code fences):
-{"interpretation":"A warm, insightful 2-3 sentence interpretation. Be poetic but grounded. Write in plain flowing prose only.","themes":[{"title":"A unique evocative theme title","symbol":"A single relevant emoji","meaning":"What this theme represents in the dreamer's life","guidance":"Actionable advice or reflection prompt for the dreamer"}]}
+{"interpretation":"A warm, insightful 2-3 sentence interpretation. Be poetic but grounded. Write in plain flowing prose only.","themes":[{"title":"A unique evocative theme title","symbol":"A single relevant emoji","meaning":"What this theme represents in the dreamer's life","guidance":"Actionable advice or reflection prompt for the dreamer"}],"scripture_refs":["Book Chapter:Verse"]}
 
-Generate 2-3 themes that are specific and unique to this dream. Theme titles should be creative and evocative (e.g. "The Unfinished Bridge", "Voices Behind the Door", "The Lamp in the Window"). Each theme should feel personally tailored, not generic.${profileContext}${patternContext}`,
+Generate 2-3 themes that are specific and unique to this dream. Theme titles should be creative and evocative (e.g. "The Unfinished Bridge", "Voices Behind the Door", "The Lamp in the Window"). Each theme should feel personally tailored, not generic.
+
+For scripture_refs, return 0 to 2 well-known verse references that genuinely connect to the dream's imagery or themes. Use the format "Book Chapter:Verse" (e.g. "Psalm 23:4", "Joel 2:28", "Matthew 3:16"). Only include verses that are recognizable from common biblical literacy. Do not invent references or chapter and verse numbers. If no verse comes naturally to mind, return an empty array. Do NOT include the verse text itself, only the reference.${profileContext}${patternContext}`,
           messages: [{
             role: "user",
             content: `Interpret this dream. Title: "${dream.title}". Mood: ${dream.mood}. Theme: ${dream.theme}.${dream.characters?.length ? ` Characters: ${dream.characters.join(", ")}.` : ""}${dream.tags?.length ? ` Tags: ${dream.tags.join(", ")}.` : ""} Dream: "${dream.description}"`,
@@ -562,15 +567,28 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
 
       try {
         const parsed = JSON.parse(cleanText);
+        // Validate scripture refs look like "Book Chapter:Verse" or
+        // "Book Chapter:Verse-Verse" before letting them through. Drop
+        // anything that doesn't match so a malformed AI response cannot
+        // surface broken links to Bible Gateway.
+        const refPattern = /^[1-3]?\s?[A-Za-z]+\s+\d+:\d+(-\d+)?$/;
+        const refs = Array.isArray(parsed.scripture_refs)
+          ? parsed.scripture_refs
+              .filter((r) => typeof r === "string" && refPattern.test(r.trim()))
+              .map((r) => r.trim())
+              .slice(0, 3)
+          : [];
         return {
           interpretation: parsed.interpretation || rawText,
           generated_themes: Array.isArray(parsed.themes) ? parsed.themes : [],
+          scripture_refs: refs,
         };
       } catch {
         // Fallback: if AI didn't return valid JSON, treat the whole response as interpretation
         return {
           interpretation: rawText || "Your dream holds meaning waiting to be uncovered. Subscribe to Dream Shepherd for unlimited AI-powered interpretations.",
           generated_themes: [],
+          scripture_refs: [],
         };
       }
     } catch {
@@ -654,13 +672,18 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
         toast.error("This dream contains language we can't process. Please edit it and try again.");
         return; // Moderation block -- no AI call, no count consumed
       }
-      const { interpretation, generated_themes } = result;
-      await supabase.from("dreams").update({ interpretation, generated_themes: generated_themes || [] }).eq("id", dream.id);
-      setDreams((prev) => prev.map((d) => d.id === dream.id ? { ...d, interpretation, generated_themes: generated_themes || [] } : d));
+      const { interpretation, generated_themes, scripture_refs } = result;
+      const scriptureRefs = scripture_refs || [];
+      await supabase.from("dreams").update({
+        interpretation,
+        generated_themes: generated_themes || [],
+        scripture_refs: scriptureRefs,
+      }).eq("id", dream.id);
+      setDreams((prev) => prev.map((d) => d.id === dream.id ? { ...d, interpretation, generated_themes: generated_themes || [], scripture_refs: scriptureRefs } : d));
       // Open the immersive reading modal
       const themes = await fetchDreamThemesCache();
       const themeConnections = detectThemeConnections(dream.description, themes);
-      setReadingModal({ interpretation, symbols: dream.symbols || [], dreamTitle: dream.title, themeConnections, generatedThemes: generated_themes || [], dream: { ...dream, interpretation, generated_themes } });
+      setReadingModal({ interpretation, symbols: dream.symbols || [], dreamTitle: dream.title, themeConnections, generatedThemes: generated_themes || [], scriptureRefs, dream: { ...dream, interpretation, generated_themes, scripture_refs: scriptureRefs } });
       if (!userSettings?.is_pro) {
         const newCount = (userSettings?.interpretation_count ?? 0) + 1;
         await supabase.from("user_settings").update({ interpretation_count: newCount }).eq("user_id", user.id);
@@ -1377,7 +1400,7 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
                 onViewReading={async (d) => {
                   const themes = await fetchDreamThemesCache();
                   const themeConnections = detectThemeConnections(d.description, themes);
-                  setReadingModal({ interpretation: d.interpretation, symbols: d.symbols || [], dreamTitle: d.title, themeConnections, generatedThemes: d.generated_themes || [], dream: d });
+                  setReadingModal({ interpretation: d.interpretation, symbols: d.symbols || [], dreamTitle: d.title, themeConnections, generatedThemes: d.generated_themes || [], scriptureRefs: d.scripture_refs || [], dream: d });
                 }}
               />
             ))}
@@ -1481,7 +1504,7 @@ Generate 2-3 themes that are specific and unique to this dream. Theme titles sho
                     onViewReading={async (d) => {
                       const themes = await fetchDreamThemesCache();
                       const themeConnections = detectThemeConnections(d.description, themes);
-                      setReadingModal({ interpretation: d.interpretation, symbols: d.symbols || [], dreamTitle: d.title, themeConnections, generatedThemes: d.generated_themes || [], dream: d });
+                      setReadingModal({ interpretation: d.interpretation, symbols: d.symbols || [], dreamTitle: d.title, themeConnections, generatedThemes: d.generated_themes || [], scriptureRefs: d.scripture_refs || [], dream: d });
                     }}
                   />
                 </ErrorBoundary>

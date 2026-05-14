@@ -48,7 +48,7 @@ function BlurReveal({ text, baseDelay = 0 }) {
 }
 
 export default function ReadingModal({ reading, onClose, onGenerateImage, userSettings, onUpgrade }) {
-  const { interpretation = "", symbols = [], dreamTitle = "", themeConnections = [], generatedThemes = [], dream } = reading;
+  const { interpretation = "", symbols = [], dreamTitle = "", themeConnections = [], generatedThemes = [], scriptureRefs = [], dream } = reading;
 
   const [showText, setShowText] = useState(false);
   const [showSymbols, setShowSymbols] = useState(false);
@@ -358,6 +358,68 @@ export default function ReadingModal({ reading, onClose, onGenerateImage, userSe
                   );
                 })}
               </div>
+            </div>
+          )}
+
+          {/* Scripture Connections — verse references the AI surfaced */}
+          {showThemes && scriptureRefs.length > 0 && (
+            <div style={{ marginTop: 22, animation: "rm-fadeIn 0.5s ease" }}>
+              <div style={{
+                height: 1, marginBottom: 16,
+                background: "linear-gradient(90deg, transparent, rgba(232,184,64,0.25), transparent)",
+              }} />
+              <div style={{
+                fontSize: 9, letterSpacing: 3,
+                textTransform: "uppercase", marginBottom: 12,
+                background: "linear-gradient(90deg, #8a7540 0%, #c8a040 25%, #e8c860 50%, #c8a040 75%, #8a7540 100%)",
+                backgroundSize: "200% auto",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+                animation: "rm-goldShimmer 4s linear infinite",
+              }}>
+                Scripture Connections
+              </div>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                {scriptureRefs.map((ref, i) => (
+                  <a
+                    key={ref}
+                    href={`https://www.biblegateway.com/passage/?search=${encodeURIComponent(ref)}&version=ESV`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: "inline-flex", alignItems: "center", gap: 6,
+                      background: "rgba(232,184,64,0.08)",
+                      border: "1px solid rgba(232,184,64,0.30)",
+                      borderRadius: 20, padding: "7px 14px",
+                      fontSize: 13, color: "#e8c860",
+                      textDecoration: "none",
+                      fontFamily: "Georgia, serif",
+                      cursor: "pointer",
+                      animation: `rm-badgeIn 0.4s cubic-bezier(0.34,1.56,0.64,1) ${i * 0.1}s both`,
+                      transition: "background 0.18s, border-color 0.18s",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = "rgba(232,184,64,0.18)";
+                      e.currentTarget.style.borderColor = "rgba(232,184,64,0.55)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = "rgba(232,184,64,0.08)";
+                      e.currentTarget.style.borderColor = "rgba(232,184,64,0.30)";
+                    }}
+                  >
+                    <span style={{ fontSize: 11 }}>✦</span>
+                    <span>{ref}</span>
+                    <span style={{ fontSize: 10, opacity: 0.7 }}>↗</span>
+                  </a>
+                ))}
+              </div>
+              <p style={{
+                fontSize: 11, color: "#6b5c30", marginTop: 10,
+                fontStyle: "italic", lineHeight: 1.5,
+              }}>
+                Tap a reference to read in Bible Gateway.
+              </p>
             </div>
           )}
 
