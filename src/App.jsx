@@ -9,6 +9,7 @@ import DreamCard from "./components/DreamCard";
 import SearchBar from "./components/SearchBar";
 import StreakBanner from "./components/StreakBanner";
 import MorningCard from "./components/MorningCard";
+import SundayRecap from "./components/SundayRecap";
 import PatternsTab from "./components/PatternsTab";
 import CommunityTab from "./components/CommunityTab";
 import DictionaryTab from "./components/DictionaryTab";
@@ -1285,13 +1286,23 @@ For scripture_refs, return 0 to 2 well-known verse references that genuinely con
         {tab === "journal" && (
           <div style={{ animation: "fadeIn 0.4s ease" }}>
             <ErrorBoundary label="Journal">
-            <MorningCard
-              user={user}
-              userSettings={userSettings}
-              dreams={dreams}
-              onSettingsUpdate={setUserSettings}
-              onRecordDream={() => { setShowForm(true); setForm(defaultForm); }}
-            />
+            {new Date().getDay() === 0 ? (
+              <SundayRecap
+                user={user}
+                userSettings={userSettings}
+                dreams={dreams}
+                onSettingsUpdate={setUserSettings}
+                onOpenJournal={() => { /* user is already on Journal tab */ }}
+              />
+            ) : (
+              <MorningCard
+                user={user}
+                userSettings={userSettings}
+                dreams={dreams}
+                onSettingsUpdate={setUserSettings}
+                onRecordDream={() => { setShowForm(true); setForm(defaultForm); }}
+              />
+            )}
             <StreakBanner
               streak={userSettings?.streak_current || 0}
               longestStreak={userSettings?.streak_longest || 0}
