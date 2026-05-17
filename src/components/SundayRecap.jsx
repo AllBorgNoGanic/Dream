@@ -197,11 +197,17 @@ Write one quiet, observant sentence about the week.`;
         display: "flex", justifyContent: "space-between", alignItems: "center",
         marginBottom: 8,
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ fontSize: 16, color: "#e8b840", textShadow: "0 0 10px rgba(232,184,64,0.5)" }}>✦</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, lineHeight: 1 }}>
+          <span style={{
+            fontSize: 12, color: "#e8b840",
+            textShadow: "0 0 10px rgba(232,184,64,0.5)",
+            lineHeight: 1, display: "inline-block",
+            transform: "translateY(0.5px)",
+          }}>✦</span>
           <span style={{
             fontSize: 10.5, letterSpacing: 3, color: "#9a8050",
             textTransform: "uppercase", fontWeight: 600,
+            lineHeight: 1,
           }}>
             Your week in dreams
           </span>

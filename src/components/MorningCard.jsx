@@ -117,10 +117,16 @@ export default function MorningCard({ user, userSettings, dreams, onSettingsUpda
         display: "flex", justifyContent: "space-between", alignItems: "center",
         marginBottom: 8,
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-          <span style={{ fontSize: 14, color: "#e8b840", textShadow: "0 0 10px rgba(232,184,64,0.4)" }}>✦</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 7, lineHeight: 1 }}>
+          <span style={{
+            fontSize: 11, color: "#e8b840",
+            textShadow: "0 0 10px rgba(232,184,64,0.4)",
+            lineHeight: 1, display: "inline-block",
+            transform: "translateY(0.5px)",
+          }}>✦</span>
           <span style={{
             fontSize: 10, letterSpacing: 3, color: "#8a7540", textTransform: "uppercase",
+            lineHeight: 1,
           }}>
             Morning with the Shepherd
           </span>
