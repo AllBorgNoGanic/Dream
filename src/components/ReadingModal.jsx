@@ -645,7 +645,7 @@ export default function ReadingModal({ reading, onClose, onGenerateImage, userSe
                   Want unlimited visualizations?
                 </div>
                 <p style={{ fontSize: 11, color: "#6b5c30", lineHeight: 1.5, margin: "0 0 10px" }}>
-                  Dream Shepherd gives you unlimited AI dream art, unlimited interpretations, and more.
+                  Supporters get unlimited dream art, unlimited interpretations, and prayers without limits.
                 </p>
                 <button
                   onClick={() => { setShowVisualizeConfirm(false); if (onUpgrade) onUpgrade(); }}
@@ -653,10 +653,10 @@ export default function ReadingModal({ reading, onClose, onGenerateImage, userSe
                     background: "linear-gradient(135deg, #c8a020, #e8c840)",
                     border: "none", color: "#1a1000", padding: "12px 22px", borderRadius: 20,
                     fontSize: 13, fontWeight: 700, cursor: "pointer", minHeight: 44,
-                    letterSpacing: 0.5,
+                    letterSpacing: 0.5, fontFamily: "Georgia, serif",
                   }}
                 >
-                  Subscribe from $5/mo
+                  Support the work
                 </button>
               </div>
             </div>

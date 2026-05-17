@@ -211,7 +211,7 @@ const REPORT_REASONS = [
   "Other",
 ];
 
-function DreamCard({ dream, displayName, isPro, user, onBlock }) {
+function DreamCard({ dream, displayName, user, onBlock }) {
   const [likes, setLikes] = useState([]);
   const [liked, setLiked] = useState(false);
   const [showComments, setShowComments] = useState(false);
@@ -374,14 +374,6 @@ function DreamCard({ dream, displayName, isPro, user, onBlock }) {
       <div style={styles.cardHeader}>
         <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <span style={styles.displayName}>{displayName || "Anonymous Dreamer"}</span>
-          {isPro && (
-            <span style={{
-              background: "linear-gradient(135deg, rgba(200,160,30,0.2), rgba(232,200,64,0.15))",
-              border: "1px solid rgba(200,160,50,0.35)",
-              borderRadius: 8, padding: "1px 6px", fontSize: 9,
-              color: "#e8c840", fontWeight: 600, letterSpacing: 0.5,
-            }}>✦</span>
-          )}
         </span>
         <span style={styles.date}>{formattedDate}</span>
       </div>
@@ -618,7 +610,6 @@ function DreamCard({ dream, displayName, isPro, user, onBlock }) {
 export default function CommunityTab({ user, supabase: _sb }) {
   const [dreams, setDreams] = useState([]);
   const [displayNames, setDisplayNames] = useState({});
-  const [proUsers, setProUsers] = useState({});
   const [blockedUsers, setBlockedUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -655,19 +646,16 @@ export default function CommunityTab({ user, supabase: _sb }) {
       setDreams(data);
       const userIds = [...new Set(data.map((d) => d.user_id))];
       if (userIds.length > 0) {
+        // Display names only — supporter status is intentionally not
+        // surfaced in the community feed (every dream stands on its own).
         const { data: settings } = await supabase
           .from("user_settings")
-          .select("user_id, display_name, is_pro")
+          .select("user_id, display_name")
           .in("user_id", userIds);
         if (settings) {
           const nameMap = {};
-          const proMap = {};
-          settings.forEach((s) => {
-            nameMap[s.user_id] = s.display_name;
-            if (s.is_pro) proMap[s.user_id] = true;
-          });
+          settings.forEach((s) => { nameMap[s.user_id] = s.display_name; });
           setDisplayNames(nameMap);
-          setProUsers(proMap);
         }
       }
     }
@@ -734,7 +722,6 @@ export default function CommunityTab({ user, supabase: _sb }) {
             key={dream.id}
             dream={dream}
             displayName={displayNames[dream.user_id]}
-            isPro={proUsers[dream.user_id]}
             user={user}
             onBlock={handleBlock}
           />

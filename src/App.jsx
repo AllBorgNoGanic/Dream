@@ -592,7 +592,7 @@ For scripture_refs, return 0 to 2 well-known verse references that genuinely con
       } catch {
         // Fallback: if AI didn't return valid JSON, treat the whole response as interpretation
         return {
-          interpretation: rawText || "Your dream holds meaning waiting to be uncovered. Subscribe to Dream Shepherd for unlimited AI-powered interpretations.",
+          interpretation: rawText || "Your dream holds meaning waiting to be uncovered. Try again in a moment.",
           generated_themes: [],
           scripture_refs: [],
         };
@@ -1595,13 +1595,13 @@ For scripture_refs, return 0 to 2 well-known verse references that genuinely con
           boxShadow: "0 8px 40px rgba(0,0,0,0.6)", zIndex: 90,
           animation: "fadeIn 0.4s ease", display: "flex", alignItems: "center", gap: 14,
         }}>
-          <div style={{ fontSize: 28, flexShrink: 0 }}>✨</div>
+          <div style={{ fontSize: 28, flexShrink: 0 }}>✦</div>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 13, color: "#f5e4b0", marginBottom: 4 }}>
-              Enjoying your reflections?
+              Has Dream Shepherd been meaningful?
             </div>
-            <div style={{ fontSize: 11, color: "#8a7540", lineHeight: 1.5 }}>
-              You have {Math.max(0, totalFree - (userSettings?.interpretation_count || 0))} left. Subscribe for unlimited interpretations, dream visualizations, and more.
+            <div style={{ fontSize: 11, color: "#8a7540", lineHeight: 1.55 }}>
+              {Math.max(0, totalFree - (userSettings?.interpretation_count || 0))} interpretation{Math.max(0, totalFree - (userSettings?.interpretation_count || 0)) === 1 ? "" : "s"} left. If it has, consider supporting the work.
             </div>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 6, flexShrink: 0 }}>
@@ -1609,8 +1609,9 @@ For scripture_refs, return 0 to 2 well-known verse references that genuinely con
               background: "linear-gradient(135deg, #c8a020, #e8c840)", border: "none",
               color: "#1a1000", padding: "10px 16px", borderRadius: 10,
               fontSize: 12, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", minHeight: 40,
+              fontFamily: "Georgia, serif",
             }}>
-              Learn More
+              Support
             </button>
             <button onClick={() => setShowUpgradeNudge(false)} style={{
               background: "none", border: "none", color: "#6b5c30",
@@ -1639,21 +1640,21 @@ For scripture_refs, return 0 to 2 well-known verse references that genuinely con
               zIndex: 101,
             }}
           >
-            <Dialog.Title style={{ fontSize: 20, color: "#f5e4b0", marginBottom: 8, fontWeight: 400 }}>
+            <Dialog.Title style={{ fontSize: 20, color: "#f5e4b0", marginBottom: 10, fontWeight: 400 }}>
               <div style={{ fontSize: 40, marginBottom: 16 }}>🐑</div>
-              Dream Shepherd
+              Support Dream Shepherd
             </Dialog.Title>
-            <div style={{ fontSize: 13, color: "#7a6a40", marginBottom: 20, lineHeight: 1.6 }}>
-              Take your dream journey to the next level.
+            <div style={{ fontSize: 13, color: "#9a8050", marginBottom: 20, lineHeight: 1.7, fontStyle: "italic" }}>
+              Dream Shepherd is built by a small team. If it has helped you, consider supporting the work.
             </div>
             <div style={{
               textAlign: "left", marginBottom: 20, display: "flex", flexDirection: "column", gap: 10,
             }}>
               {[
-                { icon: "🌙", text: "Unlimited AI dream interpretations" },
+                { icon: "🌙", text: "Unlimited dream interpretations" },
                 { icon: "🎨", text: "Unlimited dream visualizations" },
-                { icon: "🔮", text: "Deeper, more personalized insights" },
-                { icon: "✨", text: "Priority access to new features" },
+                { icon: "✝", text: "Unlimited prayers over your dreams" },
+                { icon: "✦", text: "Helps us keep the lights on" },
               ].map((item) => (
                 <div key={item.text} style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   <span style={{ fontSize: 16, flexShrink: 0 }}>{item.icon}</span>
@@ -1707,8 +1708,9 @@ For scripture_refs, return 0 to 2 well-known verse references that genuinely con
               width: "100%", background: "linear-gradient(135deg, #c8a020, #e8c840)",
               border: "none", color: "#1a1000", padding: "16px", borderRadius: 12,
               fontSize: 16, fontWeight: 600, cursor: "pointer", letterSpacing: 0.5, marginBottom: 12, minHeight: 48,
+              fontFamily: "Georgia, serif",
             }}>
-              {selectedPlan === "annual" ? "Upgrade Now - Best Value" : "Upgrade Now"}
+              {selectedPlan === "annual" ? "Become a Supporter · Annual" : "Become a Supporter"}
             </button>
             {(userSettings?.share_bonus_count ?? 0) < MAX_SHARE_BONUS && (
               <div style={{ marginBottom: 12 }}>
@@ -1726,9 +1728,9 @@ For scripture_refs, return 0 to 2 well-known verse references that genuinely con
             )}
             <Dialog.Close asChild>
               <button style={{
-                background: "none", border: "none", color: "#6b5c30", fontSize: 14, cursor: "pointer", padding: "12px", minHeight: 44,
+                background: "none", border: "none", color: "#6b5c30", fontSize: 14, cursor: "pointer", padding: "12px", minHeight: 44, fontFamily: "Georgia, serif",
               }}>
-                Maybe Later
+                Not right now
               </button>
             </Dialog.Close>
           </Dialog.Content>

@@ -95,30 +95,39 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
         ))}
       </div>
 
-      {/* Pro status */}
+      {/* Account status — supporters get a warm acknowledgment, free users
+          get a gentle invitation to support the work. */}
       <div style={{ ...card, border: userSettings?.is_pro ? "1px solid rgba(200,160,50,0.3)" : "1px solid rgba(200,160,30,0.15)" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        {userSettings?.is_pro ? (
           <div>
-            <div style={{ fontSize: 16, color: userSettings?.is_pro ? "#e8c840" : "#f5e4b0", marginBottom: 4 }}>
-              {userSettings?.is_pro ? "✦ Dream Shepherd" : "Free Plan"}
+            <div style={{ fontSize: 16, color: "#e8c840", marginBottom: 6, display: "flex", alignItems: "center", gap: 8 }}>
+              <span>✦</span>
+              <span>Thank you</span>
             </div>
-            <div style={{ fontSize: 12, color: "#6b5c30" }}>
-              {userSettings?.is_pro
-                ? "Unlimited AI interpretations · All features"
-                : `${Math.max(0, FREE_INTERPRETATIONS + Math.min(userSettings?.share_bonus_count ?? 0, MAX_SHARE_BONUS) - (userSettings?.interpretation_count || 0))} free interpretations remaining`}
+            <div style={{ fontSize: 13, color: "#9a8050", lineHeight: 1.65 }}>
+              You support Dream Shepherd. Your dreams unfold without limits.
             </div>
           </div>
-          {!userSettings?.is_pro && (
+        ) : (
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 14 }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 15, color: "#f5e4b0", marginBottom: 4 }}>
+                Dream Shepherd is free
+              </div>
+              <div style={{ fontSize: 12, color: "#6b5c30", lineHeight: 1.6 }}>
+                {Math.max(0, FREE_INTERPRETATIONS + Math.min(userSettings?.share_bonus_count ?? 0, MAX_SHARE_BONUS) - (userSettings?.interpretation_count || 0))} interpretation{Math.max(0, FREE_INTERPRETATIONS + Math.min(userSettings?.share_bonus_count ?? 0, MAX_SHARE_BONUS) - (userSettings?.interpretation_count || 0)) === 1 ? "" : "s"} left this month
+              </div>
+            </div>
             <button onClick={onUpgrade} style={{
               background: "linear-gradient(135deg, #c8a020, #e8c840)",
-              border: "none", color: "#1a1000", padding: "12px 20px", borderRadius: 20,
-              fontSize: 13, fontWeight: 600, cursor: "pointer", letterSpacing: 0.5, minHeight: 44,
-              whiteSpace: "nowrap"
+              border: "none", color: "#1a1000", padding: "12px 18px", borderRadius: 22,
+              fontSize: 12.5, fontWeight: 600, cursor: "pointer", letterSpacing: 0.5, minHeight: 44,
+              whiteSpace: "nowrap", fontFamily: "Georgia, serif",
             }}>
-              Subscribe from $5/mo
+              Support the work
             </button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Share and Earn */}
