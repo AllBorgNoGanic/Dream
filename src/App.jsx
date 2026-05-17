@@ -1246,7 +1246,17 @@ For scripture_refs, return 0 to 2 well-known verse references that genuinely con
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 4px 20px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <span style={{ fontSize: 24 }}>🐑</span>
+            <img
+              src="/shepherd.svg"
+              alt=""
+              aria-hidden="true"
+              style={{
+                width: 30, height: 30,
+                // CSS-filter recolor of the monochrome SVG into the brand gold.
+                // See CLAUDE.md for the canonical recipe.
+                filter: "brightness(0) saturate(100%) invert(78%) sepia(40%) saturate(600%) hue-rotate(5deg) brightness(95%) drop-shadow(0 0 8px rgba(232,184,64,0.3))",
+              }}
+            />
             <div>
               <h1 style={{
                 fontSize: 20, fontWeight: 400, margin: 0,
