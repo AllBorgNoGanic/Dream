@@ -27,6 +27,7 @@ import InterpretationOverlay from "./components/InterpretationOverlay";
 import useOffline from "./hooks/useOffline";
 import Landing from "./Landing";
 import { checkContent } from "./utils/moderation";
+import { getSeasonAiHint } from "./utils/liturgicalSeason";
 
 // ─── Constants ─────────────────────────────────────────────────────────────
 const FREE_INTERPRETATIONS = 5;
@@ -532,6 +533,9 @@ export default function DreamJournal() {
       // Build pattern context from dream history
       const patternContext = buildPatternContext(dreams);
 
+      // Liturgical season hint (empty string during Ordinary Time)
+      const seasonContext = getSeasonAiHint();
+
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/interpret-dream`, {
         method: "POST",
         headers: {
@@ -550,7 +554,7 @@ Respond ONLY with valid JSON in this exact format (no markdown, no code fences):
 
 Generate 2-3 themes that are specific and unique to this dream. Theme titles should be creative and evocative (e.g. "The Unfinished Bridge", "Voices Behind the Door", "The Lamp in the Window"). Each theme should feel personally tailored, not generic.
 
-For scripture_refs, return 0 to 2 well-known verse references that genuinely connect to the dream's imagery or themes. Use the format "Book Chapter:Verse" (e.g. "Psalm 23:4", "Joel 2:28", "Matthew 3:16"). Only include verses that are recognizable from common biblical literacy. Do not invent references or chapter and verse numbers. If no verse comes naturally to mind, return an empty array. Do NOT include the verse text itself, only the reference.${profileContext}${patternContext}`,
+For scripture_refs, return 0 to 2 well-known verse references that genuinely connect to the dream's imagery or themes. Use the format "Book Chapter:Verse" (e.g. "Psalm 23:4", "Joel 2:28", "Matthew 3:16"). Only include verses that are recognizable from common biblical literacy. Do not invent references or chapter and verse numbers. If no verse comes naturally to mind, return an empty array. Do NOT include the verse text itself, only the reference.${profileContext}${patternContext}${seasonContext}`,
           messages: [{
             role: "user",
             content: `Interpret this dream. Title: "${dream.title}". Mood: ${dream.mood}. Theme: ${dream.theme}.${dream.characters?.length ? ` Characters: ${dream.characters.join(", ")}.` : ""}${dream.tags?.length ? ` Tags: ${dream.tags.join(", ")}.` : ""} Dream: "${dream.description}"`,

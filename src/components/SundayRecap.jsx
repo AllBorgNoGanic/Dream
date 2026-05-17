@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "../lib/supabase";
 import { getTodaysDevotional, localDateKey } from "../constants/devotionals";
+import { getCurrentSeason } from "../utils/liturgicalSeason";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SundayRecap
@@ -86,6 +87,7 @@ export default function SundayRecap({ user, userSettings, dreams, onSettingsUpda
   const todayKey = useMemo(() => localDateKey(today), [today]);
   const stats = useMemo(() => computeWeekStats(dreams, today), [dreams, today]);
   const devotional = useMemo(() => getTodaysDevotional(today), [today]);
+  const season = useMemo(() => getCurrentSeason(today), [today]);
 
   const alreadySeen = userSettings?.last_sunday_recap_seen === todayKey;
   const shouldRender = isSundayLocal(today) && (!alreadySeen || dismissing);
@@ -182,10 +184,10 @@ Write one quiet, observant sentence about the week.`;
         : "sr-enterIn 0.5s ease-out",
       boxShadow: "0 0 36px rgba(232,184,64,0.10), 0 0 50px rgba(104,71,192,0.08)",
     }}>
-      {/* Top gold shimmer */}
+      {/* Top shimmer — tinted by the current liturgical season */}
       <div style={{
         position: "absolute", top: 0, left: 0, right: 0, height: 2,
-        background: "linear-gradient(90deg, transparent, rgba(232,184,64,0.7), transparent)",
+        background: `linear-gradient(90deg, transparent, ${season.borderColor.replace("0.30", "0.7").replace("0.32", "0.7").replace("0.35", "0.7").replace("0.40", "0.7")}, transparent)`,
         backgroundSize: "300% 100%",
         animation: "sr-shimmerLine 5s ease-in-out infinite",
       }} />
@@ -193,7 +195,7 @@ Write one quiet, observant sentence about the week.`;
       {/* Header */}
       <div style={{
         display: "flex", justifyContent: "space-between", alignItems: "center",
-        marginBottom: 16,
+        marginBottom: 8,
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontSize: 16, color: "#e8b840", textShadow: "0 0 10px rgba(232,184,64,0.5)" }}>✦</span>
@@ -208,6 +210,26 @@ Write one quiet, observant sentence about the week.`;
           {headerDate}
         </div>
       </div>
+
+      {/* Liturgical season badge — hidden during Ordinary Time */}
+      {season.key !== "ordinary" && (
+        <div style={{
+          display: "inline-flex", alignItems: "center", gap: 6,
+          padding: "3px 10px", borderRadius: 12,
+          background: season.softColor,
+          border: `1px solid ${season.borderColor}`,
+          marginBottom: 14,
+        }}>
+          <span style={{ width: 5, height: 5, borderRadius: "50%", background: season.color, display: "inline-block" }} />
+          <span style={{ fontSize: 10, letterSpacing: 1.5, color: season.color, textTransform: "uppercase" }}>
+            {season.name}
+          </span>
+          <span style={{ fontSize: 10, color: "rgba(255,255,255,0.35)" }}>·</span>
+          <span style={{ fontSize: 10, color: "#6b5c30", fontStyle: "italic" }}>
+            {season.blurb}
+          </span>
+        </div>
+      )}
 
       {/* No-dreams variant ─────────────────────────────────────────────────── */}
       {stats.count === 0 ? (

@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { supabase } from "../lib/supabase";
 import { getTodaysDevotional, localDateKey } from "../constants/devotionals";
+import { getCurrentSeason } from "../utils/liturgicalSeason";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // MorningCard
@@ -33,11 +34,12 @@ function formatHeaderDate(d) {
   return `${WEEKDAY[d.getDay()]}, ${MONTH[d.getMonth()]} ${d.getDate()}`;
 }
 
-export default function MorningCard({ user, userSettings, dreams, onSettingsUpdate, onRecordDream }) {
+export default function MorningCard({ user, userSettings, dreams, onSettingsUpdate, onRecordDream, now: nowOverride }) {
   const [dismissing, setDismissing] = useState(false);
-  const today = useMemo(() => new Date(), []);
+  const today = useMemo(() => nowOverride || new Date(), [nowOverride]);
   const todayKey = useMemo(() => localDateKey(today), [today]);
   const devotional = useMemo(() => getTodaysDevotional(today), [today]);
+  const season = useMemo(() => getCurrentSeason(today), [today]);
 
   // Find the user's most recent dream from yesterday (or earlier if no
   // yesterday entry exists, so the card can still surface "your last dream").
@@ -102,10 +104,10 @@ export default function MorningCard({ user, userSettings, dreams, onSettingsUpda
         : "mc-enterIn 0.45s ease-out",
       boxShadow: "0 0 30px rgba(104,71,192,0.10)",
     }}>
-      {/* Top shimmer bar */}
+      {/* Top shimmer bar — tinted by the current liturgical season */}
       <div style={{
         position: "absolute", top: 0, left: 0, right: 0, height: 2,
-        background: "linear-gradient(90deg, transparent, rgba(232,184,64,0.6), transparent)",
+        background: `linear-gradient(90deg, transparent, ${season.borderColor.replace("0.30", "0.65").replace("0.32", "0.65").replace("0.35", "0.65").replace("0.40", "0.65")}, transparent)`,
         backgroundSize: "300% 100%",
         animation: "mc-shimmerLine 6s ease-in-out infinite",
       }} />
@@ -113,7 +115,7 @@ export default function MorningCard({ user, userSettings, dreams, onSettingsUpda
       {/* Header row */}
       <div style={{
         display: "flex", justifyContent: "space-between", alignItems: "center",
-        marginBottom: 14,
+        marginBottom: 8,
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
           <span style={{ fontSize: 14, color: "#e8b840", textShadow: "0 0 10px rgba(232,184,64,0.4)" }}>✦</span>
@@ -127,6 +129,26 @@ export default function MorningCard({ user, userSettings, dreams, onSettingsUpda
           {formatHeaderDate(today)}
         </div>
       </div>
+
+      {/* Liturgical season badge — hidden during Ordinary Time to avoid noise */}
+      {season.key !== "ordinary" && (
+        <div style={{
+          display: "inline-flex", alignItems: "center", gap: 6,
+          padding: "3px 10px", borderRadius: 12,
+          background: season.softColor,
+          border: `1px solid ${season.borderColor}`,
+          marginBottom: 14,
+        }}>
+          <span style={{ width: 5, height: 5, borderRadius: "50%", background: season.color, display: "inline-block" }} />
+          <span style={{ fontSize: 10, letterSpacing: 1.5, color: season.color, textTransform: "uppercase" }}>
+            {season.name}
+          </span>
+          <span style={{ fontSize: 10, color: "rgba(255,255,255,0.35)" }}>·</span>
+          <span style={{ fontSize: 10, color: "#6b5c30", fontStyle: "italic" }}>
+            {season.blurb}
+          </span>
+        </div>
+      )}
 
       {/* Verse */}
       <p style={{
