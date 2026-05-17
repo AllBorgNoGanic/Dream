@@ -1252,8 +1252,22 @@ For scripture_refs, return 0 to 2 well-known verse references that genuinely con
                 fontSize: 20, fontWeight: 400, margin: 0,
                 background: "linear-gradient(135deg, #f5e4b0, #e8b840, #a07010)",
                 WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", letterSpacing: 0.5,
+                display: "inline-flex", alignItems: "baseline", gap: 8, lineHeight: 1.1,
               }}>
-                Dream Shepherd
+                <span>Dream Shepherd</span>
+                {userSettings?.is_pro && (
+                  <span
+                    title="Supporter"
+                    aria-label="Supporter"
+                    style={{
+                      fontSize: 12, color: "#e8c860",
+                      WebkitTextFillColor: "#e8c860",
+                      textShadow: "0 0 8px rgba(232,184,64,0.4)",
+                    }}
+                  >
+                    ✦
+                  </span>
+                )}
               </h1>
               {userSettings?.display_name && (
                 <div style={{ fontSize: 11, color: "#8a7540", marginTop: 2 }}>
@@ -1261,14 +1275,6 @@ For scripture_refs, return 0 to 2 well-known verse references that genuinely con
                 </div>
               )}
             </div>
-            {userSettings?.is_pro && (
-              <span style={{
-                background: "linear-gradient(135deg, #c8a020, #e8c840)",
-                color: "#1a1000", padding: "2px 8px", borderRadius: 16, fontSize: 10, fontWeight: 600,
-              }}>
-                ✦
-              </span>
-            )}
           </div>
         </div>
 
