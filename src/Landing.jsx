@@ -1,4 +1,5 @@
 import StarField from "./components/StarField";
+import ShepherdMark from "./components/ShepherdMark";
 
 export default function Landing({ onSignIn }) {
 
@@ -34,10 +35,11 @@ export default function Landing({ onSignIn }) {
       }}>
         {/* Logo */}
         <div style={{
-          fontSize: 72, marginBottom: 24,
+          marginBottom: 24,
           animation: "ld-float 4s ease-in-out infinite",
-          filter: "drop-shadow(0 0 30px rgba(232,184,64,0.3))",
-        }}>🐑</div>
+        }}>
+          <ShepherdMark size={80} />
+        </div>
 
         <div style={{
           fontSize: 11, letterSpacing: 6, color: "#8a7540",
@@ -142,8 +144,9 @@ export default function Landing({ onSignIn }) {
           <a href="/privacy.html" style={{ fontSize: 12, color: "#6b5c30", textDecoration: "none" }}>Privacy Policy</a>
         </div>
 
-        <div style={{ fontSize: 11, color: "#3a3050" }}>
-          🐑 Tend to your dreams like a shepherd.
+        <div style={{ fontSize: 11, color: "#3a3050", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+          <ShepherdMark size={14} glow={false} style={{ opacity: 0.6 }} />
+          <span>Tend to your dreams like a shepherd.</span>
         </div>
       </div>
     </div>

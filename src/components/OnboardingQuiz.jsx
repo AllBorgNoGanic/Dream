@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import StarField from "./StarField";
+import ShepherdMark from "./ShepherdMark";
 
 // ── Keyframe CSS (injected once) ─────────────────────────────────────────────
 const KEYFRAMES = `
@@ -250,10 +251,11 @@ Write 2 to 3 paragraphs of warm, poetic but grounded prose. Plain flowing prose 
         return (
           <div key={animKey} style={S.container}>
             <div style={{
-              fontSize: 64, marginBottom: 20,
+              marginBottom: 20,
               animation: "onb-float 4s ease-in-out infinite",
-              filter: "drop-shadow(0 0 30px rgba(232,184,64,0.4))",
-            }}>🐑</div>
+            }}>
+              <ShepherdMark size={72} />
+            </div>
             <h1 style={{ ...S.title, animation: "onb-fadeIn 0.5s ease-out" }}>
               Welcome to Dream Shepherd
             </h1>

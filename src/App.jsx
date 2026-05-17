@@ -28,6 +28,7 @@ import useOffline from "./hooks/useOffline";
 import Landing from "./Landing";
 import { checkContent } from "./utils/moderation";
 import { getSeasonAiHint } from "./utils/liturgicalSeason";
+import ShepherdMark from "./components/ShepherdMark";
 
 // ─── Constants ─────────────────────────────────────────────────────────────
 const FREE_INTERPRETATIONS = 5;
@@ -108,6 +109,7 @@ const globalStyles = (
     @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes twinkle { 0%,100% { opacity: 0.3; } 50% { opacity: 0.9; } }
     @keyframes bethlehem-pulse { 0%,100% { opacity: 0.88; filter: brightness(1) drop-shadow(0 0 6px rgba(160,215,255,0.7)); } 50% { opacity: 1; filter: brightness(1.3) drop-shadow(0 0 18px rgba(160,215,255,1)); } }
+    @keyframes shepherd-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     button, a, [role="button"] { touch-action: manipulation; }
     ::-webkit-scrollbar { width: 4px; }
@@ -1010,7 +1012,9 @@ For scripture_refs, return 0 to 2 well-known verse references that genuinely con
       <div style={{ ...sharedBackground, display: "flex", alignItems: "center", justifyContent: "center" }}>
         {globalStyles}
         <div style={{ textAlign: "center", color: "#8a7010" }}>
-          <div style={{ fontSize: 36, marginBottom: 16 }}>🐑</div>
+          <div style={{ marginBottom: 16 }}>
+            <ShepherdMark size={48} animate />
+          </div>
           <div style={{ fontSize: 13, letterSpacing: 4, textTransform: "uppercase" }}>The shepherd watches over your dreams...</div>
         </div>
       </div>
@@ -1049,7 +1053,9 @@ For scripture_refs, return 0 to 2 well-known verse references that genuinely con
           animation: "fadeIn 0.55s ease-out",
         }}>
           <div style={{ textAlign: "center", marginBottom: 40 }}>
-            <div style={{ fontSize: 52, marginBottom: 12 }}>🐑</div>
+            <div style={{ marginBottom: 12 }}>
+              <ShepherdMark size={64} animate />
+            </div>
             <h1 style={{ fontSize: 36, fontWeight: 400, margin: "0 0 8px", background: "linear-gradient(135deg, #f5e4b0, #e8b840, #a07010)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
               Dream Shepherd
             </h1>
@@ -1246,17 +1252,7 @@ For scripture_refs, return 0 to 2 well-known verse references that genuinely con
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 4px 20px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <img
-              src="/shepherd.svg"
-              alt=""
-              aria-hidden="true"
-              style={{
-                width: 30, height: 30,
-                // CSS-filter recolor of the monochrome SVG into the brand gold.
-                // See CLAUDE.md for the canonical recipe.
-                filter: "brightness(0) saturate(100%) invert(78%) sepia(40%) saturate(600%) hue-rotate(5deg) brightness(95%) drop-shadow(0 0 8px rgba(232,184,64,0.3))",
-              }}
-            />
+            <ShepherdMark size={30} />
             <div>
               <h1 style={{
                 fontSize: 20, fontWeight: 400, margin: 0,
@@ -1657,7 +1653,9 @@ For scripture_refs, return 0 to 2 well-known verse references that genuinely con
             }}
           >
             <Dialog.Title style={{ fontSize: 20, color: "#f5e4b0", marginBottom: 10, fontWeight: 400 }}>
-              <div style={{ fontSize: 40, marginBottom: 16 }}>🐑</div>
+              <div style={{ marginBottom: 16 }}>
+                <ShepherdMark size={52} />
+              </div>
               Support Dream Shepherd
             </Dialog.Title>
             <div style={{ fontSize: 13, color: "#9a8050", marginBottom: 20, lineHeight: 1.7, fontStyle: "italic" }}>

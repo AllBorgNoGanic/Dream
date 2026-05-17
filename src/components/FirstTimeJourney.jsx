@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import ShepherdMark from "./ShepherdMark";
 
 // Inject keyframes once
 const STYLE_ID = "first-time-journey-styles";
@@ -61,12 +62,11 @@ export default function FirstTimeJourney({ onStart }) {
       {/* Header / Welcome */}
       <div style={{ textAlign: "center", marginBottom: 32 }}>
         <div style={{
-          fontSize: 64, marginBottom: 12,
+          marginBottom: 12,
           animation: "ftj-pulse 3.2s ease-in-out infinite",
-          filter: "drop-shadow(0 0 24px rgba(232,184,64,0.3))",
           lineHeight: 1,
         }}>
-          🐑
+          <ShepherdMark size={72} />
         </div>
         <div style={{
           fontFamily: "Georgia, serif", fontSize: 11,
