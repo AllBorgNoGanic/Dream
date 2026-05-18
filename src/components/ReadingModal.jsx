@@ -31,15 +31,6 @@ const KEYFRAMES = `
 @keyframes rm-blurIn { from { opacity: 0; filter: blur(4px); } to { opacity: 1; filter: blur(0px); } }
 @keyframes rm-goldShimmer { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
 @keyframes rm-borderGlow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-@keyframes rm-dropCapIn {
-  0%   { opacity: 0; transform: scale(0.5) translateY(6px); filter: blur(8px); }
-  55%  { transform: scale(1.06); }
-  100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0px); }
-}
-@keyframes rm-dropCapGlow {
-  0%, 100% { text-shadow: 0 0 14px rgba(232,184,64,0.30); }
-  50%      { text-shadow: 0 0 22px rgba(232,184,64,0.55); }
-}
 `;
 
 // BlurReveal: fades entire text from blurred to sharp
@@ -53,64 +44,6 @@ function BlurReveal({ text, baseDelay = 0 }) {
     }}>
       {text}
     </span>
-  );
-}
-
-// IlluminatedDropCap: render the first letter of an interpretation as a
-// large, gold-leaf, upright initial that floats so the body text wraps
-// around it. Skips quote marks at the start so we never illuminate a "
-// or a smart quote. Falls back gracefully if the text is empty.
-function IlluminatedDropCap({ text }) {
-  if (!text) return null;
-  // Skip leading quote marks and whitespace when picking the cap letter.
-  // The skipped characters stay on the same line, just unstyled.
-  const QUOTE_MATCH = /^[\s"'‘’“”]*/;
-  const lead = text.match(QUOTE_MATCH)?.[0] ?? "";
-  const afterLead = text.slice(lead.length);
-  if (afterLead.length === 0) {
-    return <BlurReveal text={text} baseDelay={0} />;
-  }
-  const capChar = afterLead.charAt(0);
-  const rest = afterLead.slice(1);
-
-  return (
-    <>
-      {lead && <BlurReveal text={lead} baseDelay={0} />}
-      <span
-        aria-hidden="false"
-        style={{
-          float: "left",
-          fontFamily: "Georgia, 'Times New Roman', serif",
-          fontSize: 62,
-          lineHeight: 0.92,
-          paddingRight: 12,
-          paddingTop: 4,
-          marginBottom: -4,
-          // Override the parent italic so the cap stays upright like an
-          // illuminated manuscript initial.
-          fontStyle: "normal",
-          fontWeight: 400,
-          // Gold-leaf gradient via background-clip text.
-          background: "linear-gradient(135deg, #fff0c0 0%, #f5d068 35%, #c89020 70%, #8a5e10 100%)",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
-          backgroundClip: "text",
-          // Animated entrance + ambient breathing glow.
-          animation:
-            "rm-dropCapIn 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both, rm-dropCapGlow 3.8s ease-in-out 0.95s infinite",
-          // The glow uses textShadow on the underlying letter. Since
-          // background-clip swallows it, we add a drop-shadow filter for
-          // the actual glow effect.
-          filter: "drop-shadow(0 0 14px rgba(232,184,64,0.35))",
-          // Slight transform origin so the scale animates from a sensible
-          // pivot.
-          transformOrigin: "50% 60%",
-        }}
-      >
-        {capChar}
-      </span>
-      <BlurReveal text={rest} baseDelay={0.05} />
-    </>
   );
 }
 
@@ -285,7 +218,7 @@ export default function ReadingModal({ reading, onClose, onGenerateImage, userSe
             }} />
           </div>
 
-          {/* Interpretation text with blur reveal + illuminated drop cap */}
+          {/* Interpretation text with blur reveal */}
           {showText && (
             <p style={{
               fontSize: 16, color: "#f0dfa0", lineHeight: 1.9,
@@ -293,9 +226,8 @@ export default function ReadingModal({ reading, onClose, onGenerateImage, userSe
               textShadow: "0 1px 12px rgba(200,160,30,0.2)",
               letterSpacing: 0.2,
               whiteSpace: "pre-wrap",
-              overflow: "hidden", // contain the floated drop cap
             }}>
-              <IlluminatedDropCap text={interpretation} />
+              <BlurReveal text={interpretation} baseDelay={0} />
             </p>
           )}
 
