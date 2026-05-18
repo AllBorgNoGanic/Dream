@@ -1582,27 +1582,71 @@ For scripture_refs, return 0 to 2 well-known verse references that genuinely con
         display: "flex", justifyContent: "space-around", alignItems: "center",
         paddingBottom: "env(safe-area-inset-bottom, 8px)",
       }}>
-        {tabs.map((t) => (
-          <button key={t.id} onClick={() => setTab(t.id)} style={{
-            background: "none", border: "none", cursor: "pointer",
-            display: "flex", flexDirection: "column", alignItems: "center",
-            gap: 3, padding: "10px 0 6px", minWidth: 64, minHeight: 50,
-          }}>
-            <span style={{
-              opacity: tab === t.id ? 1 : 0.5,
-              transition: "opacity 0.15s",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              filter: tab === t.id ? "drop-shadow(0 0 4px rgba(232,184,64,0.35))" : "none",
-            }}><TabIcon id={t.id} active={tab === t.id} /></span>
-            <span style={{
-              fontSize: 10, letterSpacing: 0.3,
-              color: tab === t.id ? "#e8b840" : "#5a5040",
-              fontFamily: "-apple-system, sans-serif",
-              fontWeight: tab === t.id ? 600 : 400,
-              transition: "color 0.15s",
-            }}>{t.label}</span>
-          </button>
-        ))}
+        {tabs.map((t) => {
+          const isActive = tab === t.id;
+          return (
+            <button
+              key={t.id}
+              onClick={async () => {
+                if (isActive) return;
+                setTab(t.id);
+                // Light haptic on native devices only. Web is a silent no-op.
+                if (typeof window !== "undefined" && window.Capacitor?.isNativePlatform?.()) {
+                  try {
+                    const { Haptics, ImpactStyle } = await import("@capacitor/haptics");
+                    await Haptics.impact({ style: ImpactStyle.Light });
+                  } catch { /* haptics are optional */ }
+                }
+              }}
+              onTouchStart={(e) => { e.currentTarget.style.transform = "scale(0.92)"; }}
+              onTouchEnd={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+              onTouchCancel={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+              onMouseDown={(e) => { e.currentTarget.style.transform = "scale(0.92)"; }}
+              onMouseUp={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+              style={{
+                background: "none", border: "none", cursor: "pointer",
+                display: "flex", flexDirection: "column", alignItems: "center",
+                gap: 4, padding: "10px 0 8px", minWidth: 64, minHeight: 54,
+                position: "relative",
+                transition: "transform 0.12s ease",
+                WebkitTapHighlightColor: "transparent",
+              }}
+            >
+              {/* Active indicator dot above the icon */}
+              <span
+                aria-hidden="true"
+                style={{
+                  position: "absolute", top: 4,
+                  width: 4, height: 4, borderRadius: "50%",
+                  background: "#e8b840",
+                  boxShadow: "0 0 6px rgba(232,184,64,0.65)",
+                  opacity: isActive ? 1 : 0,
+                  transform: isActive ? "scale(1)" : "scale(0)",
+                  transition: "opacity 0.25s ease, transform 0.3s cubic-bezier(0.34,1.56,0.64,1)",
+                  pointerEvents: "none",
+                }}
+              />
+              <span style={{
+                opacity: isActive ? 1 : 0.55,
+                transition: "opacity 0.2s ease, filter 0.2s ease",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                filter: isActive ? "drop-shadow(0 0 4px rgba(232,184,64,0.35))" : "none",
+              }}>
+                <TabIcon id={t.id} active={isActive} />
+              </span>
+              <span style={{
+                fontSize: 10, letterSpacing: 0.4,
+                color: isActive ? "#e8b840" : "#6a6048",
+                fontFamily: "Georgia, serif",
+                fontWeight: isActive ? 600 : 400,
+                transition: "color 0.2s ease",
+              }}>
+                {t.label}
+              </span>
+            </button>
+          );
+        })}
       </nav>
 
       {/* ── Upgrade Nudge (after 3rd interpretation) ── */}
