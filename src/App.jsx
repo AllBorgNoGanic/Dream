@@ -1607,26 +1607,11 @@ For scripture_refs, return 0 to 2 well-known verse references that genuinely con
               style={{
                 background: "none", border: "none", cursor: "pointer",
                 display: "flex", flexDirection: "column", alignItems: "center",
-                gap: 4, padding: "10px 0 8px", minWidth: 64, minHeight: 54,
-                position: "relative",
+                gap: 4, padding: "10px 0 8px", minWidth: 64, minHeight: 50,
                 transition: "transform 0.12s ease",
                 WebkitTapHighlightColor: "transparent",
               }}
             >
-              {/* Active indicator dot above the icon */}
-              <span
-                aria-hidden="true"
-                style={{
-                  position: "absolute", top: 4,
-                  width: 4, height: 4, borderRadius: "50%",
-                  background: "#e8b840",
-                  boxShadow: "0 0 6px rgba(232,184,64,0.65)",
-                  opacity: isActive ? 1 : 0,
-                  transform: isActive ? "scale(1)" : "scale(0)",
-                  transition: "opacity 0.25s ease, transform 0.3s cubic-bezier(0.34,1.56,0.64,1)",
-                  pointerEvents: "none",
-                }}
-              />
               <span style={{
                 opacity: isActive ? 1 : 0.55,
                 transition: "opacity 0.2s ease, filter 0.2s ease",
