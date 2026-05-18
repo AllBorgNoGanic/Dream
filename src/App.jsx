@@ -658,8 +658,16 @@ For scripture_refs, return 0 to 2 well-known verse references that genuinely con
 
   const detectThemeConnections = (text, themes) => {
     if (!text || !themes?.length) return [];
-    const lower = text.toLowerCase();
-    return themes.filter((t) => lower.includes(t.key));
+    // Use word-boundary regex so substring matches do not trigger false
+    // positives. Without this, "walking" matches "king" and "sinking"
+    // matches "king" and "snake" matches "ake", etc. The optional "s?"
+    // accepts the plural form of single-word keys.
+    return themes.filter((t) => {
+      if (!t?.key) return false;
+      const escaped = t.key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const re = new RegExp(`\\b${escaped}s?\\b`, "i");
+      return re.test(text);
+    });
   };
 
   // ── Dream CRUD ─────────────────────────────────────────────────────────────
