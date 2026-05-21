@@ -21,7 +21,8 @@ if (typeof document !== "undefined" && !document.getElementById(PROFILE_DIALOG_S
 const FREE_INTERPRETATIONS = 5;
 const MAX_SHARE_BONUS = 3;
 
-export default function ProfileTab({ user, userSettings, onSettingsUpdate, dreams, onUpgrade, onSignOut, onDeleteAccount }) {
+export default function ProfileTab({ user, userSettings, onSettingsUpdate, dreams, onUpgrade, onRestorePurchases, onSignOut, onDeleteAccount }) {
+  const isNative = typeof window !== "undefined" && !!window.Capacitor?.isNativePlatform?.();
   const [displayName, setDisplayName] = useState(userSettings?.display_name || "");
   const [age, setAge] = useState(userSettings?.age || "");
   const [wakeTime, setWakeTime] = useState(userSettings?.wake_time || "07:00");
@@ -129,6 +130,24 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
           </div>
         )}
       </div>
+
+      {/* Restore Purchases — required by Apple for any app selling
+          subscriptions. Hidden on web since purchases are mobile-only. */}
+      {isNative && onRestorePurchases && (
+        <div style={{ textAlign: "center", marginBottom: 16 }}>
+          <button
+            onClick={onRestorePurchases}
+            style={{
+              background: "none", border: "none", padding: "8px 16px",
+              color: "#6b5c30", fontSize: 12, cursor: "pointer",
+              fontFamily: "Georgia, serif", letterSpacing: 0.3,
+              textDecoration: "underline",
+            }}
+          >
+            Restore previous purchases
+          </button>
+        </div>
+      )}
 
       {/* Share and Earn */}
       {!userSettings?.is_pro && (

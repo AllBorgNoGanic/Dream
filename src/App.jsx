@@ -29,6 +29,14 @@ import Landing from "./Landing";
 import { checkContent } from "./utils/moderation";
 import { getSeasonAiHint } from "./utils/liturgicalSeason";
 import ShepherdMark from "./components/ShepherdMark";
+import {
+  configureRevenueCat,
+  revenueCatLogOut,
+  fetchPackages as fetchRcPackages,
+  purchasePackage as rcPurchasePackage,
+  restorePurchases as rcRestorePurchases,
+  onPremiumChange as onRcPremiumChange,
+} from "./lib/revenuecat";
 
 // ─── Constants ─────────────────────────────────────────────────────────────
 const FREE_INTERPRETATIONS = 5;
@@ -148,6 +156,7 @@ export default function DreamJournal() {
   const [loading, setLoading] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState("annual");
+  const [rcPackages, setRcPackages] = useState({ monthly: null, annual: null });
   const [showUpgradeNudge, setShowUpgradeNudge] = useState(false);
   const [readingModal, setReadingModal] = useState(null); // { interpretation, symbols, dreamTitle, themeConnections }
   const [dreamThemesCache, setDreamThemesCache] = useState(null);
@@ -207,6 +216,44 @@ export default function DreamJournal() {
       setShowQuiz(false);
     }
   }, [user]); // eslint-disable-line
+
+  // ── RevenueCat: refresh live packages when the upgrade modal opens so
+  //    pricing is localized to the store's currency for the user's region.
+  useEffect(() => {
+    if (!showUpgradeModal) return;
+    let cancelled = false;
+    (async () => {
+      const pkgs = await fetchRcPackages();
+      if (!cancelled) setRcPackages(pkgs);
+    })();
+    return () => { cancelled = true; };
+  }, [showUpgradeModal]);
+
+  // ── RevenueCat: configure on sign-in, log out on sign-out ─────────────────
+  // Listen for entitlement changes pushed from the SDK (e.g. after a webhook
+  // arrives) and mirror them to Supabase so the rest of the app sees the
+  // updated is_pro value without a refetch.
+  useEffect(() => {
+    let unsubscribe = () => {};
+    (async () => {
+      if (user?.id) {
+        await configureRevenueCat(user.id);
+        unsubscribe = await onRcPremiumChange(async (isPremium) => {
+          // Reconcile authoritative server state when entitlement flips
+          if (user?.id) {
+            await supabase
+              .from("user_settings")
+              .update({ is_pro: !!isPremium })
+              .eq("user_id", user.id);
+            setUserSettings((s) => (s ? { ...s, is_pro: !!isPremium } : s));
+          }
+        });
+      } else {
+        await revenueCatLogOut();
+      }
+    })();
+    return () => { unsubscribe(); };
+  }, [user?.id]);
 
   // Stripe redirect + PWA quick-record
   useEffect(() => {
@@ -860,21 +907,60 @@ For scripture_refs, return 0 to 2 well-known verse references that genuinely con
     }
   };
 
-  // ── Upgrade ────────────────────────────────────────────────────────────────
+  // ── Upgrade (RevenueCat, mobile only) ─────────────────────────────────────
+  // Subscriptions are mobile-only by design. On web we show a soft message
+  // directing the user to install the app instead of pretending to charge.
   const handleUpgrade = async (plan) => {
+    const isWeb = typeof window !== "undefined" && !window.Capacitor?.isNativePlatform?.();
+    if (isWeb) {
+      toast.error("Subscriptions are available in the iOS and Android apps.");
+      return;
+    }
     try {
-      const res = await fetch("/api/create-checkout-session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id: user.id, plan: plan || selectedPlan }),
-      });
-      const { url } = await res.json();
-      if (url) window.location.href = url;
-      else throw new Error("No checkout URL returned");
+      const { monthly, annual } = await fetchRcPackages();
+      const pkg = (plan || selectedPlan) === "annual" ? annual : monthly;
+      if (!pkg) {
+        toast.error("Subscriptions are not available right now. Please try again later.");
+        return;
+      }
+      const result = await rcPurchasePackage(pkg);
+      if (result.cancelled) return; // user backed out, no toast needed
+      if (!result.success) {
+        toast.error(result.error || "Purchase failed. Please try again.");
+        return;
+      }
+      // Optimistic local flip; webhook will reconcile authoritatively
+      if (result.premium && user?.id) {
+        await supabase
+          .from("user_settings")
+          .update({ is_pro: true })
+          .eq("user_id", user.id);
+        setUserSettings((s) => (s ? { ...s, is_pro: true } : s));
+        setShowUpgradeModal(false);
+        toast.success("Thank you for supporting Dream Shepherd.");
+      }
     } catch (err) {
       console.error("Upgrade failed:", err);
-      toast.error("Couldn't open checkout. Please try again.");
-      setShowUpgradeModal(true);
+      toast.error("Something went wrong. Please try again.");
+    }
+  };
+
+  // Restore previous purchases (Apple requires this UI to exist).
+  const handleRestorePurchases = async () => {
+    const result = await rcRestorePurchases();
+    if (!result.success) {
+      toast.error(result.error || "Could not restore purchases.");
+      return;
+    }
+    if (result.premium && user?.id) {
+      await supabase
+        .from("user_settings")
+        .update({ is_pro: true })
+        .eq("user_id", user.id);
+      setUserSettings((s) => (s ? { ...s, is_pro: true } : s));
+      toast.success("Your subscription was restored.");
+    } else {
+      toast.success("No previous purchases found.");
     }
   };
 
@@ -1530,6 +1616,7 @@ For scripture_refs, return 0 to 2 well-known verse references that genuinely con
                 onSettingsUpdate={setUserSettings}
                 dreams={dreams}
                 onUpgrade={() => setShowUpgradeModal(true)}
+                onRestorePurchases={handleRestorePurchases}
                 onSignOut={handleLogout}
                 onDeleteAccount={handleDeleteAccount}
               />
@@ -1740,17 +1827,19 @@ For scripture_refs, return 0 to 2 well-known verse references that genuinely con
               {selectedPlan === "monthly" ? (
                 <>
                   <div style={{ fontSize: 28, color: "#e8c840", fontWeight: 400 }}>
-                    $8<span style={{ fontSize: 14, color: "#a09060" }}>/month</span>
+                    {rcPackages.monthly?.product?.priceString || "$7.99"}
+                    <span style={{ fontSize: 14, color: "#a09060" }}>/month</span>
                   </div>
                   <div style={{ fontSize: 12, color: "#a09060", marginTop: 4 }}>Cancel anytime</div>
                 </>
               ) : (
                 <>
                   <div style={{ fontSize: 28, color: "#e8c840", fontWeight: 400 }}>
-                    $59.99<span style={{ fontSize: 14, color: "#a09060" }}>/year</span>
+                    {rcPackages.annual?.product?.priceString || "$59.99"}
+                    <span style={{ fontSize: 14, color: "#a09060" }}>/year</span>
                   </div>
                   <div style={{ fontSize: 12, color: "#a09060", marginTop: 4 }}>
-                    Just $5/mo - Save 37%
+                    Just $5/mo. Save 37%.
                   </div>
                 </>
               )}
