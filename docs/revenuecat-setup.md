@@ -1,121 +1,139 @@
 # RevenueCat setup checklist
 
-The app code is wired up and ready. To actually accept payments you need
-to configure RevenueCat, App Store Connect, and Google Play Console.
-This file is the checklist; once everything below is done, the app will
-process real subscriptions.
+The app code is wired up and ready for sandbox testing. The integration
+uses RevenueCat's hosted **Paywall** for purchases and **Customer Center**
+for subscription management — both presented as native screens managed
+by the RevenueCat dashboard, so you can iterate on copy and layout
+without shipping app updates.
 
-## 1. App Store Connect (one-time, ~30 min)
+## What's already done in code
 
-1. Sign in at appstoreconnect.apple.com
-2. My Apps → Dream Shepherd → Subscriptions → Create new subscription group
-   - Name: **Dream Shepherd Premium**
-   - Reference name: `premium`
-3. Inside the group, create two subscriptions:
-   - **Monthly**
-     - Product ID: `dreamshepherd.monthly`
-     - Subscription duration: 1 month
-     - Price: $7.99 USD (Apple auto-converts other currencies)
-     - Display name: "Dream Shepherd Monthly"
-     - Description: "Unlimited dream interpretations, visualizations, and prayers."
-   - **Annual**
-     - Product ID: `dreamshepherd.annual`
-     - Subscription duration: 1 year
-     - Price: $59.99 USD
-     - Display name: "Dream Shepherd Annual"
-     - Description: "Save 37%. Unlimited dream interpretations, visualizations, and prayers."
-4. Status of each will show "Missing Metadata" → fill review notes:
-   - "This subscription unlocks unlimited AI dream interpretations and
-     dream art visualizations. Free users get 5 interpretations to start."
-5. Both products should land in **"Ready to Submit"** within a few hours.
-   Apple sometimes requires the first build to be uploaded before products
-   activate, so this can wait until you're closer to submission.
+- `@revenuecat/purchases-capacitor` + `@revenuecat/purchases-capacitor-ui` installed
+- Native projects synced (iOS via SPM, Android via Capacitor module)
+- Single unified API key via `VITE_REVENUECAT_API_KEY`
+- Configures on sign-in with the user's Supabase UUID
+- Entitlement-change listener mirrors `is_pro` to Supabase live
+- Tapping "Support the work" on native opens the RevenueCat paywall
+- ProfileTab has "Manage subscription" (Customer Center) + "Restore previous purchases"
+- Webhook endpoint at `/api/revenuecat-webhook` for authoritative state
 
-## 2. Google Play Console (one-time, ~30 min)
+## 1. App Store Connect (~30 min, one-time)
 
-1. Sign in at play.google.com/console
-2. Monetize → Subscriptions → Create subscription
-   - Product ID: `dreamshepherd.monthly` (must match Apple)
-   - Base plan: monthly, autorenewing, $7.99
-3. Repeat for `dreamshepherd.annual` at $59.99
-4. Activate both subscriptions
+Create three subscription products in App Store Connect:
 
-## 3. RevenueCat (one-time, ~15 min)
+| Type | Product ID | Price | Duration |
+|---|---|---|---|
+| Auto-renewable | `dreamshepherd.monthly` | $7.99 | 1 month |
+| Auto-renewable | `dreamshepherd.yearly` | $59.99 | 1 year |
+| Non-renewing | `dreamshepherd.lifetime` | $149.99 (your choice) | One-time |
 
-1. Sign up at revenuecat.com (free tier covers up to $2.5K/mo revenue)
-2. Create a new **Project** named "Dream Shepherd"
-3. Add an **App** for each platform:
-   - iOS: bundle ID matches your Capacitor app ID
-   - Android: package name matches your Capacitor app ID
-4. Connect each platform's store:
-   - iOS: paste your App Store Connect shared secret
-   - Android: upload the service account JSON from Google Play Console
-5. Create the **Entitlement**:
-   - Identifier: **`premium`**  ← MUST match the constant in
-     `src/lib/revenuecat.js`
-6. Create **Products**, importing from the stores:
-   - `dreamshepherd.monthly`
-   - `dreamshepherd.annual`
-7. Attach both products to the `premium` entitlement.
-8. Create an **Offering**:
-   - Identifier: **`default`** (RevenueCat auto-uses this)
-   - Add two packages:
-     - Package type: **Monthly**, product: `dreamshepherd.monthly`
-     - Package type: **Annual**, product: `dreamshepherd.annual`
+For the two subscriptions, create a single Subscription Group named
+**Dream Shepherd Premium** and add both to it.
+
+Each product needs metadata: localized display name + description, and
+a placeholder screenshot. They land in "Ready to Submit" after a few
+hours.
+
+## 2. Google Play Console (~30 min, one-time)
+
+Mirror the same product IDs and pricing in Play Console → Monetize →
+Subscriptions and one-time products. Activate all three.
+
+## 3. RevenueCat Dashboard (~15 min)
+
+1. Create a Project named "Dream Shepherd"
+2. Add iOS and Android apps with bundle/package ID `app.dreamshepherd`
+3. Connect both stores:
+   - iOS: App Store Connect shared secret
+   - Android: Service account JSON
+4. Create the Entitlement:
+   - **Identifier: `Dream Shepherd Unlimited`** (must match exactly,
+     case-sensitive — used by `src/lib/revenuecat.js`)
+5. Import all three products from the stores
+6. Attach each product to the `Dream Shepherd Unlimited` entitlement
+7. Create an Offering:
+   - Identifier: `default`
+   - Packages: Monthly, Yearly, Lifetime (RevenueCat will match by package type)
    - Mark as current offering
-9. Grab the **public SDK keys** from Project → API keys:
-   - iOS public key → set as `VITE_REVENUECAT_IOS_KEY` env var
-   - Android public key → set as `VITE_REVENUECAT_ANDROID_KEY` env var
+8. Configure the Paywall:
+   - Project → Paywalls → New Paywall
+   - Use the visual editor to design (gold/navy palette, "Support
+     Dream Shepherd" copy, etc.)
+   - Publish → attach to the `default` offering
+9. Grab the unified API key (Project → API keys) and save as
+   `VITE_REVENUECAT_API_KEY` in your env
 
-## 4. Webhook (one-time, ~5 min)
+## 4. Customer Center (~5 min, one-time)
 
-1. RevenueCat → Project → Integrations → Webhooks → Add webhook
+1. Project → Customer Center → Configure
+2. Set the brand color (gold #e8b840 on dark)
+3. Enable: Manage subscription, Restore purchases, Cancel subscription
+4. Save
+
+## 5. Webhook (~5 min)
+
+1. Project → Integrations → Webhooks → Add webhook
 2. URL: `https://dreamshepherd.app/api/revenuecat-webhook`
-3. Authorization header: generate a long random string (1Password is fine)
-   - Save the same string as `REVENUECAT_WEBHOOK_AUTH` in your Vercel env vars
-4. Subscribe to all events. The handler ignores the ones that aren't
-   actionable; the rest update `user_settings.is_pro` automatically.
+3. Authorization header: generate a random string (1Password is fine)
+   - Save as `REVENUECAT_WEBHOOK_AUTH` in Vercel env vars
+4. Subscribe to all events; handler ignores ones that aren't actionable
 
-## 5. Vercel environment variables
+## 6. Vercel environment variables
 
-In Vercel → dreamshepherd → Settings → Environment Variables, add:
+In Vercel → dreamshepherd → Settings → Environment Variables:
 
-- `VITE_REVENUECAT_IOS_KEY` (public SDK key from step 3.9)
-- `VITE_REVENUECAT_ANDROID_KEY` (public SDK key from step 3.9)
-- `REVENUECAT_WEBHOOK_AUTH` (from step 4.3)
-- `SUPABASE_URL` (your project URL, used by the webhook to update is_pro)
-- `SUPABASE_SERVICE_ROLE_KEY` (already set, used by webhook to bypass RLS)
+- `VITE_REVENUECAT_API_KEY` — production key from step 3.9 (or test key for staging)
+- `REVENUECAT_WEBHOOK_AUTH` — from step 5.3
+- `SUPABASE_URL` — your project URL, used by the webhook
+- `SUPABASE_SERVICE_ROLE_KEY` — already set, lets webhook bypass RLS
 
-Trigger a redeploy after saving.
+Redeploy after saving.
 
-## 6. Capacitor sync
-
-After updating `package.json` (`@revenuecat/purchases-capacitor`
-already installed by the agent), run:
+## 7. Capacitor sync (each time RevenueCat plugin updates)
 
 ```bash
+cd ~/Dream
 npm install
 npm run build
 npx cap sync ios
 npx cap sync android
 ```
 
-Then open Xcode (`npx cap open ios`) and confirm:
-- The RevenueCat pod installed correctly (Pods/Purchases visible)
-- `Info.plist` has no missing keys
-
-## 7. Sandbox testing (Apple, ~10 min)
+## 8. Sandbox testing on iOS
 
 1. App Store Connect → Users and Access → Sandbox Testers → Create one
-2. On a real iPhone (sandbox doesn't work in the simulator reliably):
+2. On a real iPhone (sandbox does NOT work in the simulator):
    - Settings → App Store → sign out of your real Apple ID
    - Sign in with the sandbox tester ID
-3. Run the app from Xcode
-4. Tap **Support the work** → confirm purchase flow runs
-5. Verify in Supabase that `user_settings.is_pro = true` for your row
-6. Test **Restore previous purchases** on a fresh install
+3. Run the app from Xcode (`npx cap open ios`)
+4. Tap **Support the work** → the RevenueCat paywall presents
+5. Choose a plan → Apple's sandbox purchase sheet appears
+6. Verify in Supabase that `user_settings.is_pro = true` for your row
+7. Tap **Manage subscription** in Profile → Customer Center opens
+8. Try Restore Purchases on a fresh install
+
+## API key naming
+
+The new unified key format looks like:
+- Test/sandbox: `test_BjnpfLjgPMoGvPKQtILryPuxoTv`
+- Production: starts with a project-specific prefix
+
+A single key works across iOS and Android. The old split-key approach
+(`appl_...`, `goog_...`) is deprecated.
+
+## Switching from sandbox to production
+
+When you're ready to ship:
+
+1. RevenueCat dashboard → Project → API keys → copy the **production**
+   public key
+2. Vercel → Settings → Environment Variables → update
+   `VITE_REVENUECAT_API_KEY` to the production key
+3. Redeploy
+
+The sandbox key shipped with the current build will keep working in
+development; production builds pulling from Vercel will use the prod key.
 
 ## Done
 
-Once the above is complete, the app is monetized. The code is fully
-written; this is configuration only.
+Once the above is complete, the app is monetized. Code is fully wired.

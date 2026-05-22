@@ -21,7 +21,7 @@ if (typeof document !== "undefined" && !document.getElementById(PROFILE_DIALOG_S
 const FREE_INTERPRETATIONS = 5;
 const MAX_SHARE_BONUS = 3;
 
-export default function ProfileTab({ user, userSettings, onSettingsUpdate, dreams, onUpgrade, onRestorePurchases, onSignOut, onDeleteAccount }) {
+export default function ProfileTab({ user, userSettings, onSettingsUpdate, dreams, onUpgrade, onManageSubscription, onRestorePurchases, onSignOut, onDeleteAccount }) {
   const isNative = typeof window !== "undefined" && !!window.Capacitor?.isNativePlatform?.();
   const [displayName, setDisplayName] = useState(userSettings?.display_name || "");
   const [age, setAge] = useState(userSettings?.age || "");
@@ -131,21 +131,39 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
         )}
       </div>
 
-      {/* Restore Purchases — required by Apple for any app selling
-          subscriptions. Hidden on web since purchases are mobile-only. */}
-      {isNative && onRestorePurchases && (
-        <div style={{ textAlign: "center", marginBottom: 16 }}>
-          <button
-            onClick={onRestorePurchases}
-            style={{
-              background: "none", border: "none", padding: "8px 16px",
-              color: "#6b5c30", fontSize: 12, cursor: "pointer",
-              fontFamily: "Georgia, serif", letterSpacing: 0.3,
-              textDecoration: "underline",
-            }}
-          >
-            Restore previous purchases
-          </button>
+      {/* Subscription management — Customer Center is the primary entry
+          point for supporters (manage plan, cancel, restore). A separate
+          Restore Purchases link is kept for users who haven't subscribed
+          on this device yet, which is also what Apple expects to see. */}
+      {isNative && (onManageSubscription || onRestorePurchases) && (
+        <div style={{ textAlign: "center", marginBottom: 16, display: "flex", flexDirection: "column", gap: 6 }}>
+          {onManageSubscription && userSettings?.is_pro && (
+            <button
+              onClick={onManageSubscription}
+              style={{
+                background: "none", border: "1px solid rgba(200,160,30,0.25)",
+                color: "#c8a040",
+                padding: "10px 22px", borderRadius: 22, fontSize: 13,
+                cursor: "pointer", fontFamily: "Georgia, serif",
+                letterSpacing: 0.5, minHeight: 40, alignSelf: "center",
+              }}
+            >
+              Manage subscription
+            </button>
+          )}
+          {onRestorePurchases && (
+            <button
+              onClick={onRestorePurchases}
+              style={{
+                background: "none", border: "none", padding: "8px 16px",
+                color: "#6b5c30", fontSize: 12, cursor: "pointer",
+                fontFamily: "Georgia, serif", letterSpacing: 0.3,
+                textDecoration: "underline",
+              }}
+            >
+              Restore previous purchases
+            </button>
+          )}
         </div>
       )}
 

@@ -33,9 +33,10 @@ import {
   configureRevenueCat,
   revenueCatLogOut,
   fetchPackages as fetchRcPackages,
-  purchasePackage as rcPurchasePackage,
   restorePurchases as rcRestorePurchases,
-  onPremiumChange as onRcPremiumChange,
+  onEntitlementChange as onRcEntitlementChange,
+  presentPaywall as rcPresentPaywall,
+  presentCustomerCenter as rcPresentCustomerCenter,
 } from "./lib/revenuecat";
 
 // ─── Constants ─────────────────────────────────────────────────────────────
@@ -238,14 +239,14 @@ export default function DreamJournal() {
     (async () => {
       if (user?.id) {
         await configureRevenueCat(user.id);
-        unsubscribe = await onRcPremiumChange(async (isPremium) => {
+        unsubscribe = await onRcEntitlementChange(async (entitled) => {
           // Reconcile authoritative server state when entitlement flips
           if (user?.id) {
             await supabase
               .from("user_settings")
-              .update({ is_pro: !!isPremium })
+              .update({ is_pro: !!entitled })
               .eq("user_id", user.id);
-            setUserSettings((s) => (s ? { ...s, is_pro: !!isPremium } : s));
+            setUserSettings((s) => (s ? { ...s, is_pro: !!entitled } : s));
           }
         });
       } else {
@@ -656,7 +657,7 @@ For scripture_refs, return 0 to 2 well-known verse references that genuinely con
 
   const generateDreamImage = async (dream) => {
     if (!userSettings?.is_pro && (userSettings?.image_generation_count || 0) >= FREE_IMAGE_LIMIT) {
-      setShowUpgradeModal(true);
+      handleUpgrade();
       return null;
     }
     try {
@@ -675,7 +676,7 @@ For scripture_refs, return 0 to 2 well-known verse references that genuinely con
         }),
       });
       const data = await response.json();
-      if (data.error === "limit_reached") { setShowUpgradeModal(true); return null; }
+      if (data.error === "limit_reached") { handleUpgrade(); return null; }
       if (data.imageUrl) {
         const newImage = { image_url: data.imageUrl, created_at: new Date().toISOString() };
         setDreams((prev) => prev.map((d) => d.id === dream.id
@@ -721,7 +722,7 @@ For scripture_refs, return 0 to 2 well-known verse references that genuinely con
   const [interpretingId, setInterpretingId] = useState(null);
 
   const handleInterpretDream = async (dream) => {
-    if (!canInterpret) { setShowUpgradeModal(true); return; }
+    if (!canInterpret) { handleUpgrade(); return; }
     setInterpretingId(dream.id);
     try {
       const result = await interpretDream(dream, userSettings);
@@ -907,37 +908,35 @@ For scripture_refs, return 0 to 2 well-known verse references that genuinely con
     }
   };
 
-  // ── Upgrade (RevenueCat, mobile only) ─────────────────────────────────────
-  // Subscriptions are mobile-only by design. On web we show a soft message
-  // directing the user to install the app instead of pretending to charge.
-  const handleUpgrade = async (plan) => {
+  // ── Upgrade flow (RevenueCat hosted paywall, mobile only) ─────────────────
+  // On native, opens the paywall configured in the RevenueCat dashboard.
+  // Paywall copy + layout can be updated remotely without app releases.
+  // On web, falls back to the custom Support Dream Shepherd modal (which
+  // gently directs the user to install the iOS / Android app).
+  const handleUpgrade = async () => {
     const isWeb = typeof window !== "undefined" && !window.Capacitor?.isNativePlatform?.();
     if (isWeb) {
-      toast.error("Subscriptions are available in the iOS and Android apps.");
+      // Web users see the existing custom modal with web copy.
+      setShowUpgradeModal(true);
       return;
     }
     try {
-      const { monthly, annual } = await fetchRcPackages();
-      const pkg = (plan || selectedPlan) === "annual" ? annual : monthly;
-      if (!pkg) {
-        toast.error("Subscriptions are not available right now. Please try again later.");
+      const result = await rcPresentPaywall();
+      if (result.cancelled) return; // user backed out cleanly
+      if (result.result === "ERROR") {
+        toast.error(result.error || "Could not load the paywall. Please try again.");
         return;
       }
-      const result = await rcPurchasePackage(pkg);
-      if (result.cancelled) return; // user backed out, no toast needed
-      if (!result.success) {
-        toast.error(result.error || "Purchase failed. Please try again.");
-        return;
-      }
-      // Optimistic local flip; webhook will reconcile authoritatively
-      if (result.premium && user?.id) {
+      // Sync entitlement back to Supabase. The customer-info listener
+      // also handles this, but doing it here keeps the UI snappy.
+      if (result.entitled && user?.id) {
         await supabase
           .from("user_settings")
           .update({ is_pro: true })
           .eq("user_id", user.id);
         setUserSettings((s) => (s ? { ...s, is_pro: true } : s));
-        setShowUpgradeModal(false);
-        toast.success("Thank you for supporting Dream Shepherd.");
+        if (result.purchased) toast.success("Thank you for supporting Dream Shepherd.");
+        if (result.restored) toast.success("Your subscription was restored.");
       }
     } catch (err) {
       console.error("Upgrade failed:", err);
@@ -945,14 +944,25 @@ For scripture_refs, return 0 to 2 well-known verse references that genuinely con
     }
   };
 
-  // Restore previous purchases (Apple requires this UI to exist).
+  // Open the RevenueCat Customer Center (manage subscription, restore,
+  // cancel, change plans). Apple still wants an explicit Restore button
+  // somewhere; we keep one on Profile in addition to this.
+  const handleManageSubscription = async () => {
+    const result = await rcPresentCustomerCenter();
+    if (!result.success) {
+      toast.error(result.error || "Could not open subscription management.");
+    }
+  };
+
+  // Explicit Restore Purchases handler (kept alongside Customer Center
+  // so the link remains discoverable for free users who already paid).
   const handleRestorePurchases = async () => {
     const result = await rcRestorePurchases();
     if (!result.success) {
       toast.error(result.error || "Could not restore purchases.");
       return;
     }
-    if (result.premium && user?.id) {
+    if (result.entitled && user?.id) {
       await supabase
         .from("user_settings")
         .update({ is_pro: true })
@@ -1615,7 +1625,8 @@ For scripture_refs, return 0 to 2 well-known verse references that genuinely con
                 userSettings={userSettings}
                 onSettingsUpdate={setUserSettings}
                 dreams={dreams}
-                onUpgrade={() => setShowUpgradeModal(true)}
+                onUpgrade={handleUpgrade}
+                onManageSubscription={handleManageSubscription}
                 onRestorePurchases={handleRestorePurchases}
                 onSignOut={handleLogout}
                 onDeleteAccount={handleDeleteAccount}
@@ -1741,7 +1752,7 @@ For scripture_refs, return 0 to 2 well-known verse references that genuinely con
             </div>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 6, flexShrink: 0 }}>
-            <button onClick={() => { setShowUpgradeNudge(false); setShowUpgradeModal(true); }} style={{
+            <button onClick={() => { setShowUpgradeNudge(false); handleUpgrade(); }} style={{
               background: "linear-gradient(135deg, #c8a020, #e8c840)", border: "none",
               color: "#1a1000", padding: "10px 16px", borderRadius: 10,
               fontSize: 12, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", minHeight: 40,
@@ -1844,7 +1855,7 @@ For scripture_refs, return 0 to 2 well-known verse references that genuinely con
                 </>
               )}
             </div>
-            <button onClick={() => handleUpgrade(selectedPlan)} style={{
+            <button onClick={handleUpgrade} style={{
               width: "100%", background: "linear-gradient(135deg, #c8a020, #e8c840)",
               border: "none", color: "#1a1000", padding: "16px", borderRadius: 12,
               fontSize: 16, fontWeight: 600, cursor: "pointer", letterSpacing: 0.5, marginBottom: 12, minHeight: 48,
