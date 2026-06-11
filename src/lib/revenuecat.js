@@ -6,24 +6,59 @@
 // checking, and restoration all go through here. Web is a hard no-op
 // since subscriptions are mobile-only per product decision.
 //
-// Entitlement: "Dream Shepherd Unlimited"
+// Entitlement: "Dreamshepherd Pro" (must match the identifier in the
+//   RevenueCat Dashboard -> Product catalog -> Entitlements exactly).
+// Offering: "default"
 // Packages (from RevenueCat Dashboard offering):
-//   - monthly  ($7.99/mo)
-//   - yearly   (annual)
-//   - lifetime (one-time)
+//   - $rc_monthly ($7.99/mo)
+//   - $rc_annual  ($59.99/yr)
 //
-// API key:
-//   RevenueCat now uses a single unified API key per project rather than
-//   separate iOS/Android keys. The "test_" prefix denotes the sandbox key.
-//   Set via env: VITE_REVENUECAT_API_KEY
+// API keys (public SDK keys, safe to ship in the client):
+//   RevenueCat issues a separate public key per store/app. Use the one that
+//   matches the running platform.
+//     iOS App Store -> "appl_..."  (env: VITE_REVENUECAT_IOS_KEY)
+//     Google Play   -> "goog_..."  (env: VITE_REVENUECAT_ANDROID_KEY)
+//   A "test_" key targets RevenueCat's Test Store, not the real App/Play
+//   store, so it will NOT return your App Store Connect products. Use the
+//   "appl_" key for real iOS purchases and submission.
+//   VITE_REVENUECAT_API_KEY is honored as a fallback for a single-key setup.
 // ─────────────────────────────────────────────────────────────────────────────
 
-const ENTITLEMENT_ID = "Dream Shepherd Unlimited";
+const ENTITLEMENT_ID = "Dreamshepherd Pro";
+
+// Treat the user as entitled if the named entitlement is active. As a
+// safety net against a dashboard/code identifier mismatch (which would
+// silently lock paying customers out of Pro), also honor ANY active
+// entitlement, since Dream Shepherd sells exactly one paid tier. If the
+// fallback ever fires, the dashboard identifier differs from ENTITLEMENT_ID
+// and the two should be reconciled.
+function entitledFrom(entitlements) {
+  const active = entitlements?.active || {};
+  if (active[ENTITLEMENT_ID]) return true;
+  const keys = Object.keys(active);
+  if (keys.length > 0) {
+    if (import.meta.env.DEV) {
+      console.warn(
+        `[RevenueCat] entitlement "${ENTITLEMENT_ID}" not found, but active ` +
+        `entitlements exist: ${keys.join(", ")}. Update ENTITLEMENT_ID to match.`
+      );
+    }
+    return true;
+  }
+  return false;
+}
 
 const isNative = () =>
   typeof window !== "undefined" && !!window.Capacitor?.isNativePlatform?.();
 
-const getApiKey = () => import.meta.env.VITE_REVENUECAT_API_KEY || "";
+const getApiKey = () => {
+  const env = import.meta.env;
+  const platform =
+    (typeof window !== "undefined" && window.Capacitor?.getPlatform?.()) || "web";
+  if (platform === "ios" && env.VITE_REVENUECAT_IOS_KEY) return env.VITE_REVENUECAT_IOS_KEY;
+  if (platform === "android" && env.VITE_REVENUECAT_ANDROID_KEY) return env.VITE_REVENUECAT_ANDROID_KEY;
+  return env.VITE_REVENUECAT_API_KEY || "";
+};
 
 let configured = false;
 let cachedCore = null;
@@ -101,8 +136,7 @@ export async function isEntitled() {
   try {
     const { Purchases } = await loadCore();
     const info = await Purchases.getCustomerInfo();
-    const ent = info?.customerInfo?.entitlements?.active?.[ENTITLEMENT_ID];
-    return !!ent;
+    return entitledFrom(info?.customerInfo?.entitlements);
   } catch {
     return false;
   }
@@ -110,23 +144,23 @@ export async function isEntitled() {
 
 /**
  * Fetch the configured "current" Offering and group packages by type so
- * UI can pick the one the user selected. Returns lifetime/yearly/monthly
- * keys (any may be null if not configured in the dashboard).
+ * the upgrade modal can pick the plan the user selected. Returns
+ * monthly/annual keys (either may be null if not configured in the
+ * dashboard). `raw` is the full Offering for any advanced use.
  */
 export async function fetchPackages() {
-  const empty = { lifetime: null, yearly: null, monthly: null, raw: null };
+  const empty = { monthly: null, annual: null, raw: null };
   if (!isNative()) return empty;
   try {
     const { Purchases } = await loadCore();
     const { offerings } = await Purchases.getOfferings();
     const current = offerings?.current;
     if (!current) return empty;
-    const byType = { lifetime: null, yearly: null, monthly: null };
+    const byType = { monthly: null, annual: null };
     (current.availablePackages || []).forEach((p) => {
       const t = (p.packageType || "").toLowerCase();
-      if (t === "lifetime") byType.lifetime = p;
-      else if (t === "annual" || t === "yearly") byType.yearly = p;
-      else if (t === "monthly") byType.monthly = p;
+      if (t === "monthly") byType.monthly = p;
+      else if (t === "annual" || t === "yearly") byType.annual = p;
     });
     return { ...byType, raw: current };
   } catch (err) {
@@ -136,9 +170,10 @@ export async function fetchPackages() {
 }
 
 /**
- * Manually purchase a specific package (used by the custom modal as a
- * fallback path). The hosted paywall (presentPaywall) is the preferred
- * primary purchase flow.
+ * Purchase a specific package. This is the primary purchase path: the
+ * custom on-brand upgrade modal calls it with the package matching the
+ * user's selected plan. Apple/Google show their own native payment sheet;
+ * everything around it is our own UI.
  */
 export async function purchasePackage(pkg) {
   if (!isNative()) {
@@ -150,8 +185,7 @@ export async function purchasePackage(pkg) {
   try {
     const { Purchases } = await loadCore();
     const result = await Purchases.purchasePackage({ aPackage: pkg });
-    const ent = result?.customerInfo?.entitlements?.active?.[ENTITLEMENT_ID];
-    return { success: true, entitled: !!ent };
+    return { success: true, entitled: entitledFrom(result?.customerInfo?.entitlements) };
   } catch (err) {
     if (err?.userCancelled || err?.code === "PURCHASE_CANCELLED") {
       return { success: false, cancelled: true };
@@ -172,43 +206,9 @@ export async function restorePurchases() {
   try {
     const { Purchases } = await loadCore();
     const result = await Purchases.restorePurchases();
-    const ent = result?.customerInfo?.entitlements?.active?.[ENTITLEMENT_ID];
-    return { success: true, entitled: !!ent };
+    return { success: true, entitled: entitledFrom(result?.customerInfo?.entitlements) };
   } catch (err) {
     return { success: false, error: err?.message || "Could not restore purchases." };
-  }
-}
-
-/**
- * Present the RevenueCat-hosted paywall. The paywall layout and copy
- * are configured in the RevenueCat dashboard, so updates ship without
- * an app release. Returns:
- *   { result: "PURCHASED" | "RESTORED" | "CANCELLED" | "ERROR" | "NOT_PRESENTED",
- *     entitled: boolean }
- */
-export async function presentPaywall({ requiredEntitlement } = {}) {
-  if (!isNative()) {
-    return { result: "NOT_PRESENTED", entitled: false };
-  }
-  try {
-    const { RevenueCatUI, PAYWALL_RESULT } = await loadUi();
-    const args = requiredEntitlement ? { requiredEntitlementIdentifier: requiredEntitlement } : undefined;
-    const fn = requiredEntitlement
-      ? RevenueCatUI.presentPaywallIfNeeded.bind(RevenueCatUI)
-      : RevenueCatUI.presentPaywall.bind(RevenueCatUI);
-    const { result } = await fn(args);
-    // Resolve current entitlement state after the paywall closes.
-    const entitled = await isEntitled();
-    return {
-      result: result || "ERROR",
-      entitled,
-      purchased: result === PAYWALL_RESULT?.PURCHASED,
-      restored: result === PAYWALL_RESULT?.RESTORED,
-      cancelled: result === PAYWALL_RESULT?.CANCELLED,
-    };
-  } catch (err) {
-    console.error("[RevenueCat] presentPaywall failed:", err);
-    return { result: "ERROR", entitled: false, error: err?.message };
   }
 }
 
@@ -242,8 +242,7 @@ export async function onEntitlementChange(callback) {
   try {
     const { Purchases } = await loadCore();
     const handle = await Purchases.addCustomerInfoUpdateListener((info) => {
-      const ent = info?.entitlements?.active?.[ENTITLEMENT_ID];
-      callback(!!ent);
+      callback(entitledFrom(info?.entitlements));
     });
     return () => {
       try {

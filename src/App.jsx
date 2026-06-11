@@ -33,9 +33,9 @@ import {
   configureRevenueCat,
   revenueCatLogOut,
   fetchPackages as fetchRcPackages,
+  purchasePackage as purchaseRcPackage,
   restorePurchases as rcRestorePurchases,
   onEntitlementChange as onRcEntitlementChange,
-  presentPaywall as rcPresentPaywall,
   presentCustomerCenter as rcPresentCustomerCenter,
 } from "./lib/revenuecat";
 
@@ -158,6 +158,7 @@ export default function DreamJournal() {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState("annual");
   const [rcPackages, setRcPackages] = useState({ monthly: null, annual: null });
+  const [purchasing, setPurchasing] = useState(false);
   const [showUpgradeNudge, setShowUpgradeNudge] = useState(false);
   const [readingModal, setReadingModal] = useState(null); // { interpretation, symbols, dreamTitle, themeConnections }
   const [dreamThemesCache, setDreamThemesCache] = useState(null);
@@ -908,39 +909,52 @@ For scripture_refs, return 0 to 2 well-known verse references that genuinely con
     }
   };
 
-  // ── Upgrade flow (RevenueCat hosted paywall, mobile only) ─────────────────
-  // On native, opens the paywall configured in the RevenueCat dashboard.
-  // Paywall copy + layout can be updated remotely without app releases.
-  // On web, falls back to the custom Support Dream Shepherd modal (which
-  // gently directs the user to install the iOS / Android app).
-  const handleUpgrade = async () => {
+  // ── Upgrade flow (custom on-brand modal) ──────────────────────────────────
+  // handleUpgrade just opens the modal. The actual purchase happens through
+  // handlePurchaseSelectedPlan when the user taps the supporter button, so
+  // the whole flow stays inside our own UI (Apple's payment sheet aside).
+  const handleUpgrade = () => {
+    setShowUpgradeModal(true);
+  };
+
+  // Purchase the package matching the plan toggle. Native only: the SDK is a
+  // Capacitor plugin and store purchases cannot run on the web PWA, so web
+  // users are pointed to the native app instead.
+  const handlePurchaseSelectedPlan = async () => {
     const isWeb = typeof window !== "undefined" && !window.Capacitor?.isNativePlatform?.();
     if (isWeb) {
-      // Web users see the existing custom modal with web copy.
-      setShowUpgradeModal(true);
+      toast.info("Subscriptions are available in the Dream Shepherd app for iPhone and Android.");
       return;
     }
+    const pkg = selectedPlan === "annual" ? rcPackages.annual : rcPackages.monthly;
+    if (!pkg) {
+      toast.error("Plans are still loading. Please try again in a moment.");
+      return;
+    }
+    setPurchasing(true);
     try {
-      const result = await rcPresentPaywall();
+      const result = await purchaseRcPackage(pkg);
       if (result.cancelled) return; // user backed out cleanly
-      if (result.result === "ERROR") {
-        toast.error(result.error || "Could not load the paywall. Please try again.");
+      if (!result.success) {
+        toast.error(result.error || "Purchase could not be completed.");
         return;
       }
-      // Sync entitlement back to Supabase. The customer-info listener
-      // also handles this, but doing it here keeps the UI snappy.
+      // Sync entitlement to Supabase. The customer-info listener also handles
+      // this, but updating here keeps the UI snappy.
       if (result.entitled && user?.id) {
         await supabase
           .from("user_settings")
           .update({ is_pro: true })
           .eq("user_id", user.id);
         setUserSettings((s) => (s ? { ...s, is_pro: true } : s));
-        if (result.purchased) toast.success("Thank you for supporting Dream Shepherd.");
-        if (result.restored) toast.success("Your subscription was restored.");
+        toast.success("Thank you for supporting Dream Shepherd.");
+        setShowUpgradeModal(false);
       }
     } catch (err) {
-      console.error("Upgrade failed:", err);
+      console.error("Purchase failed:", err);
       toast.error("Something went wrong. Please try again.");
+    } finally {
+      setPurchasing(false);
     }
   };
 
@@ -1855,13 +1869,15 @@ For scripture_refs, return 0 to 2 well-known verse references that genuinely con
                 </>
               )}
             </div>
-            <button onClick={handleUpgrade} style={{
+            <button onClick={handlePurchaseSelectedPlan} disabled={purchasing} style={{
               width: "100%", background: "linear-gradient(135deg, #c8a020, #e8c840)",
               border: "none", color: "#1a1000", padding: "16px", borderRadius: 12,
-              fontSize: 16, fontWeight: 600, cursor: "pointer", letterSpacing: 0.5, marginBottom: 12, minHeight: 48,
-              fontFamily: "Georgia, serif",
+              fontSize: 16, fontWeight: 600, cursor: purchasing ? "default" : "pointer", letterSpacing: 0.5, marginBottom: 12, minHeight: 48,
+              fontFamily: "Georgia, serif", opacity: purchasing ? 0.7 : 1,
             }}>
-              {selectedPlan === "annual" ? "Become a Supporter · Annual" : "Become a Supporter"}
+              {purchasing
+                ? "Processing..."
+                : selectedPlan === "annual" ? "Become a Supporter · Annual" : "Become a Supporter"}
             </button>
             {(userSettings?.share_bonus_count ?? 0) < MAX_SHARE_BONUS && (
               <div style={{ marginBottom: 12 }}>
