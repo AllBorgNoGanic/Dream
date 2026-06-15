@@ -139,7 +139,10 @@ export default function DreamJournal() {
   const [authMode, setAuthMode] = useState("login");
   const [authForm, setAuthForm] = useState({ email: "", password: "" });
   const [authError, setAuthError] = useState("");
+  const [authSuccess, setAuthSuccess] = useState("");
   const [authLoading, setAuthLoading] = useState(false);
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
   const [sessionLoading, setSessionLoading] = useState(true);
   const [showLanding, setShowLanding] = useState(
     !window.Capacitor && !new URLSearchParams(window.location.search).has("dev")
@@ -188,6 +191,11 @@ export default function DreamJournal() {
       if (event === "INITIAL_SESSION") {
         setUser(session?.user ?? null);
         setSessionLoading(false);
+      } else if (event === "PASSWORD_RECOVERY") {
+        // User arrived via password reset link. Prompt for new password.
+        setUser(session?.user ?? null);
+        setSessionLoading(false);
+        setShowPasswordReset(true);
       } else if (event === "SIGNED_IN" || event === "USER_UPDATED") {
         setUser(session?.user ?? null);
       } else if (event === "SIGNED_OUT") {
@@ -406,6 +414,53 @@ export default function DreamJournal() {
       options: { redirectTo: window.location.origin },
     });
     if (error) setAuthError(error.message);
+  };
+
+  const handleUpdatePassword = async () => {
+    if (!newPassword || newPassword.length < 6) {
+      setAuthError("Password must be at least 6 characters.");
+      return;
+    }
+    setAuthError("");
+    setAuthLoading(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) setAuthError(error.message);
+      else {
+        setShowPasswordReset(false);
+        setNewPassword("");
+        toast.success("Password updated! You are now signed in.");
+      }
+    } catch {
+      setAuthError("Something went wrong. Please try again.");
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    const email = authForm.email?.trim();
+    if (!email) {
+      setAuthError("Enter your email address above, then tap Reset Password.");
+      return;
+    }
+    setAuthError("");
+    setAuthSuccess("");
+    setAuthLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}?reset=1`,
+      });
+      if (error) setAuthError(error.message);
+      else {
+        setAuthSuccess("Password reset link sent! Check your inbox (and spam folder).");
+        setAuthMode("login");
+      }
+    } catch {
+      setAuthError("Something went wrong. Please try again.");
+    } finally {
+      setAuthLoading(false);
+    }
   };
 
   const handleLogout = async () => {
@@ -1139,6 +1194,51 @@ For scripture_refs, return 0 to 2 well-known verse references that genuinely con
     );
   }
 
+  // ── Password reset (user arrived via reset email link) ───────────────────
+  if (showPasswordReset) {
+    return (
+      <div style={{ ...sharedBackground, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        {starsLayer}
+        {globalStyles}
+        <div style={{
+          background: "rgba(10,5,30,0.92)", border: "1px solid rgba(200,160,30,0.15)",
+          borderRadius: 20, padding: "40px 28px", width: "90%", maxWidth: 380,
+          backdropFilter: "blur(20px)", textAlign: "center",
+        }}>
+          <ShepherdMark size={40} />
+          <h2 style={{ color: "#e8b840", fontSize: 22, margin: "16px 0 8px", fontFamily: "Georgia, serif" }}>
+            Set new password
+          </h2>
+          <p style={{ color: "#8a7540", fontSize: 13, marginBottom: 24 }}>
+            Choose a new password for your account.
+          </p>
+          <input
+            type="password" placeholder="New password (min 6 characters)"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleUpdatePassword()}
+            style={{
+              width: "100%", background: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(200,160,30,0.2)", borderRadius: 10,
+              padding: "14px 16px", color: "#f5e4b0", fontSize: 16,
+              marginBottom: 16, outline: "none",
+            }}
+          />
+          {authError && (
+            <div style={{ fontSize: 12, color: "#ff9999", marginBottom: 12 }}>{authError}</div>
+          )}
+          <button onClick={handleUpdatePassword} disabled={authLoading} style={{
+            width: "100%", background: authLoading ? "rgba(140,90,5,0.4)" : "linear-gradient(135deg, #7a5200, #c89020)",
+            border: "none", color: "white", padding: "16px", borderRadius: 12,
+            fontSize: 16, cursor: authLoading ? "not-allowed" : "pointer", letterSpacing: 0.5, minHeight: 48,
+          }}>
+            {authLoading ? "Updating..." : "Update Password"}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   // ── Pre-auth quiz (gather profile before signing up) ─────────────────────
   if (!user && showPreAuthQuiz) {
     return (
@@ -1251,10 +1351,24 @@ For scripture_refs, return 0 to 2 well-known verse references that genuinely con
               type="password" placeholder="Password" value={authForm.password}
               onChange={(e) => setAuthForm((f) => ({ ...f, password: e.target.value }))}
               onKeyDown={(e) => e.key === "Enter" && handleAuth()}
-              style={{ width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(200,160,30,0.2)", borderRadius: 10, padding: "14px 16px", color: "#f5e4b0", fontSize: 16, marginBottom: 16, outline: "none" }}
+              style={{ width: "100%", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(200,160,30,0.2)", borderRadius: 10, padding: "14px 16px", color: "#f5e4b0", fontSize: 16, marginBottom: 8, outline: "none" }}
             />
+            {authMode === "login" && (
+              <div style={{ textAlign: "right", marginBottom: 12 }}>
+                <button onClick={handleForgotPassword} disabled={authLoading} style={{
+                  background: "none", border: "none", color: "#8a7540", fontSize: 12, cursor: "pointer",
+                  textDecoration: "underline", padding: 0, fontFamily: "Georgia, serif",
+                }}>
+                  Forgot password?
+                </button>
+              </div>
+            )}
+            {authMode !== "login" && <div style={{ height: 8 }} />}
             {authError && (
               <div style={{ fontSize: 12, color: "#ff9999", marginBottom: 12, textAlign: "center" }}>{authError}</div>
+            )}
+            {authSuccess && (
+              <div style={{ fontSize: 12, color: "#a0d4a0", marginBottom: 12, textAlign: "center" }}>{authSuccess}</div>
             )}
             <button onClick={handleAuth} disabled={authLoading} style={{
               width: "100%", background: authLoading ? "rgba(140,90,5,0.4)" : "linear-gradient(135deg, #7a5200, #c89020)",
@@ -1267,7 +1381,7 @@ For scripture_refs, return 0 to 2 well-known verse references that genuinely con
               <span style={{ fontSize: 13, color: "#8a7540" }}>
                 {authMode === "login" ? "No account? " : "Already have an account? "}
               </span>
-              <button onClick={() => { setAuthMode(authMode === "login" ? "signup" : "login"); setAuthError(""); }} style={{
+              <button onClick={() => { setAuthMode(authMode === "login" ? "signup" : "login"); setAuthError(""); setAuthSuccess(""); }} style={{
                 background: "none", border: "none", color: "#e8b840", fontSize: 13, cursor: "pointer", textDecoration: "underline", padding: 0,
               }}>
                 {authMode === "login" ? "Sign up free" : "Sign in"}

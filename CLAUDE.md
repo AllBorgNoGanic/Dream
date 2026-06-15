@@ -1,6 +1,6 @@
 # Dream Shepherd
 
-A Christian-themed dream journal and AI-interpretation app. Mobile-first PWA plus native iOS and Android (via Capacitor). Lets users record dreams, get AI interpretations grounded in symbol detection and a small dream dictionary, share to a public community feed, track sleep and lucid dreaming, and visualize patterns over time.
+A Christian-themed dream journal and AI-interpretation app. Mobile-first PWA plus native iOS and Android (via Capacitor). Lets users record dreams (including via voice), get AI interpretations grounded in symbol detection and a dream dictionary, share to a public community feed, pray over interpretations, track sleep and lucid dreaming, visualize patterns over time, and receive daily devotionals tied to the liturgical calendar.
 
 - Production: https://dreamshepherd.app (Vercel)
 - Capacitor app id: `app.dreamshepherd`
@@ -12,10 +12,10 @@ A Christian-themed dream journal and AI-interpretation app. Mobile-first PWA plu
 - **Styling**: All inline CSS via `style={{ ... }}`. No Tailwind, no CSS modules, no styled-components. The only stylesheet is `src/index.css` (resets, keyframes injected by individual components into `document.head`)
 - **UI primitives**: Radix UI (`@radix-ui/react-dialog`, `react-alert-dialog`, `react-select`, `react-switch`, `react-tabs`, `react-tooltip`)
 - **Backend**: Supabase (Postgres, auth, RLS). Schema in `supabase-schema.sql` is idempotent (uses `ALTER TABLE ADD COLUMN IF NOT EXISTS` for every non-PK column so it can be re-run safely)
-- **AI**: Anthropic API called directly from the frontend with `VITE_ANTHROPIC_API_KEY`
-- **Payments**: Stripe ($5.99 / month Pro tier). Currently inactive (keys empty in `.env`); the paywall code paths exist but are not yet live
-- **Mobile**: Capacitor 8 (`@capacitor/ios`, `@capacitor/android`, `@capacitor/haptics`, `@capacitor/splash-screen`, `@capacitor/status-bar`)
-- **Serverless**: Vercel functions in `api/` (Stripe checkout, billing portal, share recording, Stripe webhook)
+- **AI**: Anthropic API called via Supabase edge functions (`interpret-dream`, `generate-dream-image`)
+- **Payments**: RevenueCat Capacitor SDK (`@revenuecat/purchases-capacitor@13.1.2`). Entitlement `Dreamshepherd Pro`, offering `default` with `$rc_monthly` ($7.99/mo) and `$rc_annual` ($59.99/yr). Custom on-brand paywall (not RC hosted). Server webhook at `api/revenuecat-webhook.js` syncs `is_pro` to Supabase. Legacy Stripe paths exist in `api/` but are inactive (keys empty in `.env`).
+- **Mobile**: Capacitor 8 (`@capacitor/ios`, `@capacitor/android`, `@capacitor/haptics`, `@capacitor/splash-screen`, `@capacitor/status-bar`, `@capacitor-community/speech-recognition`)
+- **Serverless**: Vercel functions in `api/` (RevenueCat webhook, account deletion, share recording, plus inactive Stripe functions)
 - **Asset generation**: `@capacitor/assets` plus `sharp` via `scripts/generate-assets.mjs` (composes SVGs with star backgrounds and golden gradients into iOS, Android, and web icon/splash sets)
 - **Storage**: Supabase remote. Local IndexedDB queue for offline dream creation and a cached dream list (see `src/lib/offlineStore.js`)
 - **Other**: `jspdf` for PDF export, service worker for PWA install (registers only in `import.meta.env.PROD`; auto-unregisters in dev)
@@ -30,45 +30,62 @@ src/
   index.css             resets and a few global keyframes
   components/
     StarField.jsx           220 procedurally placed stars + Star of Bethlehem (upper left)
-    DreamForm.jsx           dream creation/edit form
+    ShepherdMark.jsx        shepherd logo component (used in header + upgrade modal)
+    DreamForm.jsx           dream creation/edit form (includes VoiceCapture + DreamSwitch)
     DreamCard.jsx           list-row with kebab menu + long-press action sheet, status badges
     DreamActionSheet.jsx    Radix Dialog styled as bottom sheet for per-dream actions
     DreamSelect.jsx         Radix Select wrapper themed for the app
     DreamSwitch.jsx         Radix Switch wrapper
+    VoiceCapture.jsx        speech-to-text dream entry modal (Radix Dialog, mic pulse animation)
     SearchBar.jsx           search + date range + interp filter + sort + clear + result count
-    StreakBanner.jsx        7-day calendar, streak-loss state, motivational CTAs
-    PatternsTab.jsx         insights/guidance ("Advice", not "Wisdom"), color-coded cards
-    CommunityTab.jsx        public-feed of shared dreams, like, view interpretation
+    StreakBanner.jsx         7-day calendar, streak-loss state, motivational CTAs
+    MorningCard.jsx         daily devotional card (verse, reflection, record CTA, liturgical season tinting)
+    SundayRecap.jsx         weekly Sunday summary (top symbol, mood, longest dream, AI synthesis, verse)
+    PatternsTab.jsx         insights/guidance ("Advice"), color-coded cards, CalendarHeatmap, sub-tabs
+    CalendarHeatmap.jsx     52-week GitHub-style activity heatmap + monthly bar chart
+    CommunityTab.jsx        public feed of shared dreams, like, view interpretation
     DictionaryTab.jsx       built-in symbol dictionary
-    GalleryTab.jsx          gallery view of dream art/visualizations
-    CalendarHeatmap.jsx     activity heatmap
-    OnboardingQuiz.jsx      9-screen DreamApp-style flow (welcome -> highlights -> goal -> frequency -> interests -> wake time -> processing -> archetype result)
-    ProfileTab.jsx          settings + account, includes Sign out with AlertDialog confirmation
+    GalleryTab.jsx          gallery view of dream art/visualizations (rendered inside ProfileTab)
+    OnboardingQuiz.jsx      3-step flow: welcome -> dream entry -> AI reveal
+    ProfileTab.jsx          settings + account + gallery subsection, includes Sign out with AlertDialog
+    PersonalizationCard.jsx settings card showing sleep/emotional/theme personalization state
+    PersonalizationModal.jsx modal to edit personalization (sleep quality, stress, mood, themes)
     FirstTimeJourney.jsx    empty-state walkthrough: Capture / Reflect / Discover
-    InterpretationOverlay.jsx full-screen waiting state with orbiting particles, 4 cycling stage labels every 3500ms
-    ReadingModal.jsx        modal showing interpretation + theme connections
-    ExportPDF.jsx           jspdf export of journal
+    InterpretationOverlay.jsx full-screen waiting state with orbiting particles, cycling stage labels
+    ReadingModal.jsx        modal showing interpretation + theme connections + prayer trigger
+    PrayerOverlay.jsx       prayer experience (cross pulse animation, ascending effect)
+    ExportPDF.jsx           jspdf export of journal (used in ProfileTab)
     ShareButton.jsx         share to community
+    ReportDialog.jsx        content reporting modal for community moderation (used in ReadingModal)
     OfflineBanner.jsx       offline / syncing / pending-sync states
     Skeleton.jsx            shimmer loaders (gold-tinted)
     Toast.jsx               ToastProvider + useToast() + ToastContainer
     ErrorBoundary.jsx       class-based, themed fallback, dev-only stack
   hooks/
-    useLongPress.js         pointerdown timer + move-threshold cancel; @capacitor/haptics dynamic import with web Vibration API fallback
+    useLongPress.js         pointerdown timer + move-threshold cancel; @capacitor/haptics with web Vibration API fallback
     useOffline.js           navigator.onLine + queue/sync orchestration
+    useSpeechRecognition.js speech recognition hook for VoiceCapture
   lib/
     supabase.js             createClient with VITE_SUPABASE_URL + VITE_SUPABASE_ANON_KEY
     offlineStore.js         IndexedDB helpers (no deps): pending dreams + dream list cache
+    revenuecat.js           RevenueCat SDK wrapper: configure, login/logout, entitlement checks,
+                            package fetching, direct purchase, restore, customer center, entitlement listener.
+                            Web is a hard no-op (subscriptions are mobile-only).
   utils/
     moderation.js           text moderation helpers for community posts
+    liturgicalSeason.js     Western liturgical calendar detection (Advent, Christmas, Epiphany, Lent,
+                            Easter, Ordinary) with accent colors and AI interpretation hints
+
   constants/
-    archetypes.js           archetype definitions, deriveArchetype(goal, interests) weighted scoring
+    devotionals.js          daily devotional content for MorningCard + SundayRecap
 
 api/                       Vercel serverless functions
-  create-checkout-session.js
-  create-portal-session.js
-  record-share.js
-  webhook.js                Stripe webhook handler
+  revenuecat-webhook.js     RevenueCat -> Supabase entitlement sync (is_pro on purchase/renewal/expiration/refund)
+  delete-account.js         account deletion endpoint
+  record-share.js           community share bonus (grants bonus interpretations, cooldown-gated)
+  create-checkout-session.js  Stripe checkout (inactive, keys empty)
+  create-portal-session.js    Stripe billing portal (inactive)
+  webhook.js                  Stripe webhook handler (inactive)
 
 supabase/migrations/        SQL migrations beyond the base schema
 supabase-schema.sql         full idempotent schema (run in Supabase SQL editor)
@@ -105,7 +122,7 @@ Vercel auto-deploys from the `master` branch. `vercel.json` declares `framework:
 
 ## Conventions and gotchas
 
-- **No em dashes anywhere in user-facing text.** Use periods, commas, parens, or words like "such as", "like", "because", "including". This applies to UI copy, dream meanings, directions, error messages, marketing copy. (See `~/.claude/projects/-Users-seansmith-Dream/memory/feedback_no_em_dashes.md`.)
+- **No em dashes anywhere in user-facing text.** Use periods, commas, parens, or words like "such as", "like", "because", "including". This applies to UI copy, dream meanings, directions, error messages, marketing copy.
 - **Inline CSS only.** New styling goes in `style={{}}` props or in component-local keyframe blocks injected into `document.head` once via `if (!document.getElementById(STYLE_ID))` pattern (see `ProfileTab.jsx` `PROFILE_DIALOG_STYLES_ID` for the canonical example).
 - **Brand palette**:
   - `#04001a` (NAVY_BG, the canonical app background)
@@ -129,30 +146,77 @@ Vercel auto-deploys from the `master` branch. `vercel.json` declares `framework:
 ### Auth and accounts
 - Email/password via Supabase auth
 - `user_settings` row created on first login; `onboarding_completed` gates the quiz
+- Account deletion via `api/delete-account.js`
+
+### Navigation (5 tabs)
+Bottom tab bar with custom SVG/image icons, haptic feedback on tap (Capacitor native only), press-scale animation:
+
+| Order | Tab | ID | Renders |
+|---|---|---|---|
+| 1 | Community | `community` | CommunityTab |
+| 2 | Patterns | `insights` | PatternsTab |
+| 3 | Journal | `journal` | Dream list (center, default) |
+| 4 | Library | `library` | DictionaryTab |
+| 5 | Profile | `profile` | ProfileTab (includes Gallery subsection) |
 
 ### Dream entry
 - 50-character minimum on dream description
 - Optional fields: mood, theme, tags, characters
+- **Voice capture**: speech-to-text via `VoiceCapture` component (uses `useSpeechRecognition` hook + `@capacitor-community/speech-recognition`)
 - Symbol detection runs on title + description against `DREAM_DICTIONARY` (word-boundary regex)
 - Lucid dreaming subform: `is_lucid`, `lucidity_level`, `dream_signs`, `lucid_trigger`, `lucid_activity`, `lucid_duration`
 - Sleep tracking: `bed_time`, `wake_time`, `sleep_quality`, computed `sleep_hours`
 
 ### AI interpretation
-- 5 free interpretations per user
+- 5 free interpretations per user (`FREE_INTERPRETATIONS`)
 - Up to 3 bonus interpretations from sharing dreams to community (`MAX_SHARE_BONUS`)
-- Pro tier ($5.99 / month) for unlimited (Stripe-gated, currently inactive)
+- 2 free image generations (`FREE_IMAGE_LIMIT`)
+- Pro tier ($7.99/mo or $59.99/yr) for unlimited (RevenueCat-gated)
 - Interpretation cross-references generated themes against the dream's text, surfaces theme connections under the result
 - Viewing an existing interpretation from the community tab does NOT consume a free interpretation
-- A separate paid path lets users spend a free interpretation on their own dream and skip community sharing
+- Liturgical season context (`getSeasonAiHint`) is appended to AI interpretation prompts
+
+### Prayer
+- `PrayerOverlay` component triggered from `ReadingModal` after viewing an interpretation
+- Full-screen Radix Dialog with cross pulse animation, ascending/dissolving prayer effect
+- Contemplative, non-interactive experience (no text input)
+
+### Devotionals and liturgical calendar
+- `MorningCard`: daily devotional card at top of Journal tab. Shows verse, short reflection, "yesterday's dream" callback, and record CTA. Dismissable per local day. Uses liturgical season accent colors.
+- `SundayRecap`: weekly summary card on Sunday mornings. Summarizes past 7 days: top symbol, dominant mood, longest dream, one-sentence AI synthesis, and a verse for the week ahead.
+- `liturgicalSeason.js`: detects Advent, Christmas, Epiphany, Lent, Easter, and Ordinary Time via the Meeus/Jones/Butcher Easter algorithm. Returns season name, accent color scheme, and an AI hint string.
+- `devotionals.js`: daily devotional content keyed by date for MorningCard and SundayRecap.
+
+### Personalization
+- `PersonalizationCard` (in ProfileTab): shows current sleep quality, stress level, mood, and recurring themes
+- `PersonalizationModal`: multi-step editor for updating personalization data
+- Data stored in `user_settings.archetype_data` (sleep, emotional, recurringThemes fields)
 
 ### Patterns tab
-- Insights / Ongoing Guidance cards: label, color-coded strength badge, quoted representative guidance, dream count, last date, contributing titles
-- "Advice" header (was "Wisdom"; renamed)
+- Sub-tabbed: Overview, Symbols, Advice
+- Overview: CalendarHeatmap (52-week activity + monthly bar chart), aggregated stats with deltas, streak/recall metrics
+- Symbols: concept frequency from AI-generated themes + word-boundary dictionary scan
+- Advice ("Ongoing guidance"): clustered insights scored by frequency x recency (requires >= 10 dreams and >= 3 occurrences of a concept). Lucid dreaming "Tonight's reality checks" card.
+- Drill-down bottom sheets (Radix Dialog) with "View all in Journal" navigation
+- All client-side computation (zero AI calls per render)
 
 ### Community tab
 - Public feed of shared dreams
 - "View interpretation" button only appears on posts that have an interpretation
 - Likes (`dream_likes` table)
+- Content reporting via `ReportDialog`
+
+### Payments (RevenueCat)
+- RevenueCat Capacitor SDK with custom on-brand paywall modal (not RC hosted paywall)
+- Entitlement: `Dreamshepherd Pro`
+- Offering: `default` with packages `$rc_monthly` ($7.99/mo) and `$rc_annual` ($59.99/yr, "Save 37%")
+- Platform-aware SDK key: `VITE_REVENUECAT_IOS_KEY` (appl_) for iOS, `VITE_REVENUECAT_ANDROID_KEY` (goog_) for Android, falls back to `VITE_REVENUECAT_API_KEY`
+- SDK configured on sign-in (`configureRevenueCat(user.id)`), logged out on sign-out
+- Entitlement change listener mirrors `is_pro` to Supabase in real time
+- Server webhook (`api/revenuecat-webhook.js`) handles renewals/expirations/refunds while app is closed. Secured via `REVENUECAT_WEBHOOK_AUTH` header. Registered at `https://dreamshepherd.app/api/revenuecat-webhook`.
+- Web users see the modal but are told subscriptions are available in the native app
+- Restore purchases + Customer Center (RC hosted subscription management) available from ProfileTab
+- Legacy Stripe server functions in `api/` still exist but are inactive (keys empty)
 
 ### Streaks
 - 7-day mini calendar in the StreakBanner
@@ -160,46 +224,46 @@ Vercel auto-deploys from the `master` branch. `vercel.json` declares `framework:
 - streakLost state when streak=0 and lastDate < yesterday
 - Motivational CTA to record a new dream
 
-### Onboarding quiz (9 screens)
-1. Welcome (sheep emoji + Get Started)
-2. Feature highlight: Journal
-3. Feature highlight: Patterns
-4. Goal selection (6 single-select pills)
-5. Dream frequency (2x2 grid)
-6. Interest chips (8 multi-select, >= 1 required)
-7. Wake time picker (with skip)
-8. Processing animation (auto-advance after 2.5s)
-9. Archetype result + Begin Journaling CTA
+### Onboarding quiz (3 steps)
+1. Welcome screen
+2. Dream entry (user writes their first dream)
+3. AI reveal (post-auth: shows AI interpretation of the entered dream) / bridge screen (pre-auth: directs to sign up)
 
-`onComplete` payload: `{ archetype, archetypeData, interests, dreamGoal, dreamFrequency, wakeTime }` and stored on `user_settings`.
+`onComplete` payload: `{ displayName, profile, sleep, emotional, recurringThemes, recentDream, interpretation, aiThemes }` stored on `user_settings.archetype_data`. Skip path sends empty defaults with `skipped: true`.
 
 ### Offline
 - Failed `handleSubmit` mid-request queues the dream to IndexedDB
 - `OfflineBanner` shows offline / syncing / pending-online states
 - `useOffline` exposes `isOnline`, `pendingCount`, `syncing`, `queueDream`, `syncAll`, `cacheDreamList`, `loadCachedDreams`
-- `DreamCard` renders a "☁️ Pending sync" badge when `dream._offlineCreated`
+- `DreamCard` renders a "Pending sync" badge when `dream._offlineCreated`
 
 ### UX polish
 - Long-press on a DreamCard or kebab "..." button opens `DreamActionSheet` (Radix Dialog as bottom sheet)
 - Haptic feedback on long press (Capacitor Haptics where available, web Vibration API fallback)
+- Haptic feedback on tab switches (native only, ImpactStyle.Light)
 - `FirstTimeJourney` 3-step empty state for new users (Capture / Reflect / Discover)
-- `InterpretationOverlay` full-screen waiting state for AI calls (orbiting particles, 4 rotating contemplative phrases at 3500ms cadence)
-- Sign out lives in `ProfileTab` (not the header) and is gated by an AlertDialog confirmation with copy: "Your dreams are saved to your account. You can sign back in any time to pick up where you left off."
+- `InterpretationOverlay` full-screen waiting state for AI calls (orbiting particles, rotating contemplative phrases)
+- Sign out lives in `ProfileTab` (not the header) and is gated by an AlertDialog confirmation
+- Press-scale animation on tab buttons (scale 0.92 on touch/mouse down)
 
 ### Visual identity
 - 220 stars in `StarField`, plus a Star of Bethlehem in upper left
 - Star of Bethlehem rays use `radial-gradient(ellipse)` on narrow divs with `borderRadius: "50%"` to get naturally tapered points (vertical 320px, horizontal 90px, diagonal 60px)
+- `ShepherdMark` component renders the shepherd logo at configurable sizes
 - Recoloring monochrome SVGs to gold uses CSS filter:
   ```
   filter: brightness(0) saturate(100%) invert(78%) sepia(40%) saturate(600%) hue-rotate(5deg) brightness(95%);
   ```
   Inactive variant is the same with brightness reduced.
 - The shepherd SVG is the Journal tab icon. Source SVG must have `fill="#000000"` for the CSS filter recolor to work.
+- Liturgical seasons subtly tint MorningCard and SundayRecap with season-appropriate accent colors.
 
 ## Open items and not-yet-done
 
-- **Stripe paywall is inactive.** `VITE_STRIPE_PUBLIC_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` are empty in `.env`. Server functions in `api/` exist but `webhook.js` will fail without the webhook secret. The free interpretation counter and Pro flag are wired through; only the actual checkout path is dark.
-- **App Store / Play Store**: Capacitor scaffolding is in place. iOS targets a launchScreen with backgroundColor `#04001a`; Android assets generated via `npm run assets`. Submission is open.
+- **Apple Paid Apps agreement**: must be Active in App Store Connect (Business -> Agreements) before products load in the app. Banking, Tax (W-9), and DSA Trader verification required.
+- **Sandbox purchase test**: once the Paid Apps agreement is active, test the full purchase flow on a device with a Sandbox Apple ID.
+- **Google Play**: Android Capacitor project is synced and ready, but no Play Console listing or `goog_` key configured yet.
+- **Legacy Stripe functions**: `api/create-checkout-session.js`, `api/create-portal-session.js`, and `api/webhook.js` exist but are inactive. Can be removed once RevenueCat is confirmed working in production.
 - The dream list pagination is "20 at a time with Load More"; if community feed gets large, consider applying the same pattern there.
 
 ## Common recipes
@@ -214,7 +278,7 @@ Edit `DREAM_DICTIONARY` in `src/App.jsx`. Use a single lowercase keyword. Plural
 4. Update reads/writes in `src/App.jsx` and any relevant components.
 
 ### Add a new tab
-Tabs are conditionally rendered inside `App.jsx`. Add a key to the tab array, an icon, an active-state CSS filter, and the conditional render block. Six tabs is the current target (Journal, Patterns, Lucid, Community, Dict, Profile). Adding a 7th means re-spacing the bottom nav.
+Tabs are conditionally rendered inside `App.jsx`. Add a key to the `tabs` array (line ~1354), a case in `TabIcon`, and the conditional render block. Currently 5 tabs (Community, Patterns, Journal, Library, Profile). Adding a 6th means re-spacing the bottom nav.
 
 ### Generate icons and splash
 1. Update SVGs in `assets/` or the source SVG strings inside `scripts/generate-assets.mjs`.
@@ -226,22 +290,19 @@ Run the entire `supabase-schema.sql` in the Supabase SQL editor. It is safe to r
 
 ## File-by-file source-of-truth pointers
 
-- App-level state, dream CRUD, paywall counter, symbol detection: `src/App.jsx`
+- App-level state, dream CRUD, paywall counter, symbol detection, tab nav: `src/App.jsx`
 - Visual style of stars and orbs: `src/components/StarField.jsx`
-- Onboarding-flow shape and archetype derivation: `src/components/OnboardingQuiz.jsx` plus `src/constants/archetypes.js`
+- Onboarding flow: `src/components/OnboardingQuiz.jsx`
+- Devotional content: `src/constants/devotionals.js` + `src/components/MorningCard.jsx` + `src/components/SundayRecap.jsx`
+- Liturgical calendar: `src/utils/liturgicalSeason.js`
+- Personalization: `src/components/PersonalizationCard.jsx` + `src/components/PersonalizationModal.jsx`
+- Prayer experience: `src/components/PrayerOverlay.jsx`
+- Voice input: `src/components/VoiceCapture.jsx` + `src/hooks/useSpeechRecognition.js`
+- RevenueCat SDK wrapper: `src/lib/revenuecat.js`
 - Offline queue and cache: `src/lib/offlineStore.js` + `src/hooks/useOffline.js`
 - Long-press behavior and haptics: `src/hooks/useLongPress.js`
 - Asset pipeline: `scripts/generate-assets.mjs` (Capacitor + sharp + composed SVG)
 - Schema: `supabase-schema.sql`
-- Stripe and webhook: `api/create-checkout-session.js`, `api/create-portal-session.js`, `api/record-share.js`, `api/webhook.js`
-
-## Past sessions for deeper context
-
-The four most recent Claude Code sessions are stored as JSONL at `~/.claude/projects/-Users-seansmith-Dream/`. They cover, in order:
-
-1. `07008b6f-...jsonl` (Mar 12 to Mar 30): freemium paywall scaffolding with Stripe.
-2. `2b6be30f-...jsonl` (Mar 12 to Apr 19, 56 MB): the bulk of the build (rebrand from Dreamscape to Dream Shepherd, add competitive features, Star of Bethlehem, onboarding quiz redesign).
-3. `825565cb-...jsonl` (Apr 19 to Apr 20): toast system, error boundaries, pagination, search enhancements, offline support, skeletons, streak banner upgrade, sheep/shepherd icon work.
-4. `de13905b-...jsonl` (Apr 20 to Apr 24): UX polish round (FirstTimeJourney, InterpretationOverlay, DreamActionSheet, sign-out moved to settings with confirmation, app icon and splash via @capacitor/assets).
-
-Resume with `cd ~/Dream && claude` then `/resume` to read any of them in full.
+- RevenueCat webhook: `api/revenuecat-webhook.js`
+- Community share bonus: `api/record-share.js`
+- Account deletion: `api/delete-account.js`
