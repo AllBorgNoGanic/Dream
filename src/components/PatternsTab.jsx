@@ -222,14 +222,7 @@ function moodLabelOf(mood) {
 // ── Sub-components ──────────────────────────────────────────────────────────
 function RangeChips({ value, onChange }) {
   return (
-    <div
-      style={{
-        display: "flex",
-        gap: 6,
-        marginBottom: 12,
-        flexWrap: "wrap",
-      }}
-    >
+    <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
       {RANGES.map((r) => {
         const active = value === r.key;
         return (
@@ -237,14 +230,19 @@ function RangeChips({ value, onChange }) {
             key={r.key}
             onClick={() => onChange(r.key)}
             style={{
-              padding: "6px 14px",
-              borderRadius: 999,
-              border: `1px solid ${active ? "#e8b840" : "rgba(200,160,30,0.2)"}`,
-              background: active ? "rgba(232,184,64,0.15)" : "transparent",
-              color: active ? "#f5e4b0" : "#8a7540",
+              flex: 1,
+              padding: "8px 0",
+              borderRadius: 12,
+              cursor: "pointer",
               fontFamily: "Georgia, serif",
               fontSize: 13,
-              cursor: "pointer",
+              border: active
+                ? "1px solid rgba(200,150,255,0.6)"
+                : "1px solid rgba(200,160,30,0.2)",
+              background: active
+                ? "linear-gradient(135deg, rgba(120,60,220,0.5), rgba(80,30,180,0.5))"
+                : "rgba(8,16,28,0.5)",
+              color: active ? "#fff" : "#8a7540",
               transition: "all 0.15s",
             }}
           >
@@ -258,17 +256,7 @@ function RangeChips({ value, onChange }) {
 
 function SubTabBar({ value, onChange }) {
   return (
-    <div
-      style={{
-        display: "flex",
-        gap: 4,
-        padding: 4,
-        background: "rgba(6,12,22,0.6)",
-        border: "1px solid rgba(200,160,30,0.12)",
-        borderRadius: 14,
-        marginBottom: 18,
-      }}
-    >
+    <div style={{ display: "flex", gap: 4, marginBottom: 18 }}>
       {SUBTABS.map((t) => {
         const active = value === t.key;
         return (
@@ -279,22 +267,21 @@ function SubTabBar({ value, onChange }) {
               flex: 1,
               padding: "10px 8px",
               borderRadius: 10,
-              border: "none",
-              background: active ? "rgba(232,184,64,0.18)" : "transparent",
-              color: active ? "#f5e4b0" : "#8a7540",
-              fontFamily: "Georgia, serif",
-              fontSize: 14,
-              fontWeight: active ? 600 : 400,
               cursor: "pointer",
-              transition: "all 0.15s",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 6,
+              fontFamily: "Georgia, serif",
+              fontSize: 12,
+              textAlign: "center",
+              border: active
+                ? "1px solid rgba(144,102,212,0.5)"
+                : "1px solid rgba(200,160,30,0.15)",
+              background: active
+                ? "linear-gradient(135deg, rgba(120,60,220,0.35), rgba(80,30,180,0.3))"
+                : "rgba(8,16,28,0.4)",
+              color: active ? "#e0d0ff" : "#8a7540",
+              transition: "all 0.2s",
             }}
           >
-            <span style={{ fontSize: 14 }}>{t.icon}</span>
-            <span>{t.label}</span>
+            {t.icon} {t.label}
           </button>
         );
       })}
@@ -302,63 +289,107 @@ function SubTabBar({ value, onChange }) {
   );
 }
 
-function HorizontalBar({ label, value, maxValue, color, emoji, delta }) {
-  const pct = maxValue > 0 ? (value / maxValue) * 100 : 0;
+function SectionEyebrow({ children }) {
   return (
-    <div style={{ marginBottom: 10 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-        <span style={{ color: "#f5e4b0", fontFamily: "Georgia, serif", fontSize: 14 }}>
-          {emoji ? `${emoji} ` : ""}{label}
-        </span>
-        <span style={{ color: "#e8b840", fontFamily: "Georgia, serif", fontSize: 13 }}>
-          {value} ({pct.toFixed(0)}%)
-          {delta !== undefined && delta !== 0 && (
-            <span style={{
-              marginLeft: 6,
-              fontSize: 11,
-              color: delta > 0 ? "#7dd87d" : "#d87d7d",
-            }}>
-              {delta > 0 ? "↑" : "↓"}{Math.abs(delta)}
-            </span>
-          )}
-        </span>
-      </div>
-      <div style={{ height: 10, borderRadius: 5, background: "rgba(200,160,30,0.1)", overflow: "hidden" }}>
-        <div style={{
-          width: `${pct}%`,
-          height: "100%",
-          borderRadius: 5,
-          background: color || "linear-gradient(90deg, #6847c0, #9066d4)",
-          transition: "width 0.6s ease",
-        }} />
+    <div style={{
+      fontSize: 10,
+      letterSpacing: 1.5,
+      textTransform: "uppercase",
+      color: "#8a7540",
+      margin: "8px 0 12px",
+      fontFamily: "Georgia, serif",
+    }}>
+      {children}
+    </div>
+  );
+}
+
+function DistroBars({ title, data, accent, total }) {
+  const entries = Object.entries(data).sort((a, b) => b[1] - a[1]);
+  const max = Math.max(...entries.map((e) => e[1]), 1);
+  const fill = accent === "purple"
+    ? "linear-gradient(90deg, rgba(120,60,220,0.7), rgba(160,110,230,0.5))"
+    : "linear-gradient(90deg, rgba(232,184,64,0.7), rgba(232,184,64,0.4))";
+  return (
+    <div style={{ marginBottom: 22 }}>
+      <SectionEyebrow>{title} distribution</SectionEyebrow>
+      <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+        {entries.map(([k, v]) => (
+          <div key={k} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{
+              width: 96, fontSize: 11, color: "#8a7540", fontFamily: "Georgia, serif",
+              flexShrink: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+            }}>{k}</div>
+            <div style={{ flex: 1, height: 18, background: "rgba(8,16,28,0.6)", borderRadius: 9, overflow: "hidden" }}>
+              <div style={{
+                width: `${(v / max) * 100}%`, height: "100%",
+                background: fill, borderRadius: 9,
+                transition: "width 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+              }} />
+            </div>
+            <div style={{ width: 18, textAlign: "right", fontSize: 11, color: "#6b5c30" }}>{v}</div>
+          </div>
+        ))}
       </div>
     </div>
   );
 }
 
-function StatCard({ label, value, icon, sub, delay }) {
+function CompactDayOfWeek({ dayOfWeekCounts }) {
+  const max = Math.max(...Object.values(dayOfWeekCounts), 1);
+  return (
+    <div style={{ display: "flex", alignItems: "flex-end", gap: 6, height: 96, marginBottom: 22, padding: "0 2px" }}>
+      {DAYS.map((day) => {
+        const v = dayOfWeekCounts[day] || 0;
+        return (
+          <div key={day} style={{
+            flex: 1, display: "flex", flexDirection: "column",
+            alignItems: "center", gap: 6, height: "100%", justifyContent: "flex-end",
+          }}>
+            <div style={{ fontSize: 10, color: "#6b5c30" }}>{v || ""}</div>
+            <div style={{
+              width: "100%",
+              height: `${(v / max) * 70}px`,
+              minHeight: v ? 4 : 2,
+              background: v
+                ? "linear-gradient(180deg, rgba(232,184,64,0.6), rgba(160,110,230,0.4))"
+                : "rgba(200,160,30,0.08)",
+              borderRadius: 5,
+            }} />
+            <div style={{ fontSize: 9, color: "#4a3f20" }}>{day[0]}</div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function CompactStatCard({ label, value, icon, sub, small }) {
   return (
     <div style={{
-      ...cardBase,
-      padding: "16px 14px",
+      background: "rgba(10,16,28,0.7)",
+      border: "1px solid rgba(200,160,30,0.12)",
+      borderRadius: 12,
+      padding: "12px 10px",
       textAlign: "center",
-      animation: `fadeInPatterns 0.5s ease ${delay || 0}s both`,
-      minWidth: 0,
     }}>
-      <div style={{ fontSize: 24, marginBottom: 4 }}>{icon}</div>
+      <div style={{ fontSize: 18, marginBottom: 5 }}>{icon}</div>
       <div style={{
-        fontFamily: "Georgia, serif",
-        fontSize: 20,
+        fontSize: small ? 14 : 20,
         color: "#f5e4b0",
-        fontWeight: "bold",
-        marginBottom: 2,
-        wordBreak: "break-word",
+        fontFamily: "Georgia, serif",
+        lineHeight: 1.1,
       }}>
         {value}
       </div>
-      <div style={{ ...subText, fontSize: 11 }}>{label}</div>
+      <div style={{
+        fontSize: 9.5, color: "#6b5c30", letterSpacing: 0.5,
+        textTransform: "uppercase", marginTop: 3,
+      }}>
+        {label}
+      </div>
       {sub && (
-        <div style={{ ...subText, fontSize: 10, marginTop: 3, color: "#a07c3a" }}>{sub}</div>
+        <div style={{ fontSize: 9, color: "#4a3f20", marginTop: 1 }}>{sub}</div>
       )}
     </div>
   );
@@ -506,21 +537,6 @@ export default function PatternsTab({ dreams, onNavigateJournal }) {
     return sortedDreams.filter((d) => new Date(d.created_at) >= cutoff);
   }, [sortedDreams, range]);
 
-  // Previous-period dreams (for delta comparisons)
-  const prevPeriodDreams = useMemo(() => {
-    const r = RANGES.find((x) => x.key === range);
-    if (!r || !r.days) return [];
-    const end = new Date();
-    end.setHours(0, 0, 0, 0);
-    end.setDate(end.getDate() - r.days);
-    const start = new Date(end);
-    start.setDate(start.getDate() - (r.days - 1));
-    return sortedDreams.filter((d) => {
-      const t = new Date(d.created_at);
-      return t >= start && t <= end;
-    });
-  }, [sortedDreams, range]);
-
   // Concept (symbol/theme) extraction from rangedDreams
   const conceptStats = useMemo(() => {
     // Map: conceptKey -> { display, emoji, meaning, dreamIds: Set, moodCounts: {} }
@@ -595,15 +611,6 @@ export default function PatternsTab({ dreams, onNavigateJournal }) {
       sleepCount,
     };
   }, [rangedDreams]);
-
-  // Previous-period mood counts (for deltas)
-  const prevMoodCounts = useMemo(() => {
-    const m = {};
-    prevPeriodDreams.forEach((d) => {
-      if (d.mood) m[d.mood] = (m[d.mood] || 0) + 1;
-    });
-    return m;
-  }, [prevPeriodDreams]);
 
   // Derived
   const streaks = useMemo(() => computeStreak(sortedDreams), [sortedDreams]);
@@ -769,19 +776,6 @@ export default function PatternsTab({ dreams, onNavigateJournal }) {
   // Header derived
   const topMood = Object.entries(aggregates.moodCounts).sort((a, b) => b[1] - a[1])[0];
   const totalSymbols = conceptStats.reduce((acc, c) => acc + c.count, 0);
-  const maxDayCount = Math.max(...Object.values(aggregates.dayOfWeekCounts), 1);
-
-  const moodColors = [
-    "linear-gradient(90deg, #6847c0, #9066d4)",
-    "linear-gradient(90deg, #5a3aa0, #7b5cb8)",
-    "linear-gradient(90deg, #4c2e90, #6847c0)",
-    "linear-gradient(90deg, #3e2280, #5a3aa0)",
-    "linear-gradient(90deg, #301870, #4c2e90)",
-    "linear-gradient(90deg, #281060, #3e2280)",
-    "linear-gradient(90deg, #462090, #8050c0)",
-    "linear-gradient(90deg, #5530a8, #9066d4)",
-  ];
-
   const handleViewInJournal = (query) => {
     if (onNavigateJournal) onNavigateJournal({ search: query });
   };
@@ -846,157 +840,81 @@ export default function PatternsTab({ dreams, onNavigateJournal }) {
           </div>
         </div>
       ) : subtab === "overview" ? (
-        <>
-          {/* Hero stat row */}
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))",
-            gap: 12,
-            marginBottom: 22,
-          }}>
-            <StatCard icon="📖" label="Dreams" value={rangedDreams.length} delay={0} />
-            <StatCard
+        <div className="ds-patterns-reveal" style={{ animation: "fadeInPatterns 0.5s ease both" }}>
+          {/* Compact stat grid */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 22 }}>
+            <CompactStatCard icon="🌙" label="Dreams" value={rangedDreams.length} />
+            <CompactStatCard
               icon="🔥"
-              label="Current streak"
-              value={`${streaks.current}d`}
-              sub={streaks.longest > streaks.current ? `Longest ${streaks.longest}d` : null}
-              delay={0.05}
+              label="Day streak"
+              value={streaks.current}
+              sub={streaks.longest > streaks.current ? `Best ${streaks.longest}` : null}
             />
-            <StatCard
+            <CompactStatCard
               icon={topMood ? topMood[0].split(" ")[0] : "💭"}
               label="Top mood"
               value={topMood ? moodLabelOf(topMood[0]) : "N/A"}
-              sub={topMood ? `${Math.round((topMood[1] / rangedDreams.length) * 100)}% of dreams` : null}
-              delay={0.1}
+              small
             />
-            {recallRate !== null && (
-              <StatCard
-                icon="📅"
-                label="Recall rate"
-                value={`${recallRate}%`}
-                sub={`days with a dream`}
-                delay={0.15}
-              />
-            )}
-            <StatCard icon="🔣" label="Symbols" value={totalSymbols} delay={0.2} />
-            {aggregates.avgSleep && (
-              <StatCard icon="😴" label="Avg sleep" value={aggregates.avgSleep} sub="of 5 stars" delay={0.25} />
+            <CompactStatCard
+              icon="📖"
+              label="Interpreted"
+              value={`${rangedDreams.length > 0 ? Math.round((rangedDreams.filter((d) => d.interpretation).length / rangedDreams.length) * 100) : 0}%`}
+            />
+            <CompactStatCard icon="🔣" label="Symbols" value={totalSymbols} />
+            {aggregates.avgSleep ? (
+              <CompactStatCard icon="😴" label="Avg sleep" value={aggregates.avgSleep} />
+            ) : recallRate !== null ? (
+              <CompactStatCard icon="📅" label="Recall" value={`${recallRate}%`} />
+            ) : (
+              <CompactStatCard icon="📅" label="Recall" value="—" />
             )}
           </div>
 
-          {/* Mood distribution with delta */}
-          <div style={{ ...cardBase, marginBottom: 22 }}>
-            <h3 style={sectionTitle}>Mood distribution</h3>
-            {Object.keys(aggregates.moodCounts).length === 0 ? (
-              <div style={subText}>No mood data recorded in this range.</div>
-            ) : (
-              Object.entries(aggregates.moodCounts)
-                .sort((a, b) => b[1] - a[1])
-                .map(([mood, count], i) => (
-                  <HorizontalBar
-                    key={mood}
-                    label={moodLabelOf(mood)}
-                    emoji={mood.split(" ")[0]}
-                    value={count}
-                    maxValue={rangedDreams.length}
-                    color={moodColors[i % moodColors.length]}
-                    delta={range !== "all" ? count - (prevMoodCounts[mood] || 0) : undefined}
-                  />
-                ))
-            )}
-          </div>
+          {/* Mood distribution */}
+          {Object.keys(aggregates.moodCounts).length > 0 && (
+            <DistroBars title="Mood" data={aggregates.moodCounts} accent="gold" total={rangedDreams.length} />
+          )}
 
           {/* Theme distribution */}
           {Object.keys(aggregates.themeCounts).length > 0 && (
-            <div style={{ ...cardBase, marginBottom: 22 }}>
-              <h3 style={sectionTitle}>Theme distribution</h3>
-              {Object.entries(aggregates.themeCounts)
-                .sort((a, b) => b[1] - a[1])
-                .map(([theme, count], i) => (
-                  <HorizontalBar
-                    key={theme}
-                    label={theme}
-                    value={count}
-                    maxValue={rangedDreams.length}
-                    color={moodColors[i % moodColors.length]}
-                  />
-                ))}
-            </div>
+            <DistroBars title="Theme" data={aggregates.themeCounts} accent="purple" total={rangedDreams.length} />
           )}
 
-          {/* Sleep correlation (flipped framing) */}
-          {sleepCorrelation.ratio && (
-            <div style={{ ...cardBase, marginBottom: 22 }}>
-              <h3 style={sectionTitle}>Sleep & mood</h3>
-              <div style={{
-                background: "rgba(144,102,212,0.1)",
-                border: "1px solid rgba(144,102,212,0.25)",
-                borderRadius: 12,
-                padding: "14px 16px",
-                marginBottom: 12,
-                color: "#f5e4b0",
-                fontSize: 15,
-                lineHeight: 1.5,
-              }}>
-                When you sleep well (4 to 5 stars), your dreams are{" "}
-                <strong style={{ color: "#e8b840" }}>{sleepCorrelation.ratio}x more positive</strong>{" "}
-                than after poor sleep.
-              </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                <div style={{
-                  padding: "12px 14px",
-                  background: "rgba(125,216,125,0.08)",
-                  border: "1px solid rgba(125,216,125,0.2)",
-                  borderRadius: 10,
-                }}>
-                  <div style={{ ...subText, fontSize: 11, marginBottom: 4 }}>Good sleep</div>
-                  <div style={{ color: "#f5e4b0", fontSize: 22, fontWeight: 600 }}>{sleepCorrelation.highPct ?? 0}%</div>
-                  <div style={{ ...subText, fontSize: 11 }}>positive moods</div>
-                </div>
-                <div style={{
-                  padding: "12px 14px",
-                  background: "rgba(216,125,125,0.08)",
-                  border: "1px solid rgba(216,125,125,0.2)",
-                  borderRadius: 10,
-                }}>
-                  <div style={{ ...subText, fontSize: 11, marginBottom: 4 }}>Poor sleep</div>
-                  <div style={{ color: "#f5e4b0", fontSize: 22, fontWeight: 600 }}>{sleepCorrelation.lowPct ?? 0}%</div>
-                  <div style={{ ...subText, fontSize: 11 }}>positive moods</div>
-                </div>
-              </div>
-            </div>
-          )}
+          {/* Day of week */}
+          <SectionEyebrow>Dreams by day of week</SectionEyebrow>
+          <CompactDayOfWeek dayOfWeekCounts={aggregates.dayOfWeekCounts} />
 
-          {/* Weekly day pattern */}
-          <div style={{ ...cardBase, marginBottom: 22 }}>
-            <h3 style={sectionTitle}>Day of week</h3>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 8 }}>
-              {DAYS.map((day) => {
-                const count = aggregates.dayOfWeekCounts[day];
-                const height = maxDayCount > 0 ? (count / maxDayCount) * 100 : 0;
-                return (
-                  <div key={day} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-                    <div style={{ height: 80, width: "100%", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
-                      <div style={{
-                        width: "70%",
-                        height: `${Math.max(height, 4)}%`,
-                        background: "linear-gradient(180deg, #9066d4, #5a3aa0)",
-                        borderRadius: "6px 6px 2px 2px",
-                        transition: "height 0.5s ease",
-                        minHeight: 4,
-                      }} />
-                    </div>
-                    <div style={{ color: "#e8b840", fontFamily: "Georgia, serif", fontSize: 12 }}>{count}</div>
-                    <div style={{ color: "#6b5c30", fontFamily: "Georgia, serif", fontSize: 11 }}>{day}</div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Calendar heatmap (always all-time, ignores range) */}
+          {/* Calendar heatmap (always all-time) */}
+          <SectionEyebrow>Activity</SectionEyebrow>
           <CalendarHeatmap dreams={sortedDreams} />
-        </>
+
+          {/* Sleep & mood correlation */}
+          {sleepCorrelation.ratio && (
+            <div style={{
+              background: "linear-gradient(160deg, rgba(28,8,58,0.5), rgba(10,4,24,0.5))",
+              border: "1px solid rgba(144,102,212,0.25)",
+              borderRadius: 16,
+              padding: "14px 16px",
+              marginTop: 6,
+            }}>
+              <div style={{
+                fontSize: 10, letterSpacing: 1, textTransform: "uppercase",
+                color: "#9066d4", marginBottom: 8,
+              }}>
+                Sleep & mood
+              </div>
+              <p style={{
+                fontSize: 13, color: "#f5e4b0", lineHeight: 1.6, margin: 0,
+                fontStyle: "italic", fontFamily: "Georgia, serif",
+              }}>
+                When you sleep well, your dreams are{" "}
+                <strong style={{ color: "#e8b840", fontStyle: "normal" }}>{sleepCorrelation.ratio}x</strong>{" "}
+                more likely to feel positive.
+              </p>
+            </div>
+          )}
+        </div>
       ) : subtab === "symbols" ? (
         <>
           {/* Top symbols - tappable */}

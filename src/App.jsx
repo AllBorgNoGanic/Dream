@@ -1778,6 +1778,20 @@ For scripture_refs, return 0 to 2 well-known verse references that genuinely con
                   />
                 </ErrorBoundary>
               </div>
+
+              {/* Profile footer */}
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "36px 0 20px" }}>
+                <ShepherdMark size={28} glow style={{ marginBottom: 10 }} />
+                <div style={{ fontSize: 13, color: "#8a7540", fontFamily: "Georgia, serif", marginBottom: 4 }}>
+                  Dream Shepherd
+                </div>
+                <div style={{ fontSize: 12, color: "#6b5c30", fontFamily: "Georgia, serif", fontStyle: "italic", marginBottom: 6 }}>
+                  Tend to your dreams like a shepherd
+                </div>
+                <div style={{ fontSize: 10, color: "#4a3a20", fontFamily: "Georgia, serif" }}>
+                  v1.0
+                </div>
+              </div>
             </ErrorBoundary>
           </div>
         )}

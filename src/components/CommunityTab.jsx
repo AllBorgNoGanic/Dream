@@ -30,13 +30,18 @@ const styles = {
   searchInput: {
     flex: 1,
     minWidth: 180,
-    padding: "10px 16px",
+    padding: "10px 16px 10px 40px",
     borderRadius: 16,
-    border: "1px solid rgba(200,160,30,0.15)",
-    background: "rgba(6,12,22,0.7)",
+    border: "1px solid rgba(200,160,30,0.35)",
+    background: "rgba(20,12,40,0.6)",
     color: "#f5e4b0",
     fontFamily: "Georgia, serif",
     fontSize: 16,
+    boxShadow: "0 0 16px rgba(232,184,64,0.06), inset 0 1px 0 rgba(232,184,64,0.06)",
+    backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238a7540' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E\")",
+    backgroundRepeat: "no-repeat",
+    backgroundPosition: "12px center",
+    backgroundSize: "16px",
     outline: "none",
   },
   select: {
@@ -211,13 +216,14 @@ const REPORT_REASONS = [
   "Other",
 ];
 
-function DreamCard({ dream, displayName, user, onBlock }) {
+function DreamCard({ dream, displayName, avatarUrl, user, onBlock }) {
   const [likes, setLikes] = useState([]);
   const [liked, setLiked] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [comments, setComments] = useState([]);
   const [commentText, setCommentText] = useState("");
   const [commentAuthors, setCommentAuthors] = useState({});
+  const [commentAvatars, setCommentAvatars] = useState({});
   const [loadingComments, setLoadingComments] = useState(false);
   const [showInterpretation, setShowInterpretation] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
@@ -269,14 +275,17 @@ function DreamCard({ dream, displayName, user, onBlock }) {
       if (userIds.length > 0) {
         const { data: settings } = await supabase
           .from("user_settings")
-          .select("user_id, display_name")
+          .select("user_id, display_name, avatar_url")
           .in("user_id", userIds);
         if (settings) {
-          const map = {};
+          const nameMap = {};
+          const avatarMap = {};
           settings.forEach((s) => {
-            map[s.user_id] = s.display_name;
+            nameMap[s.user_id] = s.display_name;
+            if (s.avatar_url) avatarMap[s.user_id] = s.avatar_url;
           });
-          setCommentAuthors(map);
+          setCommentAuthors(nameMap);
+          setCommentAvatars(avatarMap);
         }
       }
     }
@@ -372,7 +381,20 @@ function DreamCard({ dream, displayName, user, onBlock }) {
   return (
     <div style={styles.card}>
       <div style={styles.cardHeader}>
-        <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+        <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{
+            width: 28, height: 28, borderRadius: "50%", flexShrink: 0,
+            background: "linear-gradient(135deg, #7c3aed, #a855f7)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: 12, color: "#fff", fontFamily: "Georgia, serif",
+            overflow: "hidden",
+          }}>
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+            ) : (
+              (displayName || "A")[0].toUpperCase()
+            )}
+          </div>
           <span style={styles.displayName}>{displayName || "Anonymous Dreamer"}</span>
         </span>
         <span style={styles.date}>{formattedDate}</span>
@@ -554,11 +576,26 @@ function DreamCard({ dream, displayName, user, onBlock }) {
           ) : (
             comments.filter((c) => !c.report_count || c.report_count < 3).map((c) => (
               <div key={c.id} style={{ ...styles.commentItem, display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                <div style={{ flex: 1 }}>
-                  <div style={styles.commentAuthor}>
-                    {commentAuthors[c.user_id] || "Anonymous Dreamer"}
+                <div style={{ flex: 1, display: "flex", gap: 8, alignItems: "flex-start" }}>
+                  <div style={{
+                    width: 22, height: 22, borderRadius: "50%", flexShrink: 0, marginTop: 1,
+                    background: "linear-gradient(135deg, #7c3aed, #a855f7)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: 10, color: "#fff", fontFamily: "Georgia, serif",
+                    overflow: "hidden",
+                  }}>
+                    {commentAvatars[c.user_id] ? (
+                      <img src={commentAvatars[c.user_id]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                    ) : (
+                      (commentAuthors[c.user_id] || "A")[0].toUpperCase()
+                    )}
                   </div>
-                  <div style={styles.commentContent}>{c.content}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={styles.commentAuthor}>
+                      {commentAuthors[c.user_id] || "Anonymous Dreamer"}
+                    </div>
+                    <div style={styles.commentContent}>{c.content}</div>
+                  </div>
                 </div>
                 {user && c.user_id !== user.id && (
                   <button
@@ -610,6 +647,7 @@ function DreamCard({ dream, displayName, user, onBlock }) {
 export default function CommunityTab({ user, supabase: _sb }) {
   const [dreams, setDreams] = useState([]);
   const [displayNames, setDisplayNames] = useState({});
+  const [avatarUrls, setAvatarUrls] = useState({});
   const [blockedUsers, setBlockedUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -646,16 +684,21 @@ export default function CommunityTab({ user, supabase: _sb }) {
       setDreams(data);
       const userIds = [...new Set(data.map((d) => d.user_id))];
       if (userIds.length > 0) {
-        // Display names only — supporter status is intentionally not
+        // Display names and avatars — supporter status is intentionally not
         // surfaced in the community feed (every dream stands on its own).
         const { data: settings } = await supabase
           .from("user_settings")
-          .select("user_id, display_name")
+          .select("user_id, display_name, avatar_url")
           .in("user_id", userIds);
         if (settings) {
           const nameMap = {};
-          settings.forEach((s) => { nameMap[s.user_id] = s.display_name; });
+          const avatarMap = {};
+          settings.forEach((s) => {
+            nameMap[s.user_id] = s.display_name;
+            if (s.avatar_url) avatarMap[s.user_id] = s.avatar_url;
+          });
           setDisplayNames(nameMap);
+          setAvatarUrls(avatarMap);
         }
       }
     }
@@ -722,6 +765,7 @@ export default function CommunityTab({ user, supabase: _sb }) {
             key={dream.id}
             dream={dream}
             displayName={displayNames[dream.user_id]}
+            avatarUrl={avatarUrls[dream.user_id]}
             user={user}
             onBlock={handleBlock}
           />

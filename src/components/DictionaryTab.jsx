@@ -222,9 +222,14 @@ export default function DictionaryTab() {
         value={search}
         onChange={e => handleSearch(e.target.value)}
         style={{
-          width: "100%", background: "rgba(6,12,22,0.7)", border: "1px solid rgba(200,160,30,0.2)",
-          borderRadius: 40, padding: "14px 18px", color: "#f5e4b0", fontSize: 16,
-          marginBottom: 16, boxSizing: "border-box", outline: "none", fontFamily: "Georgia, serif"
+          width: "100%", background: "rgba(20,12,40,0.6)", border: "1px solid rgba(200,160,30,0.35)",
+          borderRadius: 40, padding: "14px 18px 14px 42px", color: "#f5e4b0", fontSize: 16,
+          marginBottom: 16, boxSizing: "border-box", outline: "none", fontFamily: "Georgia, serif",
+          boxShadow: "0 0 16px rgba(232,184,64,0.06), inset 0 1px 0 rgba(232,184,64,0.06)",
+          backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238a7540' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E\")",
+          backgroundRepeat: "no-repeat",
+          backgroundPosition: "14px center",
+          backgroundSize: "16px",
         }}
       />
 

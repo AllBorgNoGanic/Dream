@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import * as AlertDialog from "@radix-ui/react-alert-dialog";
 import { supabase } from "../lib/supabase";
 import ShareButton from "./ShareButton";
@@ -37,6 +37,68 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
   const [notifPermission, setNotifPermission] = useState(() =>
     "Notification" in window ? Notification.permission : "denied"
   );
+  const [avatarUrl, setAvatarUrl] = useState(userSettings?.avatar_url || null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [avatarError, setAvatarError] = useState("");
+  const fileInputRef = useRef(null);
+
+  // Resize and center-crop image to 300x300 JPEG
+  const resizeImage = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const size = 300;
+          canvas.width = size;
+          canvas.height = size;
+          const ctx = canvas.getContext("2d");
+          const min = Math.min(img.width, img.height);
+          const sx = (img.width - min) / 2;
+          const sy = (img.height - min) / 2;
+          ctx.drawImage(img, sx, sy, min, min, 0, 0, size, size);
+          const base64 = canvas.toDataURL("image/jpeg", 0.8).split(",")[1];
+          resolve(base64);
+        };
+        img.onerror = () => reject(new Error("Could not read image"));
+        img.src = e.target.result;
+      };
+      reader.onerror = () => reject(new Error("Could not read file"));
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setAvatarError("Please select an image file.");
+      return;
+    }
+    setAvatarError("");
+    setAvatarUploading(true);
+    try {
+      const base64 = await resizeImage(file);
+      const response = await fetch("/api/moderate-avatar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: user.id, image_base64: base64 }),
+      });
+      const data = await response.json();
+      if (data.success) {
+        setAvatarUrl(data.avatar_url);
+        if (onSettingsUpdate) onSettingsUpdate((prev) => ({ ...prev, avatar_url: data.avatar_url }));
+      } else {
+        setAvatarError(data.reason || data.error || "Upload failed. Please try again.");
+      }
+    } catch {
+      setAvatarError("Could not upload photo. Please try again.");
+    } finally {
+      setAvatarUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
   const avgSleep = dreams.filter(d => d.sleep_hours).length > 0
     ? (dreams.filter(d => d.sleep_hours).reduce((s, d) => s + Number(d.sleep_hours), 0) / dreams.filter(d => d.sleep_hours).length).toFixed(1)
@@ -74,6 +136,61 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
 
   return (
     <div style={{ animation: "fadeIn 0.4s ease" }}>
+      {/* Identity header */}
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 24, paddingTop: 8 }}>
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleAvatarUpload}
+          style={{ display: "none" }}
+        />
+
+        {/* Avatar with camera badge */}
+        <div style={{ position: "relative", marginBottom: 12 }}>
+          <div
+            onClick={() => !avatarUploading && fileInputRef.current?.click()}
+            style={{
+              width: 72, height: 72, borderRadius: "50%",
+              background: "linear-gradient(135deg, #7c3aed, #a855f7)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 28, color: "#fff", fontFamily: "Georgia, serif",
+              fontWeight: 400,
+              boxShadow: "0 4px 20px rgba(124,58,237,0.25)",
+              cursor: "pointer", overflow: "hidden", position: "relative",
+            }}
+          >
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+            ) : (
+              !avatarUploading && (userSettings?.display_name || user.email || "?")[0].toUpperCase()
+            )}
+            {avatarUploading && (
+              <div style={{
+                position: "absolute", inset: 0,
+                background: "rgba(0,0,0,0.5)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <div style={{ fontSize: 20, animation: "pulse 1.5s infinite" }}>🌙</div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div style={{ fontSize: 20, color: "#f5e4b0", fontFamily: "Georgia, serif", marginBottom: 4 }}>
+          {userSettings?.display_name || "Dreamer"}
+        </div>
+        <div style={{ fontSize: 13, color: "#6b5c30", fontFamily: "Georgia, serif" }}>
+          {user.email}
+        </div>
+        {avatarError && (
+          <div style={{ fontSize: 12, color: "#e06050", marginTop: 8, textAlign: "center", fontFamily: "Georgia, serif", maxWidth: 260 }}>
+            {avatarError}
+          </div>
+        )}
+      </div>
+
       {/* Personalization card */}
       <PersonalizationCard
         user={user}
@@ -292,26 +409,25 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
       </div>
 
       {/* Account */}
-      <div style={{ ...card, textAlign: "center", marginBottom: 16 }}>
-        <div style={{ fontSize: 12, color: "#5040a0", marginBottom: 4 }}>Signed in as</div>
-        <div style={{ fontSize: 13, color: "#7a6a40", marginBottom: onSignOut ? 18 : 0 }}>{user.email}</div>
+      <div style={card}>
+        <div style={{ fontSize: 13, letterSpacing: 3, color: "#8060cc", textTransform: "uppercase", marginBottom: 16 }}>Account</div>
 
         {onSignOut && (
           <AlertDialog.Root>
             <AlertDialog.Trigger asChild>
               <button style={{
-                background: "rgba(255,80,80,0.06)",
-                border: "1px solid rgba(255,80,80,0.2)",
-                color: "#d88080",
-                padding: "10px 24px", borderRadius: 40, fontSize: 12,
-                cursor: "pointer", fontFamily: "Georgia, serif",
-                letterSpacing: 0.5, minHeight: 40,
-                transition: "background 0.15s",
+                width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
+                background: "rgba(255,255,255,0.03)", border: "1px solid rgba(200,160,30,0.12)",
+                borderRadius: 12, padding: "14px 16px", cursor: "pointer",
+                fontFamily: "Georgia, serif", fontSize: 14, color: "#c8a870",
+                marginBottom: onDeleteAccount ? 8 : 0, minHeight: 48, transition: "background 0.15s",
+                boxSizing: "border-box",
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,80,80,0.12)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,80,80,0.06)"; }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}
               >
-                Sign out
+                <span>Sign out</span>
+                <span style={{ color: "#5a4a30", fontSize: 18 }}>›</span>
               </button>
             </AlertDialog.Trigger>
             <AlertDialog.Portal>
@@ -370,38 +486,24 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
             </AlertDialog.Portal>
           </AlertDialog.Root>
         )}
-      </div>
 
-      {/* Danger zone (App Store Guideline 5.1.1(v): in-app account deletion) */}
-      {onDeleteAccount && (
-        <div style={{
-          ...card,
-          background: "rgba(80,12,12,0.18)",
-          border: "1px solid rgba(255,80,80,0.18)",
-          marginBottom: 24,
-        }}>
-          <div style={{ fontSize: 13, letterSpacing: 3, color: "#c06060", textTransform: "uppercase", marginBottom: 10 }}>
-            Danger Zone
-          </div>
-          <p style={{ fontSize: 13, color: "#a07070", lineHeight: 1.7, margin: "0 0 16px" }}>
-            Delete your account and all your dreams, interpretations, and settings. This action cannot be undone.
-          </p>
-
+        {/* Account deletion (App Store Guideline 5.1.1(v): in-app account deletion) */}
+        {onDeleteAccount && (
           <AlertDialog.Root onOpenChange={(o) => { if (!o) { setDeleteText(""); setDeleteError(""); } }}>
             <AlertDialog.Trigger asChild>
               <button style={{
-                background: "rgba(255,80,80,0.08)",
-                border: "1px solid rgba(255,80,80,0.3)",
-                color: "#e08888",
-                padding: "11px 22px", borderRadius: 40, fontSize: 13,
-                cursor: "pointer", fontFamily: "Georgia, serif",
-                letterSpacing: 0.5, minHeight: 40,
-                transition: "background 0.15s",
+                width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
+                background: "rgba(255,80,80,0.03)", border: "1px solid rgba(255,80,80,0.1)",
+                borderRadius: 12, padding: "14px 16px", cursor: "pointer",
+                fontFamily: "Georgia, serif", fontSize: 14, color: "#a07060",
+                minHeight: 48, transition: "background 0.15s",
+                boxSizing: "border-box",
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,80,80,0.16)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,80,80,0.08)"; }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,80,80,0.08)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,80,80,0.03)"; }}
               >
-                Delete account
+                <span>Delete account</span>
+                <span style={{ color: "#6b4040", fontSize: 18 }}>›</span>
               </button>
             </AlertDialog.Trigger>
             <AlertDialog.Portal>
@@ -466,7 +568,7 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
                       color: "#c8a040", padding: "12px 16px", borderRadius: 12, fontSize: 14,
                       cursor: "pointer", fontFamily: "Georgia, serif", minHeight: 44,
                     }}>
-                      Cancel
+                      Keep my account
                     </button>
                   </AlertDialog.Cancel>
                   <button
@@ -499,14 +601,15 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
                       opacity: deleteText.trim() === "DELETE" ? 1 : 0.6,
                     }}
                   >
-                    {deleting ? "Deleting..." : "Permanently delete"}
+                    {deleting ? "Deleting..." : "Delete forever"}
                   </button>
                 </div>
               </AlertDialog.Content>
             </AlertDialog.Portal>
           </AlertDialog.Root>
-        </div>
-      )}
+        )}
+      </div>
+
     </div>
   );
 }
