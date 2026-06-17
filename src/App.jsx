@@ -1739,6 +1739,7 @@ For scripture_refs, return 0 to 2 well-known verse references that genuinely con
               <CommunityTab
                 user={user}
                 supabase={supabase}
+                onSettingsUpdate={setUserSettings}
               />
             </ErrorBoundary>
           </div>

@@ -234,7 +234,7 @@ function Avatar({ url, name, size = 28 }) {
   );
 }
 
-function UserProfile({ userId, user, displayName, avatarUrl, onBack, onBlock }) {
+function UserProfile({ userId, user, displayName, avatarUrl, onBack, onBlock, onSettingsUpdate }) {
   const isOwnProfile = user && userId === user.id;
   const [profile, setProfile] = useState(null);
   const [publicDreams, setPublicDreams] = useState([]);
@@ -359,7 +359,9 @@ function UserProfile({ userId, user, displayName, avatarUrl, onBack, onBlock }) 
                         .update({ bio: bioValue.trim() || null })
                         .eq("user_id", user.id);
                       if (!error) {
-                        setProfile(prev => ({ ...prev, bio: bioValue.trim() || null }));
+                        const trimmed = bioValue.trim() || null;
+                        setProfile(prev => ({ ...prev, bio: trimmed }));
+                        if (onSettingsUpdate) onSettingsUpdate(prev => prev ? { ...prev, bio: trimmed } : prev);
                         setEditingBio(false);
                       }
                       setBioSaving(false);
@@ -888,7 +890,7 @@ function DreamCard({ dream, displayName, avatarUrl, user, onBlock, onViewProfile
   );
 }
 
-export default function CommunityTab({ user, supabase: _sb }) {
+export default function CommunityTab({ user, supabase: _sb, onSettingsUpdate }) {
   const [dreams, setDreams] = useState([]);
   const [displayNames, setDisplayNames] = useState({});
   const [avatarUrls, setAvatarUrls] = useState({});
@@ -982,6 +984,7 @@ export default function CommunityTab({ user, supabase: _sb }) {
         avatarUrl={avatarUrls[selectedProfile]}
         onBack={() => setSelectedProfile(null)}
         onBlock={(uid) => { handleBlock(uid); setSelectedProfile(null); }}
+        onSettingsUpdate={onSettingsUpdate}
       />
     );
   }
