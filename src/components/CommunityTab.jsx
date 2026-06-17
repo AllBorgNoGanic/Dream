@@ -235,9 +235,13 @@ function Avatar({ url, name, size = 28 }) {
 }
 
 function UserProfile({ userId, user, displayName, avatarUrl, onBack, onBlock }) {
+  const isOwnProfile = user && userId === user.id;
   const [profile, setProfile] = useState(null);
   const [publicDreams, setPublicDreams] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [editingBio, setEditingBio] = useState(false);
+  const [bioValue, setBioValue] = useState("");
+  const [bioSaving, setBioSaving] = useState(false);
   useEffect(() => {
     const load = async () => {
       setLoading(true);
@@ -255,7 +259,10 @@ function UserProfile({ userId, user, displayName, avatarUrl, onBack, onBlock }) 
           .order("created_at", { ascending: false }),
       ]);
 
-      if (settingsRes.data) setProfile(settingsRes.data);
+      if (settingsRes.data) {
+        setProfile(settingsRes.data);
+        setBioValue(settingsRes.data.bio || "");
+      }
       if (dreamsRes.data) setPublicDreams(dreamsRes.data);
       setLoading(false);
     };
@@ -308,7 +315,88 @@ function UserProfile({ userId, user, displayName, avatarUrl, onBack, onBlock }) 
       </div>
 
       {/* Bio */}
-      {profile?.bio && (
+      {isOwnProfile ? (
+        <div style={{
+          background: "rgba(6,12,22,0.7)", border: "1px solid rgba(200,160,30,0.12)",
+          borderRadius: 16, padding: "16px 18px", marginBottom: 24,
+        }}>
+          {editingBio ? (
+            <>
+              <textarea
+                value={bioValue}
+                onChange={e => { if (e.target.value.length <= 160) setBioValue(e.target.value); }}
+                placeholder="Write a short bio..."
+                rows={3}
+                autoFocus
+                style={{
+                  width: "100%", background: "rgba(5,10,18,0.9)", border: "1px solid rgba(200,160,30,0.25)",
+                  borderRadius: 10, padding: "11px 14px", color: "#f5e4b0", fontSize: 14,
+                  outline: "none", boxSizing: "border-box", fontFamily: "Georgia, serif",
+                  resize: "none", lineHeight: 1.5,
+                }}
+              />
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 8 }}>
+                <span style={{ fontSize: 11, color: "#5a4a30", fontFamily: "Georgia, serif" }}>
+                  {bioValue.length}/160
+                </span>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button
+                    onClick={() => { setBioValue(profile?.bio || ""); setEditingBio(false); }}
+                    style={{
+                      background: "none", border: "1px solid rgba(255,255,255,0.12)",
+                      color: "#8a7a50", padding: "7px 16px", borderRadius: 20,
+                      fontSize: 12, cursor: "pointer", fontFamily: "Georgia, serif",
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    disabled={bioSaving}
+                    onClick={async () => {
+                      setBioSaving(true);
+                      const { error } = await supabase
+                        .from("user_settings")
+                        .update({ bio: bioValue.trim() || null })
+                        .eq("user_id", user.id);
+                      if (!error) {
+                        setProfile(prev => ({ ...prev, bio: bioValue.trim() || null }));
+                        setEditingBio(false);
+                      }
+                      setBioSaving(false);
+                    }}
+                    style={{
+                      background: "linear-gradient(135deg, #7c3aed, #a855f7)",
+                      border: "none", color: "#fff", padding: "7px 16px", borderRadius: 20,
+                      fontSize: 12, cursor: "pointer", fontFamily: "Georgia, serif",
+                      opacity: bioSaving ? 0.6 : 1,
+                    }}
+                  >
+                    {bioSaving ? "Saving..." : "Save"}
+                  </button>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div
+              onClick={() => setEditingBio(true)}
+              style={{ cursor: "pointer" }}
+            >
+              {profile?.bio ? (
+                <div style={{ fontSize: 14, color: "#f5e4b0", fontFamily: "Georgia, serif", lineHeight: 1.6 }}>
+                  {profile.bio}
+                </div>
+              ) : (
+                <div style={{ fontSize: 13, color: "#6b5c30", fontFamily: "Georgia, serif", fontStyle: "italic" }}>
+                  Tap to add a bio...
+                </div>
+              )}
+              <div style={{ fontSize: 11, color: "#5a4a30", fontFamily: "Georgia, serif", marginTop: 6 }}>
+                Tap to edit
+              </div>
+            </div>
+          )}
+        </div>
+      ) : profile?.bio ? (
         <div style={{
           background: "rgba(6,12,22,0.7)", border: "1px solid rgba(200,160,30,0.12)",
           borderRadius: 16, padding: "16px 18px", marginBottom: 24,
@@ -317,7 +405,7 @@ function UserProfile({ userId, user, displayName, avatarUrl, onBack, onBlock }) 
             {profile.bio}
           </div>
         </div>
-      )}
+      ) : null}
 
       {/* Block user option */}
       {user && userId !== user.id && (
