@@ -394,7 +394,7 @@ function UserProfile({ userId, user, displayName, avatarUrl, onBack, onBlock, on
                 </>
               ) : (
                 <div style={{ fontSize: 14, color: "#c8a030", fontFamily: "Georgia, serif" }}>
-                  Tap to create bio
+                  Tap to create bio...
                 </div>
               )}
             </div>

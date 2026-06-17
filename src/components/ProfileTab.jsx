@@ -324,7 +324,7 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
           <textarea
             value={bio}
             onChange={e => { if (e.target.value.length <= 160) setBio(e.target.value); }}
-            placeholder="A short bio visible on your public profile..."
+            placeholder="A short bio visible on your community profile..."
             rows={3}
             style={{
               width: "100%", background: "rgba(5,10,18,0.9)", border: "1px solid rgba(200,160,30,0.25)",
