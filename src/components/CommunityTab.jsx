@@ -384,17 +384,19 @@ function UserProfile({ userId, user, displayName, avatarUrl, onBack, onBlock, on
               style={{ cursor: "pointer" }}
             >
               {profile?.bio ? (
-                <div style={{ fontSize: 14, color: "#f5e4b0", fontFamily: "Georgia, serif", lineHeight: 1.6 }}>
-                  {profile.bio}
-                </div>
+                <>
+                  <div style={{ fontSize: 14, color: "#f5e4b0", fontFamily: "Georgia, serif", lineHeight: 1.6 }}>
+                    {profile.bio}
+                  </div>
+                  <div style={{ fontSize: 12, color: "#8a7a50", fontFamily: "Georgia, serif", marginTop: 6 }}>
+                    Tap to edit
+                  </div>
+                </>
               ) : (
-                <div style={{ fontSize: 13, color: "#6b5c30", fontFamily: "Georgia, serif", fontStyle: "italic" }}>
-                  Tap to add a bio...
+                <div style={{ fontSize: 14, color: "#c8a030", fontFamily: "Georgia, serif" }}>
+                  Tap to create bio
                 </div>
               )}
-              <div style={{ fontSize: 11, color: "#5a4a30", fontFamily: "Georgia, serif", marginTop: 6 }}>
-                Tap to edit
-              </div>
             </div>
           )}
         </div>
