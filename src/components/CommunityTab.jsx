@@ -216,7 +216,176 @@ const REPORT_REASONS = [
   "Other",
 ];
 
-function DreamCard({ dream, displayName, avatarUrl, user, onBlock }) {
+function Avatar({ url, name, size = 28 }) {
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: "50%", flexShrink: 0,
+      background: "linear-gradient(135deg, #7c3aed, #a855f7)",
+      display: "flex", alignItems: "center", justifyContent: "center",
+      fontSize: Math.round(size * 0.43), color: "#fff", fontFamily: "Georgia, serif",
+      overflow: "hidden",
+    }}>
+      {url ? (
+        <img src={url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+      ) : (
+        (name || "A")[0].toUpperCase()
+      )}
+    </div>
+  );
+}
+
+function UserProfile({ userId, user, displayName, avatarUrl, onBack, onBlock }) {
+  const [profile, setProfile] = useState(null);
+  const [publicDreams, setPublicDreams] = useState([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      const [settingsRes, dreamsRes] = await Promise.all([
+        supabase
+          .from("user_settings")
+          .select("display_name, avatar_url, bio, streak_current, created_at")
+          .eq("user_id", userId)
+          .single(),
+        supabase
+          .from("dreams")
+          .select("id, title, description, mood, theme, tags, dream_image_url, interpretation, created_at")
+          .eq("user_id", userId)
+          .eq("is_public", true)
+          .order("created_at", { ascending: false }),
+      ]);
+
+      if (settingsRes.data) setProfile(settingsRes.data);
+      if (dreamsRes.data) setPublicDreams(dreamsRes.data);
+      setLoading(false);
+    };
+    load();
+  }, [userId]);
+
+  const memberSince = profile?.created_at
+    ? new Date(profile.created_at).toLocaleDateString("en-US", { month: "long", year: "numeric" })
+    : null;
+
+  const name = profile?.display_name || displayName || "Anonymous Dreamer";
+  const avatar = profile?.avatar_url || avatarUrl;
+
+  if (loading) {
+    return (
+      <div style={styles.container}>
+        <div style={{ textAlign: "center", padding: 60, color: "#7a6a40", fontFamily: "Georgia, serif" }}>
+          <div style={{ fontSize: 32, marginBottom: 12, animation: "pulse 1.5s infinite" }}>🌙</div>
+          Loading profile...
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={styles.container}>
+      <button
+        onClick={onBack}
+        style={{
+          background: "none", border: "1px solid rgba(255,255,255,0.15)",
+          color: "#c8a030", padding: "10px 18px", borderRadius: 30,
+          fontSize: 13, cursor: "pointer", fontFamily: "Georgia, serif",
+          marginBottom: 24, minHeight: 44,
+        }}
+      >
+        ← Back to Community
+      </button>
+
+      {/* Profile header */}
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 28 }}>
+        <Avatar url={avatar} name={name} size={80} />
+        <div style={{ fontSize: 22, color: "#f5e4b0", fontFamily: "Georgia, serif", marginTop: 14, marginBottom: 4 }}>
+          {name}
+        </div>
+        {memberSince && (
+          <div style={{ fontSize: 12, color: "#6b5c30", fontFamily: "Georgia, serif" }}>
+            Member since {memberSince}
+          </div>
+        )}
+      </div>
+
+      {/* Bio */}
+      {profile?.bio && (
+        <div style={{
+          background: "rgba(6,12,22,0.7)", border: "1px solid rgba(200,160,30,0.12)",
+          borderRadius: 16, padding: "16px 18px", marginBottom: 24,
+        }}>
+          <div style={{ fontSize: 14, color: "#f5e4b0", fontFamily: "Georgia, serif", lineHeight: 1.6 }}>
+            {profile.bio}
+          </div>
+        </div>
+      )}
+
+      {/* Block user option */}
+      {user && userId !== user.id && (
+        <div style={{ textAlign: "center", marginBottom: 20 }}>
+          <button
+            onClick={() => onBlock(userId)}
+            style={{
+              background: "none", border: "none", color: "#6b5040",
+              fontSize: 12, cursor: "pointer", fontFamily: "Georgia, serif",
+            }}
+          >
+            Block this user
+          </button>
+        </div>
+      )}
+
+      {/* Section label */}
+      <div style={{
+        fontSize: 12, letterSpacing: 2, color: "#8060cc", textTransform: "uppercase",
+        marginBottom: 16, fontFamily: "Georgia, serif",
+      }}>
+        Shared Dreams
+      </div>
+
+      {publicDreams.length === 0 ? (
+        <div style={styles.emptyState}>This dreamer hasn't shared any dreams yet.</div>
+      ) : (
+        publicDreams.map((dream) => {
+          const tags = dream.tags
+            ? Array.isArray(dream.tags)
+              ? dream.tags
+              : typeof dream.tags === "string"
+              ? dream.tags.split(",").map((t) => t.trim()).filter(Boolean)
+              : []
+            : [];
+          const formattedDate = new Date(dream.created_at).toLocaleDateString("en-US", {
+            month: "short", day: "numeric", year: "numeric",
+          });
+          return (
+            <div key={dream.id} style={styles.card}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                <span style={styles.date}>{formattedDate}</span>
+              </div>
+              <div style={styles.title}>{dream.title || "Untitled Dream"}</div>
+              {dream.dream_image_url && (
+                <div style={{ marginBottom: 12, borderRadius: 14, overflow: "hidden" }}>
+                  <img src={dream.dream_image_url} alt={dream.title || "Dream"} style={{ width: "100%", display: "block", borderRadius: 14 }} />
+                </div>
+              )}
+              <div style={styles.description}>{dream.description}</div>
+              <div style={styles.metaRow}>
+                {dream.mood && <span style={styles.badge}>{dream.mood}</span>}
+                {dream.theme && <span style={styles.badge}>{dream.theme}</span>}
+              </div>
+              {tags.length > 0 && (
+                <div style={{ marginBottom: 6 }}>
+                  {tags.map((tag, i) => <span key={i} style={styles.tag}>{tag}</span>)}
+                </div>
+              )}
+            </div>
+          );
+        })
+      )}
+    </div>
+  );
+}
+
+function DreamCard({ dream, displayName, avatarUrl, user, onBlock, onViewProfile }) {
   const [likes, setLikes] = useState([]);
   const [liked, setLiked] = useState(false);
   const [showComments, setShowComments] = useState(false);
@@ -381,20 +550,11 @@ function DreamCard({ dream, displayName, avatarUrl, user, onBlock }) {
   return (
     <div style={styles.card}>
       <div style={styles.cardHeader}>
-        <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <div style={{
-            width: 28, height: 28, borderRadius: "50%", flexShrink: 0,
-            background: "linear-gradient(135deg, #7c3aed, #a855f7)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 12, color: "#fff", fontFamily: "Georgia, serif",
-            overflow: "hidden",
-          }}>
-            {avatarUrl ? (
-              <img src={avatarUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-            ) : (
-              (displayName || "A")[0].toUpperCase()
-            )}
-          </div>
+        <span
+          onClick={() => onViewProfile && onViewProfile(dream.user_id)}
+          style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}
+        >
+          <Avatar url={avatarUrl} name={displayName} size={28} />
           <span style={styles.displayName}>{displayName || "Anonymous Dreamer"}</span>
         </span>
         <span style={styles.date}>{formattedDate}</span>
@@ -577,21 +737,17 @@ function DreamCard({ dream, displayName, avatarUrl, user, onBlock }) {
             comments.filter((c) => !c.report_count || c.report_count < 3).map((c) => (
               <div key={c.id} style={{ ...styles.commentItem, display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                 <div style={{ flex: 1, display: "flex", gap: 8, alignItems: "flex-start" }}>
-                  <div style={{
-                    width: 22, height: 22, borderRadius: "50%", flexShrink: 0, marginTop: 1,
-                    background: "linear-gradient(135deg, #7c3aed, #a855f7)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    fontSize: 10, color: "#fff", fontFamily: "Georgia, serif",
-                    overflow: "hidden",
-                  }}>
-                    {commentAvatars[c.user_id] ? (
-                      <img src={commentAvatars[c.user_id]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-                    ) : (
-                      (commentAuthors[c.user_id] || "A")[0].toUpperCase()
-                    )}
+                  <div
+                    onClick={() => onViewProfile && onViewProfile(c.user_id)}
+                    style={{ cursor: "pointer", marginTop: 1 }}
+                  >
+                    <Avatar url={commentAvatars[c.user_id]} name={commentAuthors[c.user_id]} size={22} />
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={styles.commentAuthor}>
+                    <div
+                      onClick={() => onViewProfile && onViewProfile(c.user_id)}
+                      style={{ ...styles.commentAuthor, cursor: "pointer" }}
+                    >
                       {commentAuthors[c.user_id] || "Anonymous Dreamer"}
                     </div>
                     <div style={styles.commentContent}>{c.content}</div>
@@ -653,6 +809,7 @@ export default function CommunityTab({ user, supabase: _sb }) {
   const [search, setSearch] = useState("");
   const [moodFilter, setMoodFilter] = useState("");
   const [themeFilter, setThemeFilter] = useState("");
+  const [selectedProfile, setSelectedProfile] = useState(null);
 
   // Load blocked users
   useEffect(() => {
@@ -669,6 +826,7 @@ export default function CommunityTab({ user, supabase: _sb }) {
 
   const handleBlock = (blockedUserId) => {
     setBlockedUsers((prev) => [...prev, blockedUserId]);
+    if (selectedProfile === blockedUserId) setSelectedProfile(null);
   };
 
   const loadDreams = useCallback(async () => {
@@ -727,6 +885,19 @@ export default function CommunityTab({ user, supabase: _sb }) {
     return true;
   });
 
+  if (selectedProfile) {
+    return (
+      <UserProfile
+        userId={selectedProfile}
+        user={user}
+        displayName={displayNames[selectedProfile]}
+        avatarUrl={avatarUrls[selectedProfile]}
+        onBack={() => setSelectedProfile(null)}
+        onBlock={(uid) => { handleBlock(uid); setSelectedProfile(null); }}
+      />
+    );
+  }
+
   return (
     <div style={styles.container}>
       <h2 style={styles.heading}>Community Dreams</h2>
@@ -768,6 +939,7 @@ export default function CommunityTab({ user, supabase: _sb }) {
             avatarUrl={avatarUrls[dream.user_id]}
             user={user}
             onBlock={handleBlock}
+            onViewProfile={setSelectedProfile}
           />
         ))
       )}

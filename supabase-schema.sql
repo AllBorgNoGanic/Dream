@@ -69,6 +69,7 @@ create table if not exists user_settings (
   stripe_customer_id   text,
   display_name         text,
   avatar_url           text,
+  bio                  text,
   archetype            text,
   archetype_data       jsonb       default '{}',
   wake_time            text        default '07:00',
@@ -84,6 +85,7 @@ create table if not exists user_settings (
 alter table user_settings add column if not exists stripe_customer_id   text;
 alter table user_settings add column if not exists display_name         text;
 alter table user_settings add column if not exists avatar_url           text;
+alter table user_settings add column if not exists bio                  text;
 alter table user_settings add column if not exists archetype            text;
 alter table user_settings add column if not exists archetype_data       jsonb   default '{}';
 alter table user_settings add column if not exists wake_time            text    default '07:00';
@@ -96,10 +98,12 @@ alter table user_settings add column if not exists onboarding_completed boolean 
 alter table user_settings enable row level security;
 
 drop policy if exists "Users can view own settings"   on user_settings;
+drop policy if exists "Users can view public profiles" on user_settings;
 drop policy if exists "Users can update own settings" on user_settings;
 drop policy if exists "Users can insert own settings" on user_settings;
 
 create policy "Users can view own settings"   on user_settings for select using (auth.uid() = user_id);
+create policy "Users can view public profiles" on user_settings for select using (auth.uid() is not null);
 create policy "Users can update own settings" on user_settings for update using (auth.uid() = user_id);
 create policy "Users can insert own settings" on user_settings for insert with check (auth.uid() = user_id);
 

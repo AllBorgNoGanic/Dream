@@ -24,6 +24,7 @@ const MAX_SHARE_BONUS = 3;
 export default function ProfileTab({ user, userSettings, onSettingsUpdate, dreams, onUpgrade, onManageSubscription, onRestorePurchases, onSignOut, onDeleteAccount }) {
   const isNative = typeof window !== "undefined" && !!window.Capacitor?.isNativePlatform?.();
   const [displayName, setDisplayName] = useState(userSettings?.display_name || "");
+  const [bio, setBio] = useState(userSettings?.bio || "");
   const [age, setAge] = useState(userSettings?.age || "");
   const [wakeTime, setWakeTime] = useState(userSettings?.wake_time || "07:00");
   const [reminderEnabled, setReminderEnabled] = useState(userSettings?.reminder_enabled || false);
@@ -116,7 +117,7 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
     setSaving(true);
     const { data } = await supabase
       .from("user_settings")
-      .update({ display_name: displayName.trim() || null, age: age ? parseInt(age) : null, wake_time: wakeTime, reminder_enabled: reminderEnabled })
+      .update({ display_name: displayName.trim() || null, bio: bio.trim() || null, age: age ? parseInt(age) : null, wake_time: wakeTime, reminder_enabled: reminderEnabled })
       .eq("user_id", user.id)
       .select()
       .single();
@@ -316,6 +317,25 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
           {nameError && (
             <div style={{ fontSize: 12, color: "#e06050", marginTop: 6 }}>{nameError}</div>
           )}
+        </div>
+
+        <div style={{ marginBottom: 16 }}>
+          <label style={{ display: "block", fontSize: 13, color: "#e8b840", marginBottom: 8 }}>Bio</label>
+          <textarea
+            value={bio}
+            onChange={e => { if (e.target.value.length <= 160) setBio(e.target.value); }}
+            placeholder="A short bio visible on your public profile..."
+            rows={3}
+            style={{
+              width: "100%", background: "rgba(5,10,18,0.9)", border: "1px solid rgba(200,160,30,0.25)",
+              borderRadius: 10, padding: "11px 14px", color: "#f5e4b0", fontSize: 14,
+              outline: "none", boxSizing: "border-box", fontFamily: "Georgia, serif",
+              resize: "none", lineHeight: 1.5,
+            }}
+          />
+          <div style={{ fontSize: 11, color: "#5a4a30", marginTop: 4, textAlign: "right" }}>
+            {bio.length}/160
+          </div>
         </div>
 
         <div style={{ marginBottom: 16 }}>
