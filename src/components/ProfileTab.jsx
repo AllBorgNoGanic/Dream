@@ -206,12 +206,12 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
           display: "flex", alignItems: "center", justifyContent: "center",
         }}>
           <div style={{
-            width: "90vw", maxWidth: 360,
+            width: "92vw", maxWidth: 440,
             background: "#04001a", borderRadius: 20,
             border: "1px solid rgba(200,160,30,0.15)",
             overflow: "hidden",
           }}>
-            <div style={{ position: "relative", width: "100%", height: "70vw", maxHeight: 280 }}>
+            <div style={{ position: "relative", width: "100%", height: "80vw", maxHeight: 380 }}>
               <Cropper
                 image={cropImage}
                 crop={crop}
