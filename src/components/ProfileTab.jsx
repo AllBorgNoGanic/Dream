@@ -202,56 +202,56 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
       {cropImage && (
         <div style={{
           position: "fixed", inset: 0, zIndex: 9999,
-          background: "#04001a",
+          background: "rgba(0,0,0,0.9)",
+          display: "flex", alignItems: "center", justifyContent: "center",
         }}>
           <div style={{
-            position: "absolute", top: 0, left: 0, right: 0, bottom: 120,
+            width: "90vw", maxWidth: 360,
+            background: "#04001a", borderRadius: 20,
+            border: "1px solid rgba(200,160,30,0.15)",
             overflow: "hidden",
           }}>
-            <Cropper
-              image={cropImage}
-              crop={crop}
-              zoom={1}
-              aspect={1}
-              cropShape="round"
-              showGrid={false}
-              onCropChange={setCrop}
-              onCropComplete={onCropComplete}
-            />
-          </div>
-          <div style={{
-            position: "fixed", bottom: 0, left: 0, right: 0,
-            display: "flex", alignItems: "center", gap: 10,
-            padding: "16px 20px",
-            paddingBottom: "calc(16px + env(safe-area-inset-bottom, 0px))",
-            background: "#04001a",
-            borderTop: "1px solid rgba(200,160,30,0.15)",
-            zIndex: 10000,
-          }}>
-            <button
-              onClick={() => setCropImage(null)}
-              style={{
-                flex: 1, padding: "12px 0", borderRadius: 24,
-                background: "none", border: "1px solid rgba(255,255,255,0.15)",
-                color: "#c8a030", fontSize: 15, cursor: "pointer",
-                fontFamily: "Georgia, serif", minHeight: 44,
-              }}
-            >
-              Cancel
-            </button>
-            <button
-              disabled={avatarUploading}
-              onClick={handleCropSave}
-              style={{
-                flex: 1, padding: "12px 0", borderRadius: 24,
-                background: "linear-gradient(135deg, #7c3aed, #a855f7)",
-                border: "none", color: "#fff", fontSize: 15, cursor: "pointer",
-                fontFamily: "Georgia, serif", minHeight: 44,
-                opacity: avatarUploading ? 0.6 : 1,
-              }}
-            >
-              {avatarUploading ? "Saving..." : "Save"}
-            </button>
+            <div style={{ position: "relative", width: "100%", height: "70vw", maxHeight: 280 }}>
+              <Cropper
+                image={cropImage}
+                crop={crop}
+                zoom={1}
+                aspect={1}
+                cropShape="round"
+                showGrid={false}
+                onCropChange={setCrop}
+                onCropComplete={onCropComplete}
+              />
+            </div>
+            <div style={{
+              display: "flex", gap: 10, padding: "16px 16px",
+              borderTop: "1px solid rgba(200,160,30,0.15)",
+            }}>
+              <button
+                onClick={() => setCropImage(null)}
+                style={{
+                  flex: 1, padding: "12px 0", borderRadius: 24,
+                  background: "none", border: "1px solid rgba(255,255,255,0.15)",
+                  color: "#c8a030", fontSize: 15, cursor: "pointer",
+                  fontFamily: "Georgia, serif", minHeight: 44,
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                disabled={avatarUploading}
+                onClick={handleCropSave}
+                style={{
+                  flex: 1, padding: "12px 0", borderRadius: 24,
+                  background: "linear-gradient(135deg, #7c3aed, #a855f7)",
+                  border: "none", color: "#fff", fontSize: 15, cursor: "pointer",
+                  fontFamily: "Georgia, serif", minHeight: 44,
+                  opacity: avatarUploading ? 0.6 : 1,
+                }}
+              >
+                {avatarUploading ? "Saving..." : "Save"}
+              </button>
+            </div>
           </div>
         </div>
       )}
