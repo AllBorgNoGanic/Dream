@@ -204,10 +204,13 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
       {cropImage && (
         <div style={{
           position: "fixed", inset: 0, zIndex: 9999,
-          background: "rgba(0,0,0,0.95)",
-          display: "flex", flexDirection: "column",
+          background: "#04001a",
         }}>
-          <div style={{ position: "relative", flex: 1, minHeight: 0 }}>
+          <div style={{
+            position: "absolute", top: 0, left: 0, right: 0,
+            bottom: 150,
+            overflow: "hidden",
+          }}>
             <Cropper
               image={cropImage}
               crop={crop}
@@ -221,10 +224,14 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
             />
           </div>
           <div style={{
-            flexShrink: 0, padding: "16px 20px",
-            paddingBottom: "calc(16px + env(safe-area-inset-bottom, 0px))",
+            position: "absolute", bottom: 0, left: 0, right: 0,
+            height: 150,
+            paddingBottom: "env(safe-area-inset-bottom, 0px)",
+            boxSizing: "border-box",
+            padding: "16px 20px",
             display: "flex", flexDirection: "column", gap: 12,
             background: "#04001a",
+            borderTop: "1px solid rgba(200,160,30,0.15)",
           }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <span style={{ fontSize: 12, color: "#8a7a50", fontFamily: "Georgia, serif", minWidth: 38 }}>Zoom</span>
