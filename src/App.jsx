@@ -1484,7 +1484,7 @@ For scripture_refs, return 0 to 2 well-known verse references that genuinely con
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 4px 20px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <ShepherdMark size={30} />
+            <ShepherdMark size={30} halo={!!userSettings?.is_pro} />
             <div>
               <h1 style={{
                 fontSize: 20, fontWeight: 400, margin: 0,
@@ -1493,19 +1493,6 @@ For scripture_refs, return 0 to 2 well-known verse references that genuinely con
                 display: "inline-flex", alignItems: "baseline", gap: 8, lineHeight: 1.1,
               }}>
                 <span>Dream Shepherd</span>
-                {userSettings?.is_pro && (
-                  <span
-                    title="Supporter"
-                    aria-label="Supporter"
-                    style={{
-                      fontSize: 12, color: "#e8c860",
-                      WebkitTextFillColor: "#e8c860",
-                      textShadow: "0 0 8px rgba(232,184,64,0.4)",
-                    }}
-                  >
-                    ✦
-                  </span>
-                )}
               </h1>
               {userSettings?.display_name && (
                 <div style={{ fontSize: 11, color: "#8a7540", marginTop: 2 }}>
