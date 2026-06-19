@@ -11,8 +11,8 @@ if (typeof document !== "undefined" && !document.getElementById(STYLE_ID)) {
     @keyframes vc-overlayIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes vc-contentIn { from { opacity: 0; transform: translate(-50%, -46%) scale(0.96); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
     @keyframes vc-micPulse {
-      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(232,184,64,0.5); }
-      50% { transform: scale(1.05); box-shadow: 0 0 0 18px rgba(232,184,64,0); }
+      0%, 100% { transform: translate(-50%,-50%) scale(1); box-shadow: 0 0 0 0 rgba(232,184,64,0.5); }
+      50% { transform: translate(-50%,-50%) scale(1.05); box-shadow: 0 0 0 18px rgba(232,184,64,0); }
     }
     @keyframes vc-ringExpand {
       0% { opacity: 0.6; transform: translate(-50%,-50%) scale(0.8); }
