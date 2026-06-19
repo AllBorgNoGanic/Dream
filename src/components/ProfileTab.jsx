@@ -204,10 +204,10 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
       {cropImage && (
         <div style={{
           position: "fixed", inset: 0, zIndex: 9999,
-          background: "rgba(0,0,0,0.85)",
+          background: "rgba(0,0,0,0.95)",
           display: "flex", flexDirection: "column",
         }}>
-          <div style={{ position: "relative", flex: 1 }}>
+          <div style={{ position: "relative", flex: 1, minHeight: 0 }}>
             <Cropper
               image={cropImage}
               crop={crop}
@@ -221,8 +221,10 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
             />
           </div>
           <div style={{
-            padding: "16px 20px", display: "flex", flexDirection: "column", gap: 12,
-            background: "rgba(4,0,26,0.95)",
+            flexShrink: 0, padding: "16px 20px",
+            paddingBottom: "calc(16px + env(safe-area-inset-bottom, 0px))",
+            display: "flex", flexDirection: "column", gap: 12,
+            background: "#04001a",
           }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <span style={{ fontSize: 12, color: "#8a7a50", fontFamily: "Georgia, serif", minWidth: 38 }}>Zoom</span>
@@ -238,10 +240,10 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
               <button
                 onClick={() => setCropImage(null)}
                 style={{
-                  flex: 1, padding: "12px 0", borderRadius: 24,
+                  flex: 1, padding: "14px 0", borderRadius: 24,
                   background: "none", border: "1px solid rgba(255,255,255,0.15)",
-                  color: "#c8a030", fontSize: 14, cursor: "pointer",
-                  fontFamily: "Georgia, serif",
+                  color: "#c8a030", fontSize: 15, cursor: "pointer",
+                  fontFamily: "Georgia, serif", minHeight: 48,
                 }}
               >
                 Cancel
@@ -250,10 +252,10 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
                 disabled={avatarUploading}
                 onClick={handleCropSave}
                 style={{
-                  flex: 1, padding: "12px 0", borderRadius: 24,
+                  flex: 1, padding: "14px 0", borderRadius: 24,
                   background: "linear-gradient(135deg, #7c3aed, #a855f7)",
-                  border: "none", color: "#fff", fontSize: 14, cursor: "pointer",
-                  fontFamily: "Georgia, serif",
+                  border: "none", color: "#fff", fontSize: 15, cursor: "pointer",
+                  fontFamily: "Georgia, serif", minHeight: 48,
                   opacity: avatarUploading ? 0.6 : 1,
                 }}
               >
