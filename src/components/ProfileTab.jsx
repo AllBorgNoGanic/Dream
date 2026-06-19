@@ -45,7 +45,6 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
   const fileInputRef = useRef(null);
   const [cropImage, setCropImage] = useState(null);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
 
   const onCropComplete = useCallback((_, area) => setCroppedAreaPixels(area), []);
@@ -79,7 +78,6 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
     reader.onload = (ev) => {
       setCropImage(ev.target.result);
       setCrop({ x: 0, y: 0 });
-      setZoom(1);
     };
     reader.readAsDataURL(file);
     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -208,67 +206,54 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
         }}>
           <div style={{
             position: "absolute", top: 0, left: 0, right: 0,
-            bottom: 150,
+            bottom: 80,
             overflow: "hidden",
           }}>
             <Cropper
               image={cropImage}
               crop={crop}
-              zoom={zoom}
+              zoom={1}
               aspect={1}
               cropShape="round"
               showGrid={false}
               onCropChange={setCrop}
-              onZoomChange={setZoom}
               onCropComplete={onCropComplete}
             />
           </div>
           <div style={{
             position: "absolute", bottom: 0, left: 0, right: 0,
-            height: 150,
-            paddingBottom: "env(safe-area-inset-bottom, 0px)",
-            boxSizing: "border-box",
+            height: 80,
             padding: "16px 20px",
-            display: "flex", flexDirection: "column", gap: 12,
+            paddingBottom: "calc(16px + env(safe-area-inset-bottom, 0px))",
+            boxSizing: "border-box",
+            display: "flex", gap: 10,
             background: "#04001a",
             borderTop: "1px solid rgba(200,160,30,0.15)",
           }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <span style={{ fontSize: 12, color: "#8a7a50", fontFamily: "Georgia, serif", minWidth: 38 }}>Zoom</span>
-              <input
-                type="range"
-                min={1} max={3} step={0.05}
-                value={zoom}
-                onChange={e => setZoom(Number(e.target.value))}
-                style={{ flex: 1, accentColor: "#a855f7" }}
-              />
-            </div>
-            <div style={{ display: "flex", gap: 10 }}>
-              <button
-                onClick={() => setCropImage(null)}
-                style={{
-                  flex: 1, padding: "14px 0", borderRadius: 24,
-                  background: "none", border: "1px solid rgba(255,255,255,0.15)",
-                  color: "#c8a030", fontSize: 15, cursor: "pointer",
-                  fontFamily: "Georgia, serif", minHeight: 48,
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                disabled={avatarUploading}
-                onClick={handleCropSave}
-                style={{
-                  flex: 1, padding: "14px 0", borderRadius: 24,
-                  background: "linear-gradient(135deg, #7c3aed, #a855f7)",
-                  border: "none", color: "#fff", fontSize: 15, cursor: "pointer",
-                  fontFamily: "Georgia, serif", minHeight: 48,
-                  opacity: avatarUploading ? 0.6 : 1,
-                }}
-              >
-                {avatarUploading ? "Saving..." : "Save"}
-              </button>
-            </div>
+            <button
+              onClick={() => setCropImage(null)}
+              style={{
+                flex: 1, padding: "14px 0", borderRadius: 24,
+                background: "none", border: "1px solid rgba(255,255,255,0.15)",
+                color: "#c8a030", fontSize: 15, cursor: "pointer",
+                fontFamily: "Georgia, serif", minHeight: 48,
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              disabled={avatarUploading}
+              onClick={handleCropSave}
+              style={{
+                flex: 1, padding: "14px 0", borderRadius: 24,
+                background: "linear-gradient(135deg, #7c3aed, #a855f7)",
+                border: "none", color: "#fff", fontSize: 15, cursor: "pointer",
+                fontFamily: "Georgia, serif", minHeight: 48,
+                opacity: avatarUploading ? 0.6 : 1,
+              }}
+            >
+              {avatarUploading ? "Saving..." : "Save"}
+            </button>
           </div>
         </div>
       )}
