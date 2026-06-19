@@ -220,13 +220,13 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
             />
           </div>
           <div style={{
-            position: "absolute", bottom: 0, left: 0, right: 0,
+            position: "fixed", bottom: 0, left: 0, right: 0,
             display: "flex", alignItems: "center", gap: 10,
             padding: "16px 20px",
             paddingBottom: "calc(16px + env(safe-area-inset-bottom, 0px))",
             background: "#04001a",
             borderTop: "1px solid rgba(200,160,30,0.15)",
-            zIndex: 10,
+            zIndex: 10000,
           }}>
             <button
               onClick={() => setCropImage(null)}
