@@ -1484,7 +1484,7 @@ For scripture_refs, return 0 to 2 well-known verse references that genuinely con
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 4px 20px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <ShepherdMark size={30} halo={!!userSettings?.is_pro} />
+            <ShepherdMark size={30} />
             <div>
               <h1 style={{
                 fontSize: 20, fontWeight: 400, margin: 0,
