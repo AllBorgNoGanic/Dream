@@ -206,7 +206,42 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
         }}>
           <div style={{
             position: "absolute", top: 0, left: 0, right: 0,
-            bottom: 80,
+            height: 70,
+            paddingTop: "env(safe-area-inset-top, 0px)",
+            boxSizing: "border-box",
+            display: "flex", alignItems: "center", gap: 10,
+            padding: "0 20px",
+            background: "#04001a",
+            borderBottom: "1px solid rgba(200,160,30,0.15)",
+            zIndex: 10,
+          }}>
+            <button
+              onClick={() => setCropImage(null)}
+              style={{
+                flex: 1, padding: "12px 0", borderRadius: 24,
+                background: "none", border: "1px solid rgba(255,255,255,0.15)",
+                color: "#c8a030", fontSize: 15, cursor: "pointer",
+                fontFamily: "Georgia, serif", minHeight: 44,
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              disabled={avatarUploading}
+              onClick={handleCropSave}
+              style={{
+                flex: 1, padding: "12px 0", borderRadius: 24,
+                background: "linear-gradient(135deg, #7c3aed, #a855f7)",
+                border: "none", color: "#fff", fontSize: 15, cursor: "pointer",
+                fontFamily: "Georgia, serif", minHeight: 44,
+                opacity: avatarUploading ? 0.6 : 1,
+              }}
+            >
+              {avatarUploading ? "Saving..." : "Save"}
+            </button>
+          </div>
+          <div style={{
+            position: "absolute", top: 70, left: 0, right: 0, bottom: 0,
             overflow: "hidden",
           }}>
             <Cropper
@@ -219,41 +254,6 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
               onCropChange={setCrop}
               onCropComplete={onCropComplete}
             />
-          </div>
-          <div style={{
-            position: "absolute", bottom: 0, left: 0, right: 0,
-            height: 80,
-            padding: "16px 20px",
-            paddingBottom: "calc(16px + env(safe-area-inset-bottom, 0px))",
-            boxSizing: "border-box",
-            display: "flex", gap: 10,
-            background: "#04001a",
-            borderTop: "1px solid rgba(200,160,30,0.15)",
-          }}>
-            <button
-              onClick={() => setCropImage(null)}
-              style={{
-                flex: 1, padding: "14px 0", borderRadius: 24,
-                background: "none", border: "1px solid rgba(255,255,255,0.15)",
-                color: "#c8a030", fontSize: 15, cursor: "pointer",
-                fontFamily: "Georgia, serif", minHeight: 48,
-              }}
-            >
-              Cancel
-            </button>
-            <button
-              disabled={avatarUploading}
-              onClick={handleCropSave}
-              style={{
-                flex: 1, padding: "14px 0", borderRadius: 24,
-                background: "linear-gradient(135deg, #7c3aed, #a855f7)",
-                border: "none", color: "#fff", fontSize: 15, cursor: "pointer",
-                fontFamily: "Georgia, serif", minHeight: 48,
-                opacity: avatarUploading ? 0.6 : 1,
-              }}
-            >
-              {avatarUploading ? "Saving..." : "Save"}
-            </button>
           </div>
         </div>
       )}
