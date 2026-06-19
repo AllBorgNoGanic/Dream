@@ -205,7 +205,7 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
           background: "#04001a",
         }}>
           <div style={{
-            position: "absolute", top: 0, left: 0, right: 0, bottom: 80,
+            position: "absolute", top: 0, left: 0, right: 0, bottom: 120,
             overflow: "hidden",
           }}>
             <Cropper
