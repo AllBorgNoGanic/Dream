@@ -81,18 +81,17 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
     setAvatarUploading(true);
     try {
       const base64 = await resizeImage(file);
-      const response = await fetch("/api/moderate-avatar", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id: user.id, image_base64: base64 }),
-      });
-      const data = await response.json();
-      if (data.success) {
-        setAvatarUrl(data.avatar_url);
-        if (onSettingsUpdate) onSettingsUpdate((prev) => ({ ...prev, avatar_url: data.avatar_url }));
-      } else {
-        setAvatarError(data.reason || data.error || "Upload failed. Please try again.");
-      }
+      const buffer = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+      const fileName = `${user.id}.jpg`;
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(fileName, buffer, { contentType: "image/jpeg", upsert: true });
+      if (uploadError) throw uploadError;
+      const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(fileName);
+      const newUrl = urlData.publicUrl + "?t=" + Date.now();
+      await supabase.from("user_settings").update({ avatar_url: newUrl }).eq("user_id", user.id);
+      setAvatarUrl(newUrl);
+      if (onSettingsUpdate) onSettingsUpdate((prev) => ({ ...prev, avatar_url: newUrl }));
     } catch {
       setAvatarError("Could not upload photo. Please try again.");
     } finally {
