@@ -1,5 +1,6 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import * as AlertDialog from "@radix-ui/react-alert-dialog";
+import Cropper from "react-easy-crop";
 import { supabase } from "../lib/supabase";
 import ShareButton from "./ShareButton";
 import ExportPDF from "./ExportPDF";
@@ -42,35 +43,31 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [avatarError, setAvatarError] = useState("");
   const fileInputRef = useRef(null);
+  const [cropImage, setCropImage] = useState(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
 
-  // Resize and center-crop image to 300x300 JPEG
-  const resizeImage = (file) => {
+  const onCropComplete = useCallback((_, area) => setCroppedAreaPixels(area), []);
+
+  const getCroppedCanvas = (imageSrc, pixelCrop) => {
     return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement("canvas");
-          const size = 300;
-          canvas.width = size;
-          canvas.height = size;
-          const ctx = canvas.getContext("2d");
-          const min = Math.min(img.width, img.height);
-          const sx = (img.width - min) / 2;
-          const sy = (img.height - min) / 2;
-          ctx.drawImage(img, sx, sy, min, min, 0, 0, size, size);
-          const base64 = canvas.toDataURL("image/jpeg", 0.8).split(",")[1];
-          resolve(base64);
-        };
-        img.onerror = () => reject(new Error("Could not read image"));
-        img.src = e.target.result;
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = 300;
+        canvas.height = 300;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, pixelCrop.x, pixelCrop.y, pixelCrop.width, pixelCrop.height, 0, 0, 300, 300);
+        resolve(canvas.toDataURL("image/jpeg", 0.8).split(",")[1]);
       };
-      reader.onerror = () => reject(new Error("Could not read file"));
-      reader.readAsDataURL(file);
+      img.onerror = () => reject(new Error("Could not read image"));
+      img.crossOrigin = "anonymous";
+      img.src = imageSrc;
     });
   };
 
-  const handleAvatarUpload = async (e) => {
+  const handleFileSelect = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith("image/")) {
@@ -78,9 +75,21 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
       return;
     }
     setAvatarError("");
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setCropImage(ev.target.result);
+      setCrop({ x: 0, y: 0 });
+      setZoom(1);
+    };
+    reader.readAsDataURL(file);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleCropSave = async () => {
+    if (!cropImage || !croppedAreaPixels) return;
     setAvatarUploading(true);
     try {
-      const base64 = await resizeImage(file);
+      const base64 = await getCroppedCanvas(cropImage, croppedAreaPixels);
       const buffer = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
       const fileName = `${user.id}.jpg`;
       const { error: uploadError } = await supabase.storage
@@ -92,11 +101,11 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
       await supabase.from("user_settings").update({ avatar_url: newUrl }).eq("user_id", user.id);
       setAvatarUrl(newUrl);
       if (onSettingsUpdate) onSettingsUpdate((prev) => ({ ...prev, avatar_url: newUrl }));
+      setCropImage(null);
     } catch {
       setAvatarError("Could not upload photo. Please try again.");
     } finally {
       setAvatarUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
@@ -143,7 +152,7 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
           ref={fileInputRef}
           type="file"
           accept="image/*"
-          onChange={handleAvatarUpload}
+          onChange={handleFileSelect}
           style={{ display: "none" }}
         />
 
@@ -190,6 +199,70 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
           </div>
         )}
       </div>
+
+      {/* Crop modal */}
+      {cropImage && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 9999,
+          background: "rgba(0,0,0,0.85)",
+          display: "flex", flexDirection: "column",
+        }}>
+          <div style={{ position: "relative", flex: 1 }}>
+            <Cropper
+              image={cropImage}
+              crop={crop}
+              zoom={zoom}
+              aspect={1}
+              cropShape="round"
+              showGrid={false}
+              onCropChange={setCrop}
+              onZoomChange={setZoom}
+              onCropComplete={onCropComplete}
+            />
+          </div>
+          <div style={{
+            padding: "16px 20px", display: "flex", flexDirection: "column", gap: 12,
+            background: "rgba(4,0,26,0.95)",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ fontSize: 12, color: "#8a7a50", fontFamily: "Georgia, serif", minWidth: 38 }}>Zoom</span>
+              <input
+                type="range"
+                min={1} max={3} step={0.05}
+                value={zoom}
+                onChange={e => setZoom(Number(e.target.value))}
+                style={{ flex: 1, accentColor: "#a855f7" }}
+              />
+            </div>
+            <div style={{ display: "flex", gap: 10 }}>
+              <button
+                onClick={() => setCropImage(null)}
+                style={{
+                  flex: 1, padding: "12px 0", borderRadius: 24,
+                  background: "none", border: "1px solid rgba(255,255,255,0.15)",
+                  color: "#c8a030", fontSize: 14, cursor: "pointer",
+                  fontFamily: "Georgia, serif",
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                disabled={avatarUploading}
+                onClick={handleCropSave}
+                style={{
+                  flex: 1, padding: "12px 0", borderRadius: 24,
+                  background: "linear-gradient(135deg, #7c3aed, #a855f7)",
+                  border: "none", color: "#fff", fontSize: 14, cursor: "pointer",
+                  fontFamily: "Georgia, serif",
+                  opacity: avatarUploading ? 0.6 : 1,
+                }}
+              >
+                {avatarUploading ? "Saving..." : "Save"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Personalization card */}
       <PersonalizationCard
