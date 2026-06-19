@@ -205,14 +205,27 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
           background: "#04001a",
         }}>
           <div style={{
-            position: "absolute", top: 0, left: 0, right: 0,
-            height: 70,
-            paddingTop: "env(safe-area-inset-top, 0px)",
-            boxSizing: "border-box",
+            position: "absolute", top: 0, left: 0, right: 0, bottom: 80,
+            overflow: "hidden",
+          }}>
+            <Cropper
+              image={cropImage}
+              crop={crop}
+              zoom={1}
+              aspect={1}
+              cropShape="round"
+              showGrid={false}
+              onCropChange={setCrop}
+              onCropComplete={onCropComplete}
+            />
+          </div>
+          <div style={{
+            position: "absolute", bottom: 0, left: 0, right: 0,
             display: "flex", alignItems: "center", gap: 10,
-            padding: "0 20px",
+            padding: "16px 20px",
+            paddingBottom: "calc(16px + env(safe-area-inset-bottom, 0px))",
             background: "#04001a",
-            borderBottom: "1px solid rgba(200,160,30,0.15)",
+            borderTop: "1px solid rgba(200,160,30,0.15)",
             zIndex: 10,
           }}>
             <button
@@ -239,21 +252,6 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
             >
               {avatarUploading ? "Saving..." : "Save"}
             </button>
-          </div>
-          <div style={{
-            position: "absolute", top: 70, left: 0, right: 0, bottom: 0,
-            overflow: "hidden",
-          }}>
-            <Cropper
-              image={cropImage}
-              crop={crop}
-              zoom={1}
-              aspect={1}
-              cropShape="round"
-              showGrid={false}
-              onCropChange={setCrop}
-              onCropComplete={onCropComplete}
-            />
           </div>
         </div>
       )}
