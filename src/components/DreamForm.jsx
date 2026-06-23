@@ -250,6 +250,9 @@ export default function DreamForm({
   const [tagInput, setTagInput] = useState("");
   const [charInput, setCharInput] = useState("");
   const [voiceOpen, setVoiceOpen] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(
+    () => (form.tags?.length > 0 || form.characters?.length > 0)
+  );
   const [moderationError, setModerationError] = useState("");
   const styleInjectedRef = useRef(false);
 
@@ -429,65 +432,99 @@ export default function DreamForm({
         </div>
       </div>
 
-      {/* Tags */}
-      <div style={styles.fieldGroup}>
-        <label style={styles.label}>Tags</label>
-        <input
-          type="text"
-          placeholder="Type a tag and press Enter..."
-          value={tagInput}
-          onChange={(e) => setTagInput(e.target.value)}
-          onKeyDown={addTag}
-          style={styles.input}
-        />
-        {form.tags.length > 0 && (
-          <div style={styles.chipRow}>
-            {form.tags.map((tag) => (
-              <span key={tag} style={styles.chip}>
-                {tag}
-                <button
-                  type="button"
-                  onClick={() => removeTag(tag)}
-                  style={styles.chipX}
-                  aria-label={`Remove tag ${tag}`}
-                >
-                  x
-                </button>
-              </span>
-            ))}
-          </div>
+      {/* More Details toggle */}
+      <button
+        type="button"
+        onClick={() => setShowAdvanced((v) => !v)}
+        style={{
+          background: "none", border: "none", color: "#8a7540",
+          fontSize: 13, fontFamily: "Georgia, serif", cursor: "pointer",
+          padding: "8px 0", display: "flex", alignItems: "center", gap: 6,
+          letterSpacing: 0.3,
+        }}
+      >
+        <span style={{
+          display: "inline-block", transition: "transform 0.2s",
+          transform: showAdvanced ? "rotate(90deg)" : "rotate(0deg)",
+          fontSize: 10,
+        }}>▶</span>
+        More Details
+        {(form.tags.length > 0 || form.characters.length > 0) && (
+          <span style={{ color: "#e8b840", fontSize: 11 }}>
+            ({form.tags.length + form.characters.length})
+          </span>
         )}
-      </div>
+      </button>
 
-      {/* Characters */}
-      <div style={styles.fieldGroup}>
-        <label style={styles.label}>Characters</label>
-        <input
-          type="text"
-          placeholder="Type a character name and press Enter..."
-          value={charInput}
-          onChange={(e) => setCharInput(e.target.value)}
-          onKeyDown={addChar}
-          style={styles.input}
-        />
-        {form.characters.length > 0 && (
-          <div style={styles.chipRow}>
-            {form.characters.map((ch) => (
-              <span key={ch} style={styles.chip}>
-                {ch}
-                <button
-                  type="button"
-                  onClick={() => removeChar(ch)}
-                  style={styles.chipX}
-                  aria-label={`Remove character ${ch}`}
-                >
-                  x
-                </button>
-              </span>
-            ))}
+      {showAdvanced && (
+        <>
+          {/* Tags */}
+          <div style={styles.fieldGroup}>
+            <label style={styles.label}>Tags</label>
+            <div style={{ fontSize: 12, color: "#8a7540", marginBottom: 8, lineHeight: 1.5 }}>
+              Label your dream with keywords to find patterns over time, like "recurring", "flying", or "childhood home"
+            </div>
+            <input
+              type="text"
+              placeholder="Add a tag..."
+              value={tagInput}
+              onChange={(e) => setTagInput(e.target.value)}
+              onKeyDown={addTag}
+              style={styles.input}
+            />
+            {form.tags.length > 0 && (
+              <div style={styles.chipRow}>
+                {form.tags.map((tag) => (
+                  <span key={tag} style={styles.chip}>
+                    {tag}
+                    <button
+                      type="button"
+                      onClick={() => removeTag(tag)}
+                      style={styles.chipX}
+                      aria-label={`Remove tag ${tag}`}
+                    >
+                      x
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
-        )}
-      </div>
+
+          {/* Characters */}
+          <div style={styles.fieldGroup}>
+            <label style={styles.label}>Characters</label>
+            <div style={{ fontSize: 12, color: "#8a7540", marginBottom: 8, lineHeight: 1.5 }}>
+              Who appeared in your dream? Family, friends, strangers, or symbolic figures
+            </div>
+            <input
+              type="text"
+              placeholder="Add a character..."
+              value={charInput}
+              onChange={(e) => setCharInput(e.target.value)}
+              onKeyDown={addChar}
+              style={styles.input}
+            />
+            {form.characters.length > 0 && (
+              <div style={styles.chipRow}>
+                {form.characters.map((ch) => (
+                  <span key={ch} style={styles.chip}>
+                    {ch}
+                    <button
+                      type="button"
+                      onClick={() => removeChar(ch)}
+                      style={styles.chipX}
+                      aria-label={`Remove character ${ch}`}
+                    >
+                      x
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        </>
+      )}
 
       {/* Sleep Tracking */}
       <div style={styles.fieldGroup}>
