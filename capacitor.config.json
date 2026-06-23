@@ -9,7 +9,8 @@
   "ios": {
     "contentInset": "always",
     "allowsLinkPreview": false,
-    "scrollEnabled": true
+    "scrollEnabled": true,
+    "backgroundColor": "#04001a"
   },
   "plugins": {
     "SplashScreen": {

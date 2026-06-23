@@ -1479,7 +1479,7 @@ For scripture_refs, return 0 to 2 well-known verse references that genuinely con
       {starsLayer}
       {globalStyles}
 
-      <div style={{ position: "relative", zIndex: 1, maxWidth: 600, margin: "0 auto", padding: "0 12px 100px" }}>
+      <div style={{ position: "relative", zIndex: 1, maxWidth: 600, margin: "0 auto", padding: "0 12px 100px", paddingTop: "env(safe-area-inset-top, 0px)" }}>
 
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 4px 20px" }}>
