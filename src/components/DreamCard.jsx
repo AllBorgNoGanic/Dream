@@ -18,7 +18,7 @@ const formatDate = (iso) => {
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 };
 
-const getMoodEmoji = (mood) => mood?.split(" ")[0] || "💭";
+const getMoodEmoji = (mood) => mood?.split(" ")[0] || null;
 
 import { useState } from "react";
 import * as AlertDialog from "@radix-ui/react-alert-dialog";
@@ -173,7 +173,7 @@ export default function DreamCard({ dream, isSelected, onSelect, onDelete, onTog
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ fontSize: 20 }}>{getMoodEmoji(dream.mood)}</span>
+          {getMoodEmoji(dream.mood) && <span style={{ fontSize: 20 }}>{getMoodEmoji(dream.mood)}</span>}
           {dream.sleep_quality && (
             <span style={{ fontSize: 11, color: "#8a7540" }}>
               {"★".repeat(dream.sleep_quality)}{"☆".repeat(5 - dream.sleep_quality)}
