@@ -145,7 +145,10 @@ export default function DreamJournal() {
   const [newPassword, setNewPassword] = useState("");
   const [sessionLoading, setSessionLoading] = useState(true);
   const [showLanding, setShowLanding] = useState(
-    !window.Capacitor && !new URLSearchParams(window.location.search).has("dev")
+    !window.Capacitor &&
+    !new URLSearchParams(window.location.search).has("dev") &&
+    !window.location.hash.includes("access_token") &&
+    !new URLSearchParams(window.location.search).has("code")
   );
 
   // Data
@@ -198,6 +201,7 @@ export default function DreamJournal() {
         setShowPasswordReset(true);
       } else if (event === "SIGNED_IN" || event === "USER_UPDATED") {
         setUser(session?.user ?? null);
+        if (session?.user) setShowLanding(false);
       } else if (event === "SIGNED_OUT") {
         setUser(null);
         onboardingChecked.current = false; // reset so next login re-checks
