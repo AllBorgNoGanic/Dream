@@ -193,6 +193,7 @@ export default function DreamJournal() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "INITIAL_SESSION") {
         setUser(session?.user ?? null);
+        if (session?.user) setShowLanding(false);
         setSessionLoading(false);
       } else if (event === "PASSWORD_RECOVERY") {
         // User arrived via password reset link. Prompt for new password.
