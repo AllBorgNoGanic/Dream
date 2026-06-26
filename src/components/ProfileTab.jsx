@@ -302,10 +302,12 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
               </div>
             </div>
             <button onClick={onUpgrade} style={{
-              background: "linear-gradient(135deg, #c8a020, #e8c840)",
-              border: "none", color: "#1a1000", padding: "12px 18px", borderRadius: 22,
+              background: "transparent",
+              border: "1.5px solid rgba(168,85,247,0.6)",
+              color: "#c4a0f0", padding: "12px 18px", borderRadius: 22,
               fontSize: 12.5, fontWeight: 600, cursor: "pointer", letterSpacing: 0.5, minHeight: 44,
               whiteSpace: "nowrap", fontFamily: "Georgia, serif",
+              boxShadow: "0 0 15px rgba(124,58,237,0.5), 0 0 40px rgba(124,58,237,0.2)",
             }}>
               Support the work
             </button>

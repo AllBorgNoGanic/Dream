@@ -650,10 +650,12 @@ export default function ReadingModal({ reading, onClose, onGenerateImage, userSe
                 <button
                   onClick={() => { setShowVisualizeConfirm(false); if (onUpgrade) onUpgrade(); }}
                   style={{
-                    background: "linear-gradient(135deg, #c8a020, #e8c840)",
-                    border: "none", color: "#1a1000", padding: "12px 22px", borderRadius: 20,
+                    background: "transparent",
+                    border: "1.5px solid rgba(168,85,247,0.6)",
+                    color: "#c4a0f0", padding: "12px 22px", borderRadius: 20,
                     fontSize: 13, fontWeight: 700, cursor: "pointer", minHeight: 44,
                     letterSpacing: 0.5, fontFamily: "Georgia, serif",
+                    boxShadow: "0 0 15px rgba(124,58,237,0.5), 0 0 40px rgba(124,58,237,0.2)",
                   }}
                 >
                   Support the work

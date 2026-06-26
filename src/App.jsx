@@ -17,6 +17,7 @@ import OnboardingQuiz from "./components/OnboardingQuiz";
 import ProfileTab from "./components/ProfileTab";
 import GalleryTab from "./components/GalleryTab";
 import ShareButton from "./components/ShareButton";
+import UpgradeModal from "./components/UpgradeModal";
 import ReadingModal from "./components/ReadingModal";
 import ErrorBoundary from "./components/ErrorBoundary";
 import OfflineBanner from "./components/OfflineBanner";
@@ -32,12 +33,11 @@ import ShepherdMark from "./components/ShepherdMark";
 import {
   configureRevenueCat,
   revenueCatLogOut,
-  fetchPackages as fetchRcPackages,
-  purchasePackage as purchaseRcPackage,
   restorePurchases as rcRestorePurchases,
   onEntitlementChange as onRcEntitlementChange,
   presentCustomerCenter as rcPresentCustomerCenter,
 } from "./lib/revenuecat";
+import { identifyUser, resetUser, trackEvent } from "./lib/posthog";
 
 // ─── Constants ─────────────────────────────────────────────────────────────
 const FREE_INTERPRETATIONS = 5;
@@ -162,9 +162,6 @@ export default function DreamJournal() {
   const [selectedDream, setSelectedDream] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState("annual");
-  const [rcPackages, setRcPackages] = useState({ monthly: null, annual: null });
-  const [purchasing, setPurchasing] = useState(false);
   const [showUpgradeNudge, setShowUpgradeNudge] = useState(false);
   const [readingModal, setReadingModal] = useState(null); // { interpretation, symbols, dreamTitle, themeConnections }
   const [dreamThemesCache, setDreamThemesCache] = useState(null);
@@ -202,10 +199,17 @@ export default function DreamJournal() {
         setShowPasswordReset(true);
       } else if (event === "SIGNED_IN" || event === "USER_UPDATED") {
         setUser(session?.user ?? null);
-        if (session?.user) setShowLanding(false);
+        if (session?.user) {
+          setShowLanding(false);
+          if (event === "SIGNED_IN") {
+            identifyUser(session.user.id, { email: session.user.email });
+            trackEvent("user_signed_in", { method: session.user.app_metadata?.provider || "email" });
+          }
+        }
       } else if (event === "SIGNED_OUT") {
         setUser(null);
         onboardingChecked.current = false; // reset so next login re-checks
+        resetUser();
       }
       // TOKEN_REFRESHED intentionally ignored — no state change needed
     });
@@ -231,18 +235,6 @@ export default function DreamJournal() {
       setShowQuiz(false);
     }
   }, [user]); // eslint-disable-line
-
-  // ── RevenueCat: refresh live packages when the upgrade modal opens so
-  //    pricing is localized to the store's currency for the user's region.
-  useEffect(() => {
-    if (!showUpgradeModal) return;
-    let cancelled = false;
-    (async () => {
-      const pkgs = await fetchRcPackages();
-      if (!cancelled) setRcPackages(pkgs);
-    })();
-    return () => { cancelled = true; };
-  }, [showUpgradeModal]);
 
   // ── RevenueCat: configure on sign-in, log out on sign-out ─────────────────
   // Listen for entitlement changes pushed from the SDK (e.g. after a webhook
@@ -515,6 +507,7 @@ export default function DreamJournal() {
     quizDoneRef.current = true;
     setShowQuiz(false);
     localStorage.setItem(`onboarding_done_${user.id}`, "1");
+    trackEvent("onboarding_completed", { skipped: !!skipped, has_dream: !!recentDream?.trim() });
 
     // If we have a dream but no interpretation (pre-auth flow), generate it now
     let finalInterpretation = interpretation;
@@ -799,6 +792,7 @@ For scripture_refs, return 0 to 2 well-known verse references that genuinely con
       }
       const { interpretation, generated_themes, scripture_refs } = result;
       const scriptureRefs = scripture_refs || [];
+      trackEvent("dream_interpreted", { dream_id: dream.id });
       await supabase.from("dreams").update({
         interpretation,
         generated_themes: generated_themes || [],
@@ -879,6 +873,7 @@ For scripture_refs, return 0 to 2 well-known verse references that genuinely con
       // ── Online path: normal Supabase insert ──
       const { data: inserted, error } = await supabase.from("dreams").insert(dreamPayload).select().single();
       if (error) throw error;
+      trackEvent("dream_created", { mood: form.mood || null, theme: form.theme || null, has_interpretation: !!form.interpret_on_save, word_count: form.description.split(/\s+/).length });
 
       // Interpret on save if toggled
       if (form.interpret_on_save && canInterpret && inserted) {
@@ -946,6 +941,7 @@ For scripture_refs, return 0 to 2 well-known verse references that genuinely con
       if (error) throw error;
       setDreams((d) => d.filter((x) => x.id !== dreamId));
       if (selectedDream?.id === dreamId) setSelectedDream(null);
+      trackEvent("dream_deleted", { dream_id: dreamId });
       toast.success("Dream removed");
     } catch (err) {
       console.error("Error deleting dream:", err);
@@ -962,6 +958,7 @@ For scripture_refs, return 0 to 2 well-known verse references that genuinely con
       if (error) throw error;
       setDreams((prev) => prev.map((d) => d.id === dreamId ? { ...d, is_public: newValue } : d));
       if (selectedDream?.id === dreamId) setSelectedDream((s) => ({ ...s, is_public: newValue }));
+      if (newValue) trackEvent("dream_shared", { dream_id: dreamId });
       toast.success(newValue ? "Dream shared with the community" : "Dream made private");
     } catch (err) {
       console.error("Error toggling visibility:", err);
@@ -974,49 +971,10 @@ For scripture_refs, return 0 to 2 well-known verse references that genuinely con
   // handlePurchaseSelectedPlan when the user taps the supporter button, so
   // the whole flow stays inside our own UI (Apple's payment sheet aside).
   const handleUpgrade = () => {
+    trackEvent("upgrade_modal_opened");
     setShowUpgradeModal(true);
   };
-
-  // Purchase the package matching the plan toggle. Native only: the SDK is a
-  // Capacitor plugin and store purchases cannot run on the web PWA, so web
-  // users are pointed to the native app instead.
-  const handlePurchaseSelectedPlan = async () => {
-    const isWeb = typeof window !== "undefined" && !window.Capacitor?.isNativePlatform?.();
-    if (isWeb) {
-      toast.info("Subscriptions are available in the Dream Shepherd app for iPhone and Android.");
-      return;
-    }
-    const pkg = selectedPlan === "annual" ? rcPackages.annual : rcPackages.monthly;
-    if (!pkg) {
-      toast.error("Plans are still loading. Please try again in a moment.");
-      return;
-    }
-    setPurchasing(true);
-    try {
-      const result = await purchaseRcPackage(pkg);
-      if (result.cancelled) return; // user backed out cleanly
-      if (!result.success) {
-        toast.error(result.error || "Purchase could not be completed.");
-        return;
-      }
-      // Sync entitlement to Supabase. The customer-info listener also handles
-      // this, but updating here keeps the UI snappy.
-      if (result.entitled && user?.id) {
-        await supabase
-          .from("user_settings")
-          .update({ is_pro: true })
-          .eq("user_id", user.id);
-        setUserSettings((s) => (s ? { ...s, is_pro: true } : s));
-        toast.success("Thank you for supporting Dream Shepherd.");
-        setShowUpgradeModal(false);
-      }
-    } catch (err) {
-      console.error("Purchase failed:", err);
-      toast.error("Something went wrong. Please try again.");
-    } finally {
-      setPurchasing(false);
-    }
-  };
+  if (import.meta.env.DEV) window.__showUpgrade = () => setShowUpgradeModal(true);
 
   // Open the RevenueCat Customer Center (manage subscription, restore,
   // cancel, change plans). Apple still wants an explicit Restore button
@@ -1042,8 +1000,10 @@ For scripture_refs, return 0 to 2 well-known verse references that genuinely con
         .update({ is_pro: true })
         .eq("user_id", user.id);
       setUserSettings((s) => (s ? { ...s, is_pro: true } : s));
+      trackEvent("purchases_restored", { entitled: true });
       toast.success("Your subscription was restored.");
     } else {
+      trackEvent("purchases_restored", { entitled: false });
       toast.success("No previous purchases found.");
     }
   };
@@ -1827,6 +1787,7 @@ For scripture_refs, return 0 to 2 well-known verse references that genuinely con
               onClick={async () => {
                 if (isActive) return;
                 setTab(t.id);
+                trackEvent("tab_switched", { tab: t.id });
                 // Light haptic on native devices only. Web is a silent no-op.
                 if (typeof window !== "undefined" && window.Capacitor?.isNativePlatform?.()) {
                   try {
@@ -1892,10 +1853,12 @@ For scripture_refs, return 0 to 2 well-known verse references that genuinely con
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 6, flexShrink: 0 }}>
             <button onClick={() => { setShowUpgradeNudge(false); handleUpgrade(); }} style={{
-              background: "linear-gradient(135deg, #c8a020, #e8c840)", border: "none",
-              color: "#1a1000", padding: "10px 16px", borderRadius: 10,
+              background: "transparent",
+              border: "1.5px solid rgba(168,85,247,0.6)",
+              color: "#c4a0f0", padding: "10px 16px", borderRadius: 10,
               fontSize: 12, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", minHeight: 40,
               fontFamily: "Georgia, serif",
+              boxShadow: "0 0 15px rgba(124,58,237,0.5), 0 0 40px rgba(124,58,237,0.2)",
             }}>
               Support
             </button>
@@ -1910,124 +1873,17 @@ For scripture_refs, return 0 to 2 well-known verse references that genuinely con
       )}
 
       {/* ── Upgrade Modal ── */}
-      <Dialog.Root open={showUpgradeModal} onOpenChange={setShowUpgradeModal}>
-        <Dialog.Portal>
-          <Dialog.Overlay style={{
-            position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)",
-            display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100,
-          }} />
-          <Dialog.Content
-            aria-describedby={undefined}
-            style={{
-              position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)",
-              background: "rgba(16,4,40,0.97)", border: "1px solid rgba(200,160,50,0.4)",
-              borderRadius: 20, padding: 24, maxWidth: 400, width: "94%",
-              boxShadow: "0 16px 60px rgba(110,70,5,0.5)", animation: "fadeIn 0.3s ease", textAlign: "center",
-              zIndex: 101,
-            }}
-          >
-            <Dialog.Title style={{ fontSize: 20, color: "#f5e4b0", marginBottom: 10, fontWeight: 400 }}>
-              <div style={{ marginBottom: 16 }}>
-                <ShepherdMark size={52} />
-              </div>
-              Support Dream Shepherd
-            </Dialog.Title>
-            <div style={{ fontSize: 13, color: "#9a8050", marginBottom: 20, lineHeight: 1.7, fontStyle: "italic" }}>
-              Dream Shepherd is built by a small team. If it has helped you, consider supporting the work.
-            </div>
-            <div style={{
-              textAlign: "left", marginBottom: 20, display: "flex", flexDirection: "column", gap: 10,
-            }}>
-              {[
-                { icon: "🌙", text: "Unlimited dream interpretations" },
-                { icon: "🎨", text: "Unlimited dream visualizations" },
-                { icon: "✝", text: "Unlimited prayers over your dreams" },
-                { icon: "✦", text: "Helps us keep the lights on" },
-              ].map((item) => (
-                <div key={item.text} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <span style={{ fontSize: 16, flexShrink: 0 }}>{item.icon}</span>
-                  <span style={{ fontSize: 13, color: "#c8a040" }}>{item.text}</span>
-                </div>
-              ))}
-            </div>
-            {/* Plan Toggle */}
-            <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
-              {["monthly", "annual"].map((p) => (
-                <button
-                  key={p}
-                  onClick={() => setSelectedPlan(p)}
-                  style={{
-                    flex: 1, padding: "10px 0", borderRadius: 12, fontSize: 13, fontWeight: 600,
-                    cursor: "pointer", border: `1px solid rgba(200,160,50,${selectedPlan === p ? "0.5" : "0.2"})`,
-                    minHeight: 44, fontFamily: "Georgia, serif",
-                    background: selectedPlan === p ? "rgba(200,160,50,0.15)" : "transparent",
-                    color: selectedPlan === p ? "#e8c840" : "#7a6a40",
-                    transition: "all 0.2s",
-                  }}
-                >
-                  {p === "monthly" ? "Monthly" : "Annual"}
-                </button>
-              ))}
-            </div>
-            {/* Price Display */}
-            <div style={{
-              background: "rgba(200,160,50,0.1)", border: "1px solid rgba(200,160,50,0.3)",
-              borderRadius: 16, padding: "16px 20px", marginBottom: 24,
-            }}>
-              {selectedPlan === "monthly" ? (
-                <>
-                  <div style={{ fontSize: 28, color: "#e8c840", fontWeight: 400 }}>
-                    {rcPackages.monthly?.product?.priceString || "$7.99"}
-                    <span style={{ fontSize: 14, color: "#a09060" }}>/month</span>
-                  </div>
-                  <div style={{ fontSize: 12, color: "#a09060", marginTop: 4 }}>Cancel anytime</div>
-                </>
-              ) : (
-                <>
-                  <div style={{ fontSize: 28, color: "#e8c840", fontWeight: 400 }}>
-                    {rcPackages.annual?.product?.priceString || "$59.99"}
-                    <span style={{ fontSize: 14, color: "#a09060" }}>/year</span>
-                  </div>
-                  <div style={{ fontSize: 12, color: "#a09060", marginTop: 4 }}>
-                    Just $5/mo. Save 37%.
-                  </div>
-                </>
-              )}
-            </div>
-            <button onClick={handlePurchaseSelectedPlan} disabled={purchasing} style={{
-              width: "100%", background: "linear-gradient(135deg, #c8a020, #e8c840)",
-              border: "none", color: "#1a1000", padding: "16px", borderRadius: 12,
-              fontSize: 16, fontWeight: 600, cursor: purchasing ? "default" : "pointer", letterSpacing: 0.5, marginBottom: 12, minHeight: 48,
-              fontFamily: "Georgia, serif", opacity: purchasing ? 0.7 : 1,
-            }}>
-              {purchasing
-                ? "Processing..."
-                : selectedPlan === "annual" ? "Become a Supporter · Annual" : "Become a Supporter"}
-            </button>
-            {(userSettings?.share_bonus_count ?? 0) < MAX_SHARE_BONUS && (
-              <div style={{ marginBottom: 12 }}>
-                <ShareButton
-                  userId={user?.id}
-                  shareBonusCount={userSettings?.share_bonus_count ?? 0}
-                  maxBonus={MAX_SHARE_BONUS}
-                  variant="compact"
-                  onBonusEarned={(newCount) => {
-                    setUserSettings((s) => ({ ...s, share_bonus_count: newCount }));
-                    setTimeout(() => setShowUpgradeModal(false), 1500);
-                  }}
-                />
-              </div>
-            )}
-            <Dialog.Close asChild>
-              <button style={{
-                background: "none", border: "none", color: "#6b5c30", fontSize: 14, cursor: "pointer", padding: "12px", minHeight: 44, fontFamily: "Georgia, serif",
-              }}>
-                Not right now
-              </button>
-            </Dialog.Close>
-          </Dialog.Content>
-        </Dialog.Portal>
-      </Dialog.Root>
+      <UpgradeModal
+        open={showUpgradeModal}
+        onOpenChange={setShowUpgradeModal}
+        onPurchaseSuccess={async () => {
+          if (user?.id) {
+            await supabase.from("user_settings").update({ is_pro: true }).eq("user_id", user.id);
+            setUserSettings((s) => (s ? { ...s, is_pro: true } : s));
+          }
+        }}
+        toast={toast}
+      />
     </div>
   );
 }
