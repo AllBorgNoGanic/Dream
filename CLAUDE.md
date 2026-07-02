@@ -14,7 +14,7 @@ A Christian-themed dream journal and AI-interpretation app. Mobile-first PWA plu
 - **Backend**: Supabase (Postgres, auth, RLS). Schema in `supabase-schema.sql` is idempotent (uses `ALTER TABLE ADD COLUMN IF NOT EXISTS` for every non-PK column so it can be re-run safely)
 - **AI**: Anthropic API called via Supabase edge functions (`interpret-dream`, `generate-dream-image`)
 - **Payments**: RevenueCat Capacitor SDK (`@revenuecat/purchases-capacitor@13.1.2`). Entitlement `Dreamshepherd Pro`, offering `default` with `$rc_monthly` ($7.99/mo) and `$rc_annual` ($59.99/yr). Custom on-brand paywall (not RC hosted). Server webhook at `api/revenuecat-webhook.js` syncs `is_pro` to Supabase. Legacy Stripe paths exist in `api/` but are inactive (keys empty in `.env`).
-- **Mobile**: Capacitor 8 (`@capacitor/ios`, `@capacitor/android`, `@capacitor/haptics`, `@capacitor/splash-screen`, `@capacitor/status-bar`, `@capacitor-community/speech-recognition`)
+- **Mobile**: Capacitor 8 (`@capacitor/ios`, `@capacitor/android`, `@capacitor/haptics`, `@capacitor/splash-screen`, `@capacitor/status-bar`, `@capgo/capacitor-speech-recognition`)
 - **Serverless**: Vercel functions in `api/` (RevenueCat webhook, account deletion, share recording, plus inactive Stripe functions)
 - **Asset generation**: `@capacitor/assets` plus `sharp` via `scripts/generate-assets.mjs` (composes SVGs with star backgrounds and golden gradients into iOS, Android, and web icon/splash sets)
 - **Storage**: Supabase remote. Local IndexedDB queue for offline dream creation and a cached dream list (see `src/lib/offlineStore.js`)
@@ -162,7 +162,7 @@ Bottom tab bar with custom SVG/image icons, haptic feedback on tap (Capacitor na
 ### Dream entry
 - 50-character minimum on dream description
 - Optional fields: mood, theme, tags, characters
-- **Voice capture**: speech-to-text via `VoiceCapture` component (uses `useSpeechRecognition` hook + `@capacitor-community/speech-recognition`)
+- **Voice capture**: speech-to-text via `VoiceCapture` component (uses `useSpeechRecognition` hook + `@capgo/capacitor-speech-recognition`)
 - Symbol detection runs on title + description against `DREAM_DICTIONARY` (word-boundary regex)
 - Lucid dreaming subform: `is_lucid`, `lucidity_level`, `dream_signs`, `lucid_trigger`, `lucid_activity`, `lucid_duration`
 - Sleep tracking: `bed_time`, `wake_time`, `sleep_quality`, computed `sleep_hours`

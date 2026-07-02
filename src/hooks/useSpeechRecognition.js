@@ -14,7 +14,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 //   permissionDenied    - true if the user has denied mic/speech permission
 //
 // Implementation notes:
-// - On Capacitor (iOS/Android), uses @capacitor-community/speech-recognition
+// - On Capacitor (iOS/Android), uses @capgo/capacitor-speech-recognition
 //   which wraps SFSpeechRecognizer (iOS) and SpeechRecognizer (Android).
 // - On the web, uses the browser's SpeechRecognition API (webkit-prefixed
 //   on Safari).
@@ -44,7 +44,7 @@ export default function useSpeechRecognition({ language = "en-US" } = {}) {
     (async () => {
       if (isNative()) {
         try {
-          const { SpeechRecognition } = await import("@capacitor-community/speech-recognition");
+          const { SpeechRecognition } = await import("@capgo/capacitor-speech-recognition");
           const r = await SpeechRecognition.available();
           if (!cancelled) setSupported(!!r.available);
         } catch {
@@ -66,7 +66,7 @@ export default function useSpeechRecognition({ language = "en-US" } = {}) {
 
   // ── Native (Capacitor) path ────────────────────────────────────────────────
   const startNative = useCallback(async () => {
-    const { SpeechRecognition } = await import("@capacitor-community/speech-recognition");
+    const { SpeechRecognition } = await import("@capgo/capacitor-speech-recognition");
     // Check or request permission
     const perm = await SpeechRecognition.checkPermissions().catch(() => ({ speechRecognition: "denied" }));
     if (perm.speechRecognition !== "granted") {
@@ -109,7 +109,7 @@ export default function useSpeechRecognition({ language = "en-US" } = {}) {
   }, [language, partialTranscript]);
 
   const stopNative = useCallback(async () => {
-    const { SpeechRecognition } = await import("@capacitor-community/speech-recognition");
+    const { SpeechRecognition } = await import("@capgo/capacitor-speech-recognition");
     try {
       await SpeechRecognition.stop();
     } catch {
@@ -217,7 +217,7 @@ export default function useSpeechRecognition({ language = "en-US" } = {}) {
     return () => {
       if (isListening) stop();
       if (isNative()) {
-        import("@capacitor-community/speech-recognition")
+        import("@capgo/capacitor-speech-recognition")
           .then(({ SpeechRecognition }) => SpeechRecognition.removeAllListeners())
           .catch(() => {});
       }
