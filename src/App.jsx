@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, useMemo } from "react";
-import * as Dialog from "@radix-ui/react-dialog";
 import { supabase } from "./lib/supabase";
 import StarField from "./components/StarField";
 
@@ -16,7 +15,6 @@ import DictionaryTab from "./components/DictionaryTab";
 import OnboardingQuiz from "./components/OnboardingQuiz";
 import ProfileTab from "./components/ProfileTab";
 import GalleryTab from "./components/GalleryTab";
-import ShareButton from "./components/ShareButton";
 import UpgradeModal from "./components/UpgradeModal";
 import ReadingModal from "./components/ReadingModal";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -216,6 +214,44 @@ export default function DreamJournal() {
     return () => subscription.unsubscribe();
   }, []);
 
+  // ── Deep link handler for native OAuth callback ───────────────────────────
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.Capacitor?.isNativePlatform?.()) return;
+    let cleanup;
+    (async () => {
+      try {
+        const { App: CapApp } = await import("@capacitor/app");
+        const handle = await CapApp.addListener("appUrlOpen", ({ url }) => {
+          if (!url) return;
+          try {
+            // PKCE flow: Supabase redirects with ?code= query param
+            const urlObj = new URL(url);
+            const code = urlObj.searchParams.get("code");
+            if (code) {
+              supabase.auth.exchangeCodeForSession(code);
+              return;
+            }
+            // Implicit flow fallback: tokens in hash fragment
+            const hashIndex = url.indexOf("#");
+            if (hashIndex === -1) return;
+            const params = new URLSearchParams(url.substring(hashIndex + 1));
+            const accessToken = params.get("access_token");
+            const refreshToken = params.get("refresh_token");
+            if (accessToken && refreshToken) {
+              supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+            }
+          } catch {
+            // Malformed deep link URL; nothing to do
+          }
+        });
+        cleanup = () => handle.remove();
+      } catch {
+        // @capacitor/app not available (web); deep links only matter on native
+      }
+    })();
+    return () => cleanup?.();
+  }, []);
+
   useEffect(() => {
     if (user) {
       loadDreams();
@@ -406,9 +442,11 @@ export default function DreamJournal() {
 
   const handleOAuthSignIn = async (provider) => {
     setAuthError("");
+    const isNative = typeof window !== "undefined" && window.Capacitor?.isNativePlatform?.();
+    const redirectTo = isNative ? "app.dreamshepherd://login" : window.location.origin;
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
-      options: { redirectTo: window.location.origin },
+      options: { redirectTo },
     });
     if (error) setAuthError(error.message);
   };
@@ -445,8 +483,10 @@ export default function DreamJournal() {
     setAuthSuccess("");
     setAuthLoading(true);
     try {
+      const isNative = typeof window !== "undefined" && window.Capacitor?.isNativePlatform?.();
+      const resetRedirect = isNative ? "app.dreamshepherd://reset" : `${window.location.origin}?reset=1`;
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}?reset=1`,
+        redirectTo: resetRedirect,
       });
       if (error) setAuthError(error.message);
       else {

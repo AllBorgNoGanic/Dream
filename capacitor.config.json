@@ -3,7 +3,6 @@
   "appName": "Dream Shepherd",
   "webDir": "dist",
   "server": {
-    "url": "https://dreamshepherd.app",
     "cleartext": false
   },
   "ios": {
