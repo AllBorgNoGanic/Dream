@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { createPostHogClient } from './posthog.js';
 
 const supabase = createClient(
   process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL,
@@ -62,6 +63,21 @@ export default async function handler(req, res) {
       .from('user_settings')
       .update({ share_bonus_count: newCount, last_share_date: now.toISOString().split('T')[0] })
       .eq('user_id', user_id);
+
+    const posthog = createPostHogClient();
+    try {
+      await posthog.captureImmediate({
+        distinctId: user_id,
+        event: 'share_bonus_granted',
+        properties: {
+          share_bonus_count: newCount,
+          bonus_number: newCount,
+          max_share_bonus: MAX_SHARE_BONUS,
+        },
+      });
+    } finally {
+      await posthog.shutdown();
+    }
 
     return res.status(200).json({ bonus_granted: true, share_bonus_count: newCount });
   } catch (err) {

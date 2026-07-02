@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { createPostHogClient } from './posthog.js';
 
 const supabase = createClient(
   process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL,
@@ -26,6 +27,7 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Anthropic API key not configured' });
   }
 
+  const posthog = createPostHogClient();
   try {
     // ── Step 1: Moderate with Claude Haiku ──────────────────────────────
     const moderationResponse = await fetch('https://api.anthropic.com/v1/messages', {
@@ -112,9 +114,17 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Failed to update profile.' });
     }
 
+    await posthog.captureImmediate({
+      distinctId: user_id,
+      event: 'avatar_updated',
+    });
+
     return res.status(200).json({ success: true, avatar_url: avatarUrl });
   } catch (err) {
+    await posthog.captureExceptionImmediate(err, user_id, { endpoint: 'moderate-avatar' });
     console.error('Avatar moderation error:', err);
     return res.status(500).json({ error: 'Something went wrong. Please try again.' });
+  } finally {
+    await posthog.shutdown();
   }
 }

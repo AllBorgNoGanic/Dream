@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { createPostHogClient } from './posthog.js';
 
 // Service-role client. Used as a fallback if the RPC isn't available.
 // Required env vars on Vercel:
@@ -28,6 +29,7 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: 'Invalid session' });
   }
 
+  const posthog = createPostHogClient();
   try {
     // Delete user-owned rows in FK-safe order.
     await adminClient.from('dream_likes').delete().eq('user_id', userId);
@@ -42,8 +44,16 @@ export default async function handler(req, res) {
     const { error: delErr } = await adminClient.auth.admin.deleteUser(userId);
     if (delErr) throw delErr;
 
+    await posthog.captureImmediate({
+      distinctId: userId,
+      event: 'account_deleted',
+    });
+
     return res.status(200).json({ deleted: true });
   } catch (err) {
+    await posthog.captureExceptionImmediate(err, userId, { endpoint: 'delete-account' });
     return res.status(500).json({ error: err.message || 'Deletion failed' });
+  } finally {
+    await posthog.shutdown();
   }
 }

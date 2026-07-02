@@ -18,6 +18,7 @@
 //   - SUPABASE_URL or VITE_SUPABASE_URL
 
 import { createClient } from "@supabase/supabase-js";
+import { createPostHogClient } from "./posthog.js";
 
 // Event types that GRANT the entitlement (user currently has access).
 const GRANT_EVENTS = new Set([
@@ -109,6 +110,7 @@ export default async function handler(req, res) {
   }
   const admin = createClient(supabaseUrl, serviceKey);
 
+  const posthog = createPostHogClient();
   try {
     const { error } = await admin
       .from("user_settings")
@@ -118,9 +120,39 @@ export default async function handler(req, res) {
       console.error("[RevenueCat webhook] supabase update failed:", error);
       return res.status(500).json({ error: "DB update failed" });
     }
+
+    const eventNameMap = {
+      INITIAL_PURCHASE: "subscription_purchased",
+      RENEWAL: "subscription_renewed",
+      EXPIRATION: "subscription_expired",
+      REFUND: "subscription_refunded",
+      PRODUCT_CHANGE: "subscription_purchased",
+      NON_RENEWING_PURCHASE: "subscription_purchased",
+      UNCANCELLATION: "subscription_renewed",
+      SUBSCRIPTION_EXTENDED: "subscription_renewed",
+      SUBSCRIPTION_PAUSED: "subscription_renewed",
+    };
+    const phEvent = eventNameMap[type];
+    if (phEvent) {
+      await posthog.captureImmediate({
+        distinctId: appUserId,
+        event: phEvent,
+        properties: {
+          revenuecat_event_type: type,
+          is_pro: nextIsPro,
+          product_identifier: event.product_identifier || null,
+          period_type: event.period_type || null,
+          store: event.store || null,
+        },
+      });
+    }
+
     return res.status(200).json({ ok: true, user_id: appUserId, is_pro: nextIsPro, event: type });
   } catch (err) {
+    await posthog.captureExceptionImmediate(err, appUserId, { revenuecat_event_type: type });
     console.error("[RevenueCat webhook] handler exception:", err);
     return res.status(500).json({ error: "Internal error" });
+  } finally {
+    await posthog.shutdown();
   }
 }
