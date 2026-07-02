@@ -4,3 +4,6 @@ dist
 .env.local
 .claude
 .vercel
+.DS_Store
+.posthog-events.json
+screenshots/

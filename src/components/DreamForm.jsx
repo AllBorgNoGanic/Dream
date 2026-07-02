@@ -370,16 +370,27 @@ export default function DreamForm({
             🎙️ Voice Input
           </button>
         </div>
-        <textarea
-          placeholder="Describe your dream in detail..."
-          value={form.description}
-          onChange={(e) => update("description", e.target.value)}
-          style={{
-            ...styles.textarea,
-            borderColor: descTooShort ? "rgba(255,180,60,0.4)" : "rgba(200,160,30,0.3)",
-          }}
-          required
-        />
+        <div style={{ position: "relative" }}>
+          <textarea
+            placeholder="Describe your dream in detail..."
+            value={form.description}
+            onChange={(e) => update("description", e.target.value)}
+            style={{
+              ...styles.textarea,
+              borderColor: descTooShort ? "rgba(255,180,60,0.4)" : "rgba(200,160,30,0.3)",
+            }}
+            required
+          />
+          {!form.description && (
+            <div style={{
+              position: "absolute", bottom: 10, left: 0, right: 0,
+              textAlign: "center", fontSize: 11, color: "#5a4a30",
+              pointerEvents: "none", letterSpacing: 0.3,
+            }}>
+              🔒 Your dreams are entirely confidential and never shared.
+            </div>
+          )}
+        </div>
         {descTooShort && (
           <div style={{
             display: "flex",

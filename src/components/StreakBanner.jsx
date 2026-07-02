@@ -12,17 +12,19 @@ export default function StreakBanner({ streak, longestStreak, lastDreamDate, dre
   const isMilestone = loggedToday && milestones.includes(streak);
   const nextMilestone = milestones.find(m => m > streak) || streak + 10;
 
-  // Build last 7 days mini calendar
-  const last7 = [];
+  // Build Sun-Sat week calendar
+  const week = [];
   const dreamDates = new Set(dreams.map(d => d.created_at?.split("T")[0]).filter(Boolean));
-  const dayLabels = ["S", "M", "T", "W", "T", "F", "S"];
-  const nowMs = Date.now(); // eslint-disable-line react-hooks/purity
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date(nowMs - i * 86400000);
+  const dayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const now = new Date();
+  const todayDow = now.getDay();
+  const sundayOffset = todayDow;
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - sundayOffset + i);
     const dateStr = d.toISOString().split("T")[0];
-    last7.push({
+    week.push({
       dateStr,
-      dayLabel: dayLabels[d.getDay()],
+      dayLabel: dayLabels[i],
       hasDream: dreamDates.has(dateStr),
       isToday: dateStr === today,
     });
@@ -145,7 +147,7 @@ export default function StreakBanner({ streak, longestStreak, lastDreamDate, dre
         display: "flex", justifyContent: "space-between", marginTop: 12,
         padding: "8px 4px 4px", borderTop: "1px solid rgba(200,160,30,0.1)",
       }}>
-        {last7.map((day, i) => (
+        {week.map((day, i) => (
           <div key={i} style={{
             display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
             flex: 1,

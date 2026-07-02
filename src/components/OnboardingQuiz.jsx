@@ -16,6 +16,9 @@ const KEYFRAMES = `
 @keyframes onb-gradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 @keyframes onb-revealUp      { from { opacity: 0; transform: translateY(40px) scale(0.9); } to { opacity: 1; transform: translateY(0) scale(1); } }
 @keyframes onb-twinkle       { 0%,100% { opacity: 0.2; } 50% { opacity: 0.9; } }
+@keyframes twinkle           { 0%,100% { opacity: 0.3; } 50% { opacity: 0.9; } }
+@keyframes bethlehem-pulse   { 0%,100% { opacity: 0.88; filter: brightness(1) drop-shadow(0 0 6px rgba(160,215,255,0.7)); } 50% { opacity: 1; filter: brightness(1.3) drop-shadow(0 0 18px rgba(160,215,255,1)); } }
+@keyframes shepherd-float    { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
 @keyframes onb-particle0 { 0% { opacity:0; transform:scale(0); } 30% { opacity:1; transform:scale(1); } 100% { opacity:0; transform:translate(70px,0px) scale(0); } }
 @keyframes onb-particle1 { 0% { opacity:0; transform:scale(0); } 30% { opacity:1; transform:scale(1); } 100% { opacity:0; transform:translate(49px,49px) scale(0); } }
 @keyframes onb-particle2 { 0% { opacity:0; transform:scale(0); } 30% { opacity:1; transform:scale(1); } 100% { opacity:0; transform:translate(0px,70px) scale(0); } }
@@ -167,12 +170,12 @@ Write 2 to 3 paragraphs of warm, poetic but grounded prose. Plain flowing prose 
     overlay: {
       position: "relative",
       minHeight: "100vh",
-      background: "linear-gradient(160deg, #020c18 0%, #081830 50%, #0a0025 100%)",
+      background: "#020c18",
       fontFamily: "Georgia, serif", color: "#f5e4b0",
       overflowX: "hidden",
     },
     inner: {
-      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-start",
+      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
       minHeight: "100vh", padding: "48px 0 80px",
       boxSizing: "border-box", position: "relative", zIndex: 1,
     },
@@ -226,20 +229,55 @@ Write 2 to 3 paragraphs of warm, poetic but grounded prose. Plain flowing prose 
     },
   };
 
-  // ── Background orbs + stars ────────────────────────────────────────────────
-  const orbs = (
+  // ── Background stars (matches login screen) ────────────────────────────────
+  const starsLayer = (
     <div style={{ position: "fixed", inset: 0, pointerEvents: "none", zIndex: 0, willChange: "transform", transform: "translateZ(0)" }}>
-      <StarField count={150} animation="onb-twinkle" />
+      <StarField count={220} animation="twinkle" />
+      {/* Star of Bethlehem */}
       <div style={{
-        position: "absolute", top: "-15%", right: "-20%", width: 400, height: 400,
-        borderRadius: "50%", background: "radial-gradient(circle, rgba(124,58,237,0.12) 0%, transparent 70%)",
-        animation: "onb-float 6s ease-in-out infinite",
-      }} />
-      <div style={{
-        position: "absolute", bottom: "-10%", left: "-15%", width: 350, height: 350,
-        borderRadius: "50%", background: "radial-gradient(circle, rgba(232,184,64,0.08) 0%, transparent 70%)",
-        animation: "onb-float 8s ease-in-out infinite reverse",
-      }} />
+        position: "absolute", left: "6%", top: "4%",
+        width: 60, height: 60,
+        animation: "bethlehem-pulse 3s ease-in-out infinite",
+      }}>
+        <div style={{
+          position: "absolute", inset: -32,
+          borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(160,215,255,0.22) 0%, rgba(120,190,255,0.08) 55%, transparent 75%)",
+        }} />
+        <div style={{
+          position: "absolute", top: "50%", left: "50%",
+          width: 4, height: 320, marginLeft: -2, marginTop: -160,
+          background: "radial-gradient(ellipse at center, rgba(160,215,255,0.55) 0%, rgba(160,215,255,0.1) 40%, transparent 70%)",
+          borderRadius: "50%",
+        }} />
+        <div style={{
+          position: "absolute", top: "50%", left: "50%",
+          width: 320, height: 4, marginTop: -2, marginLeft: -160,
+          background: "radial-gradient(ellipse at center, rgba(160,215,255,0.45) 0%, rgba(160,215,255,0.08) 40%, transparent 70%)",
+          borderRadius: "50%",
+        }} />
+        <div style={{
+          position: "absolute", top: "50%", left: "50%",
+          width: 3, height: 60, marginLeft: -1.5, marginTop: -30,
+          transform: "rotate(45deg)",
+          background: "radial-gradient(ellipse at center, rgba(160,215,255,0.35) 0%, transparent 70%)",
+          borderRadius: "50%",
+        }} />
+        <div style={{
+          position: "absolute", top: "50%", left: "50%",
+          width: 3, height: 60, marginLeft: -1.5, marginTop: -30,
+          transform: "rotate(-45deg)",
+          background: "radial-gradient(ellipse at center, rgba(160,215,255,0.35) 0%, transparent 70%)",
+          borderRadius: "50%",
+        }} />
+        <div style={{
+          position: "absolute", top: "50%", left: "50%",
+          width: 8, height: 8, marginLeft: -4, marginTop: -4,
+          borderRadius: "50%",
+          background: "radial-gradient(circle, #fff 0%, rgba(160,215,255,0.9) 50%, transparent 100%)",
+          boxShadow: "0 0 12px rgba(160,215,255,0.8), 0 0 30px rgba(160,215,255,0.4)",
+        }} />
+      </div>
     </div>
   );
 
@@ -251,31 +289,36 @@ Write 2 to 3 paragraphs of warm, poetic but grounded prose. Plain flowing prose 
         return (
           <div key={animKey} style={S.container}>
             <div style={{
-              marginBottom: 20,
-              animation: "onb-float 4s ease-in-out infinite",
+              marginBottom: 12,
+              animation: "onb-fadeIn 0.5s ease-out",
             }}>
-              <ShepherdMark size={72} />
+              <ShepherdMark size={64} animate />
             </div>
-            <h1 style={{ ...S.title, animation: "onb-fadeIn 0.5s ease-out" }}>
-              Welcome to Dream Shepherd
+            <h1 style={{
+              fontSize: 36, fontWeight: 400, margin: "0 0 8px",
+              background: "linear-gradient(135deg, #f5e4b0, #e8b840, #a07010)",
+              WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+              animation: "onb-fadeIn 0.5s ease-out 0.05s both",
+              whiteSpace: "nowrap",
+            }}>
+              Dream Shepherd
             </h1>
             <p style={{
-              fontSize: 14, color: "#8a7540", letterSpacing: 4,
-              textTransform: "uppercase", marginBottom: 28,
-              animation: "onb-fadeIn 0.5s ease-out 0.05s both",
+              fontSize: 14, color: "#8a7540", margin: "0 0 28px",
+              animation: "onb-fadeIn 0.5s ease-out 0.1s both",
             }}>
-              Where Scripture meets the night
+              Your personal guided dream journal
             </p>
             <p style={{
               ...S.subtitle,
               animation: "onb-fadeIn 0.5s ease-out 0.15s both",
               maxWidth: 340, margin: "0 auto 32px",
             }}>
-              Let's start with a dream. Even a fragment is enough.
+              Let's get started.
             </p>
 
             <button style={{ ...S.ctaButton(), animation: "onb-staggerUp 0.5s ease-out 0.3s both" }} onClick={goForward}>
-              Tell me about a dream
+              Tell me about your dream
             </button>
             <button
               onClick={handleSkip}
@@ -322,20 +365,31 @@ Write 2 to 3 paragraphs of warm, poetic but grounded prose. Plain flowing prose 
             </p>
 
             <div style={{ animation: "onb-staggerUp 0.5s ease-out 0.2s both", marginBottom: 28 }}>
-              <textarea
-                placeholder="Last night I dreamed about..."
-                value={recentDream}
-                onChange={(e) => setRecentDream(e.target.value)}
-                rows={5}
-                style={{
-                  ...S.input,
-                  resize: "vertical", minHeight: 140, maxHeight: 280,
-                  lineHeight: 1.6, fontSize: 15,
-                  borderColor: tooShort
-                    ? "rgba(255,180,60,0.4)"
-                    : "rgba(200,160,30,0.3)",
-                }}
-              />
+              <div style={{ position: "relative" }}>
+                <textarea
+                  placeholder="Last night I dreamed about..."
+                  value={recentDream}
+                  onChange={(e) => setRecentDream(e.target.value)}
+                  rows={5}
+                  style={{
+                    ...S.input,
+                    resize: "vertical", minHeight: 140, maxHeight: 280,
+                    lineHeight: 1.6, fontSize: 15,
+                    borderColor: tooShort
+                      ? "rgba(255,180,60,0.4)"
+                      : "rgba(200,160,30,0.3)",
+                  }}
+                />
+                {!recentDream && (
+                  <div style={{
+                    position: "absolute", bottom: 10, left: 0, right: 0,
+                    textAlign: "center", fontSize: 11, color: "#5a4a30",
+                    pointerEvents: "none", letterSpacing: 0.3,
+                  }}>
+                    🔒 Your dreams are entirely confidential and never shared.
+                  </div>
+                )}
+              </div>
               {tooShort ? (
                 <div style={{
                   display: "flex", justifyContent: "space-between", alignItems: "center",
@@ -566,7 +620,7 @@ Write 2 to 3 paragraphs of warm, poetic but grounded prose. Plain flowing prose 
         pointerEvents: leaving ? "none" : "auto",
       }}
     >
-      {orbs}
+      {starsLayer}
 
       {/* Back button on dream-entry and pre-auth bridge screens */}
       {!processing && !leaving && (step === 1 || (step === 2 && preAuth)) && (

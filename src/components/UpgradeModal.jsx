@@ -415,13 +415,13 @@ export default function UpgradeModal({
               >
                 {restoring ? "Restoring..." : "Restore purchases"}
               </button>
-              <a href="/terms.html" target="_blank" rel="noopener noreferrer" style={{
+              <a href="https://dreamshepherd.app/terms.html" target="_blank" rel="noopener noreferrer" style={{
                 color: "#8a7a48", fontSize: 11, fontFamily: "Georgia, serif",
                 textDecoration: "underline", padding: "4px 8px",
               }}>
                 Terms
               </a>
-              <a href="/privacy.html" target="_blank" rel="noopener noreferrer" style={{
+              <a href="https://dreamshepherd.app/privacy.html" target="_blank" rel="noopener noreferrer" style={{
                 color: "#8a7a48", fontSize: 11, fontFamily: "Georgia, serif",
                 textDecoration: "underline", padding: "4px 8px",
               }}>

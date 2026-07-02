@@ -140,8 +140,8 @@ export default function Landing({ onSignIn }) {
 
         {/* Footer links */}
         <div style={{ display: "flex", justifyContent: "center", gap: 24, marginBottom: 16 }}>
-          <a href="/terms.html" style={{ fontSize: 12, color: "#6b5c30", textDecoration: "none" }}>Terms of Service</a>
-          <a href="/privacy.html" style={{ fontSize: 12, color: "#6b5c30", textDecoration: "none" }}>Privacy Policy</a>
+          <a href="https://dreamshepherd.app/terms.html" target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, color: "#6b5c30", textDecoration: "none" }}>Terms of Service</a>
+          <a href="https://dreamshepherd.app/privacy.html" target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, color: "#6b5c30", textDecoration: "none" }}>Privacy Policy</a>
         </div>
 
         <div style={{ fontSize: 11, color: "#3a3050", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
