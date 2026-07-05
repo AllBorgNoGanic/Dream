@@ -33,10 +33,10 @@ export default function UpgradeModal({
   const annualProduct = rcPackages.annual?.product;
   const monthlyProduct = rcPackages.monthly?.product;
 
-  const hasFreeTrial = annualProduct?.introPrice?.periodUnit === "DAY"
-    || annualProduct?.introPrice?.price === 0
-    || annualProduct?.introPrice?.periodNumberOfUnits > 0;
-  const trialDays = annualProduct?.introPrice?.periodNumberOfUnits || 7;
+  // A free trial is an introductory offer with price 0 (paid intro offers are not trials)
+  const hasFreeTrial = annualProduct?.introPrice?.price === 0;
+  const introUnits = annualProduct?.introPrice?.periodNumberOfUnits || 7;
+  const trialDays = annualProduct?.introPrice?.periodUnit === "WEEK" ? introUnits * 7 : introUnits;
 
   const handlePurchase = async () => {
     const isWeb = typeof window !== "undefined" && !window.Capacitor?.isNativePlatform?.();
@@ -237,7 +237,7 @@ export default function UpgradeModal({
                 transition: "all 0.2s",
               }}
             >
-              {trialEnabled && (
+              {hasFreeTrial && trialEnabled && (
                 <div style={{
                   position: "absolute", top: -10, right: 16,
                   background: "linear-gradient(135deg, #6847c0, #9066d4)",
@@ -257,7 +257,7 @@ export default function UpgradeModal({
                     Annual
                   </div>
                   <div style={{ fontSize: 11, color: "#9a8a50" }}>
-                    {trialEnabled ? `${trialDays} days free, then billed yearly` : "Billed yearly"}
+                    {hasFreeTrial && trialEnabled ? `${trialDays} days free, then billed yearly` : "Billed yearly"}
                   </div>
                 </div>
                 <div style={{ textAlign: "right" }}>
@@ -316,7 +316,8 @@ export default function UpgradeModal({
             </button>
           </div>
 
-          {/* Trial switcher */}
+          {/* Trial switcher (only when the store reports a free trial on annual) */}
+          {hasFreeTrial && (
           <div style={{
             padding: "14px 24px 0",
             display: "flex", alignItems: "center", justifyContent: "space-between",
@@ -353,6 +354,7 @@ export default function UpgradeModal({
               }} />
             </button>
           </div>
+          )}
 
           {/* CTA */}
           <div style={{ padding: "20px 24px 0" }}>
@@ -375,11 +377,11 @@ export default function UpgradeModal({
             >
               {purchasing
                 ? "Processing..."
-                : trialEnabled && selectedPlan === "annual"
+                : hasFreeTrial && trialEnabled && selectedPlan === "annual"
                   ? "Start Free Trial"
                   : "Become a Supporter"}
             </button>
-            {trialEnabled && selectedPlan === "annual" && (
+            {hasFreeTrial && trialEnabled && selectedPlan === "annual" && (
               <div style={{
                 textAlign: "center", fontSize: 11, color: "#9a8a50",
                 marginTop: 6, lineHeight: 1.4,
