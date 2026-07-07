@@ -260,8 +260,7 @@ Bottom tab bar with custom SVG/image icons, haptic feedback on tap (Capacitor na
 
 ## Open items and not-yet-done
 
-- **Apple Paid Apps agreement**: must be Active in App Store Connect (Business -> Agreements) before products load in the app. Banking, Tax (W-9), and DSA Trader verification required.
-- **Sandbox purchase test**: once the Paid Apps agreement is active, test the full purchase flow on a device with a Sandbox Apple ID.
+- **App Store Connect state (as of July 2026)**: Paid Apps agreement is Active, the Dream Shepherd app record exists, and the subscription products are already configured in App Store Connect. Do not re-walk agreement or subscription setup; focus on what remains for the specific submission at hand.
 - **Google Play**: Android Capacitor project is synced and ready, but no Play Console listing or `goog_` key configured yet.
 - **Legacy Stripe functions**: `api/create-checkout-session.js`, `api/create-portal-session.js`, and `api/webhook.js` exist but are inactive. Can be removed once RevenueCat is confirmed working in production.
 - The dream list pagination is "20 at a time with Load More"; if community feed gets large, consider applying the same pattern there.

@@ -10,8 +10,9 @@ import { mkdir, readFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { spawn } from "node:child_process";
+import { fileURLToPath } from "node:url";
 
-const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname.replace(/^\//, "")), "..");
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const ASSETS_DIR = path.join(ROOT, "assets");
 const PUBLIC_DIR = path.join(ROOT, "public");
 
@@ -42,8 +43,8 @@ function starsSvg({ count, w, h, opacityMin = 0.2, opacityMax = 0.7 }) {
   return stars.join("\n  ");
 }
 
-// Embed the shepherd SVG body (colored gold, with a soft inner glow)
-async function shepherdGroup({ size, cx, cy }) {
+// Embed the shepherd SVG body (colored gold, optional soft inner glow)
+async function shepherdGroup({ size, cx, cy, glow = true }) {
   const raw = await readFile(path.join(PUBLIC_DIR, "shepherd.svg"), "utf8");
   // Extract just the inner <g>...</g> – the file is fill="#000000" black,
   // so we re-color it gold via a wrapping group with fill override.
@@ -65,10 +66,20 @@ async function shepherdGroup({ size, cx, cy }) {
       <stop offset="100%" stop-color="${GOLD}"/>
     </linearGradient>
   </defs>
-  <circle cx="${cx}" cy="${cy}" r="${size * 0.78}" fill="url(#shepherdGlow)"/>
+  ${glow ? `<circle cx="${cx}" cy="${cy}" r="${size * 0.78}" fill="url(#shepherdGlow)"/>` : ""}
   <g transform="translate(${tx},${ty}) scale(${scale})" fill="url(#shepherdFill)">
     ${inner}
   </g>`;
+}
+
+// A 4-point sparkle (diamond star) big enough to survive downscaling to
+// home screen icon sizes, unlike sub-pixel starfield dots.
+function sparkle(cx, cy, r, opacity) {
+  const q = r * 0.18;
+  return `<path d="M ${cx} ${cy - r} Q ${cx + q} ${cy - q} ${cx + r} ${cy} Q ${cx + q} ${cy + q} ${cx} ${cy + r} Q ${cx - q} ${cy + q} ${cx - r} ${cy} Q ${cx - q} ${cy - q} ${cx} ${cy - r} Z" fill="${GOLD_SOFT}" opacity="${opacity}"/>`;
+}
+function sparkles(list) {
+  return list.map(([x, y, r, o]) => sparkle(x, y, r, o)).join("\n  ");
 }
 
 // ─── Icon (1024×1024, square, no transparency – stores require opaque) ────────
@@ -77,23 +88,28 @@ async function buildIcon() {
   const cx = SIZE / 2;
   const cy = SIZE / 2;
 
-  // The shepherd silhouette renders best at ~62% of the canvas
-  const shepherdSize = SIZE * 0.62;
-  const shepherd = await shepherdGroup({ size: shepherdSize, cx, cy: cy + 12 });
+  // Bold shepherd: fills the frame so it stays recognizable at 40-60px.
+  // No glow (turns into a muddy blob at small sizes). Background bloom is
+  // shifted left of center for asymmetric depth.
+  const shepherdSize = SIZE * 0.82;
+  const shepherd = await shepherdGroup({ size: shepherdSize, cx, cy: cy + 18, glow: false });
 
-  const stars = starsSvg({ count: 60, w: SIZE, h: SIZE, opacityMin: 0.25, opacityMax: 0.75 });
+  const iconSparkles = sparkles([
+    [150, 160, 26, 0.9], [880, 130, 20, 0.7], [820, 420, 14, 0.55],
+    [130, 520, 16, 0.6], [910, 780, 18, 0.5], [190, 850, 13, 0.45],
+  ]);
 
   const svg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="${SIZE}" height="${SIZE}" viewBox="0 0 ${SIZE} ${SIZE}">
   <defs>
-    <radialGradient id="bg" cx="50%" cy="42%" r="75%">
+    <radialGradient id="bg" cx="38%" cy="42%" r="75%">
       <stop offset="0%" stop-color="#160838"/>
       <stop offset="55%" stop-color="${NAVY_BG}"/>
       <stop offset="100%" stop-color="${NAVY_BG_DEEP}"/>
     </radialGradient>
   </defs>
   <rect width="${SIZE}" height="${SIZE}" fill="url(#bg)"/>
-  ${stars}
+  ${iconSparkles}
   ${shepherd}
 </svg>`;
 
@@ -106,7 +122,7 @@ async function buildIcon() {
   // padded ~30% so the system can crop it into a circle without clipping.
   const FG_SIZE = 1024;
   const fgShepherdSize = FG_SIZE * 0.42;
-  const fgShepherd = await shepherdGroup({ size: fgShepherdSize, cx: FG_SIZE / 2, cy: FG_SIZE / 2 + 6 });
+  const fgShepherd = await shepherdGroup({ size: fgShepherdSize, cx: FG_SIZE / 2, cy: FG_SIZE / 2 + 6, glow: false });
   const fgSvg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="${FG_SIZE}" height="${FG_SIZE}" viewBox="0 0 ${FG_SIZE} ${FG_SIZE}">
   ${fgShepherd}
@@ -119,7 +135,7 @@ async function buildIcon() {
   const bgSvg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="${FG_SIZE}" height="${FG_SIZE}" viewBox="0 0 ${FG_SIZE} ${FG_SIZE}">
   <defs>
-    <radialGradient id="bg" cx="50%" cy="42%" r="75%">
+    <radialGradient id="bg" cx="38%" cy="42%" r="75%">
       <stop offset="0%" stop-color="#160838"/>
       <stop offset="55%" stop-color="${NAVY_BG}"/>
       <stop offset="100%" stop-color="${NAVY_BG_DEEP}"/>
