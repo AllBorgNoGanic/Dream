@@ -153,15 +153,26 @@ export async function fetchPackages() {
   if (!isNative()) return empty;
   try {
     const { Purchases } = await loadCore();
-    const { offerings } = await Purchases.getOfferings();
-    const current = offerings?.current;
+    // getOfferings() resolves to PurchasesOfferings ({ all, current })
+    // directly; there is no { offerings } wrapper in purchases-capacitor.
+    const result = await Purchases.getOfferings();
+    const current = result?.current ?? result?.offerings?.current ?? null;
     if (!current) return empty;
-    const byType = { monthly: null, annual: null };
-    (current.availablePackages || []).forEach((p) => {
-      const t = (p.packageType || "").toLowerCase();
-      if (t === "monthly") byType.monthly = p;
-      else if (t === "annual" || t === "yearly") byType.annual = p;
-    });
+    // Prefer the offering's named package accessors (monthly/annual):
+    // they are the documented convenience API and carry the complete
+    // product serialization (including introPrice). Fall back to
+    // scanning availablePackages by type for anything missing.
+    const byType = {
+      monthly: current.monthly || null,
+      annual: current.annual || null,
+    };
+    if (!byType.monthly || !byType.annual) {
+      (current.availablePackages || []).forEach((p) => {
+        const t = (p.packageType || "").toLowerCase();
+        if (t === "monthly" && !byType.monthly) byType.monthly = p;
+        else if ((t === "annual" || t === "yearly") && !byType.annual) byType.annual = p;
+      });
+    }
     return { ...byType, raw: current };
   } catch (err) {
     console.error("[RevenueCat] fetchPackages failed:", err);
@@ -246,7 +257,7 @@ export async function onEntitlementChange(callback) {
     });
     return () => {
       try {
-        Purchases.removeCustomerInfoUpdateListener(handle);
+        handle?.remove?.();
       } catch {
         // ignore
       }
