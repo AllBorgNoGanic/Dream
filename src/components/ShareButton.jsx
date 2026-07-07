@@ -129,26 +129,26 @@ export default function ShareButton({ userId, shareBonusCount = 0, maxBonus = 3,
       borderRadius: 20,
       padding: "20px 18px",
     }}>
-      <div style={{ fontSize: 13, letterSpacing: 3, color: "#8060cc", textTransform: "uppercase", marginBottom: 14 }}>
+      <div style={{ fontSize: 13, letterSpacing: 3, color: "#9d7fe8", textTransform: "uppercase", marginBottom: 14 }}>
         Share and Earn
       </div>
-      <div style={{ fontSize: 13, color: "#7a6a40", marginBottom: 16, lineHeight: 1.6 }}>
+      <div style={{ fontSize: 13, color: "#c0aa74", marginBottom: 16, lineHeight: 1.6 }}>
         Share Dream Shepherd with friends and earn bonus interpretations.
       </div>
 
       {/* Progress bar */}
       <div style={{ marginBottom: 16 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "#6b5c30", marginBottom: 6 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "#a89258", marginBottom: 6 }}>
           <span>Bonus interpretations</span>
-          <span>{shareBonusCount} of {maxBonus}</span>
+          <span style={{ color: "#e8c840" }}>{shareBonusCount} of {maxBonus}</span>
         </div>
         <div style={{
-          height: 6, borderRadius: 3, background: "rgba(200,160,50,0.1)",
+          height: 6, borderRadius: 3, background: "rgba(124,58,237,0.18)",
           overflow: "hidden",
         }}>
           <div style={{
             height: "100%", borderRadius: 3,
-            background: "linear-gradient(90deg, #c8a020, #e8c840)",
+            background: "linear-gradient(90deg, #7c3aed, #a855f7)",
             width: `${(shareBonusCount / maxBonus) * 100}%`,
             transition: "width 0.5s ease",
           }} />
@@ -185,7 +185,7 @@ export default function ShareButton({ userId, shareBonusCount = 0, maxBonus = 3,
       )}
 
       {status === "cooldown" && (
-        <div style={{ fontSize: 12, color: "#6b5c30", textAlign: "center", marginTop: 8 }}>
+        <div style={{ fontSize: 12, color: "#a08c55", textAlign: "center", marginTop: 8 }}>
           You can earn 1 bonus per day
         </div>
       )}

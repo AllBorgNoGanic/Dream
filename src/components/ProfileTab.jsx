@@ -32,6 +32,9 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [nameError, setNameError] = useState("");
+  const [editingName, setEditingName] = useState(false);
+  const [nameDraft, setNameDraft] = useState("");
+  const [headerNameError, setHeaderNameError] = useState("");
   const [deleteText, setDeleteText] = useState("");
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
@@ -111,6 +114,35 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
     ? (dreams.filter(d => d.sleep_hours).reduce((s, d) => s + Number(d.sleep_hours), 0) / dreams.filter(d => d.sleep_hours).length).toFixed(1)
     : null;
 
+  const startNameEdit = () => {
+    setNameDraft(userSettings?.display_name || "");
+    setHeaderNameError("");
+    setEditingName(true);
+  };
+
+  const saveHeaderName = async () => {
+    const trimmed = nameDraft.trim();
+    if (trimmed) {
+      const check = checkContent(trimmed);
+      if (!check.clean) {
+        setHeaderNameError("Display name contains inappropriate language.");
+        return;
+      }
+    }
+    setEditingName(false);
+    if ((userSettings?.display_name || "") === trimmed) return;
+    const { data } = await supabase
+      .from("user_settings")
+      .update({ display_name: trimmed || null })
+      .eq("user_id", user.id)
+      .select()
+      .single();
+    if (data) {
+      setDisplayName(data.display_name || "");
+      if (onSettingsUpdate) onSettingsUpdate(data);
+    }
+  };
+
   const handleSave = async () => {
     setNameError("");
     if (displayName.trim()) {
@@ -183,11 +215,61 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
               </div>
             )}
           </div>
+          {/* Edit badge */}
+          <div
+            onClick={() => !avatarUploading && fileInputRef.current?.click()}
+            style={{
+              position: "absolute", bottom: -2, right: -2,
+              width: 24, height: 24,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              cursor: "pointer",
+            }}
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" style={{ opacity: 0.45 }}>
+              <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" stroke="#e8b840" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
         </div>
 
-        <div style={{ fontSize: 20, color: "#f5e4b0", fontFamily: "Georgia, serif", marginBottom: 4 }}>
-          {userSettings?.display_name || "Dreamer"}
-        </div>
+        {editingName ? (
+          <input
+            autoFocus
+            value={nameDraft}
+            onChange={(e) => setNameDraft(e.target.value)}
+            onBlur={saveHeaderName}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") e.target.blur();
+              if (e.key === "Escape") { setNameDraft(userSettings?.display_name || ""); setEditingName(false); }
+            }}
+            placeholder="Anonymous Dreamer"
+            style={{
+              fontSize: 20, color: "#f5e4b0", fontFamily: "Georgia, serif",
+              background: "rgba(5,10,18,0.9)", textAlign: "center",
+              border: "1px solid rgba(200,160,30,0.35)", borderRadius: 10,
+              padding: "4px 12px", outline: "none", marginBottom: 4,
+              maxWidth: 260, boxSizing: "border-box",
+            }}
+          />
+        ) : (
+          <div
+            onClick={startNameEdit}
+            style={{
+              fontSize: 20, color: "#f5e4b0", fontFamily: "Georgia, serif",
+              marginBottom: 4, cursor: "pointer",
+              display: "flex", alignItems: "center", gap: 6,
+            }}
+          >
+            {userSettings?.display_name || "Dreamer"}
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" style={{ opacity: 0.45, flexShrink: 0 }}>
+              <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" stroke="#e8b840" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+        )}
+        {headerNameError && (
+          <div style={{ fontSize: 12, color: "#e06050", marginBottom: 4, fontFamily: "Georgia, serif" }}>
+            {headerNameError}
+          </div>
+        )}
         <div style={{ fontSize: 13, color: "#6b5c30", fontFamily: "Georgia, serif" }}>
           {user.email}
         </div>
@@ -366,7 +448,7 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
 
       {/* Settings */}
       <div style={card}>
-        <div style={{ fontSize: 13, letterSpacing: 3, color: "#8060cc", textTransform: "uppercase", marginBottom: 20 }}>Settings</div>
+        <div style={{ fontSize: 13, letterSpacing: 3, color: "#9d7fe8", textTransform: "uppercase", marginBottom: 20 }}>Settings</div>
 
         <div style={{ marginBottom: 16 }}>
           <label style={{ display: "block", fontSize: 13, color: "#e8b840", marginBottom: 8 }}>Display Name</label>
@@ -496,7 +578,7 @@ export default function ProfileTab({ user, userSettings, onSettingsUpdate, dream
 
       {/* Account */}
       <div style={card}>
-        <div style={{ fontSize: 13, letterSpacing: 3, color: "#8060cc", textTransform: "uppercase", marginBottom: 16 }}>Account</div>
+        <div style={{ fontSize: 13, letterSpacing: 3, color: "#9d7fe8", textTransform: "uppercase", marginBottom: 16 }}>Account</div>
 
         {onSignOut && (
           <AlertDialog.Root>
