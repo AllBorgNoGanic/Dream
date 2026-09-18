@@ -7,6 +7,7 @@ import {
   cacheDreams,
   getCachedDreams,
 } from "../lib/offlineStore";
+import { trackEvent } from "../lib/posthog";
 
 /**
  * useOffline
@@ -101,6 +102,28 @@ export default function useOffline() {
 
             await removePendingDream(offlineId);
             synced++;
+
+            // Capture dream_created here (not at offline queue time): this
+            // is the point the dream actually reaches the backend, so the
+            // event only fires for dreams that really landed. dream_number
+            // comes from an authoritative count after the insert.
+            try {
+              const { count } = await supabase
+                .from("dreams")
+                .select("id", { count: "exact", head: true })
+                .eq("user_id", userId);
+              const desc = payload.description || "";
+              trackEvent("dream_created", {
+                dream_number: count ?? null,
+                mood: payload.mood || null,
+                theme: payload.theme || null,
+                has_interpretation: false,
+                word_count: desc ? desc.split(/\s+/).length : 0,
+                synced_offline: true,
+              });
+            } catch {
+              // Analytics must never block or fail a sync.
+            }
           } catch (err) {
             console.error("Offline sync error:", err);
           }

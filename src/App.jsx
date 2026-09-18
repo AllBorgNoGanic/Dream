@@ -913,7 +913,23 @@ For scripture_refs, return 0 to 2 well-known verse references that genuinely con
       // ── Online path: normal Supabase insert ──
       const { data: inserted, error } = await supabase.from("dreams").insert(dreamPayload).select().single();
       if (error) throw error;
-      trackEvent("dream_created", { mood: form.mood || null, theme: form.theme || null, has_interpretation: !!form.interpret_on_save, word_count: form.description.split(/\s+/).length });
+      // Fire-and-forget analytics with the authoritative dream number
+      // (an exact count query, not dreams.length, which is wrong once the
+      // list is paginated). dream_number === 2 is the "second dream"
+      // activation milestone.
+      supabase
+        .from("dreams")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .then(({ count }) =>
+          trackEvent("dream_created", {
+            dream_number: count ?? null,
+            mood: form.mood || null,
+            theme: form.theme || null,
+            has_interpretation: !!form.interpret_on_save,
+            word_count: form.description.split(/\s+/).length,
+          })
+        );
 
       // Interpret on save if toggled
       if (form.interpret_on_save && canInterpret && inserted) {
