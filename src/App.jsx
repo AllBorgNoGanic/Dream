@@ -168,6 +168,7 @@ export default function DreamJournal() {
   const onboardingChecked = useRef(false); // flipped to true after first check — quiz never re-evaluated
   const quizDoneRef = useRef(false);       // prevents quiz re-showing after completion
   const pendingQuizDataRef = useRef(null); // stores quiz results from pre-auth flow
+  const signedInUserIdRef = useRef(null);  // last id we fired user_signed_in for — dedupes repeat SIGNED_IN events
 
   // Search & filters
   const [searchQuery, setSearchQuery] = useState("");
@@ -188,7 +189,13 @@ export default function DreamJournal() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "INITIAL_SESSION") {
         setUser(session?.user ?? null);
-        if (session?.user) setShowLanding(false);
+        if (session?.user) {
+          setShowLanding(false);
+          // Restored session (not a fresh sign-in): attribute events to this
+          // user without firing user_signed_in.
+          signedInUserIdRef.current = session.user.id;
+          identifyUser(session.user.id, { email: session.user.email });
+        }
         setSessionLoading(false);
       } else if (event === "PASSWORD_RECOVERY") {
         // User arrived via password reset link. Prompt for new password.
@@ -199,7 +206,10 @@ export default function DreamJournal() {
         setUser(session?.user ?? null);
         if (session?.user) {
           setShowLanding(false);
-          if (event === "SIGNED_IN") {
+          // Supabase re-emits SIGNED_IN on tab focus / session recovery, not
+          // just on a real sign-in. Only identify + count once per new user id.
+          if (event === "SIGNED_IN" && signedInUserIdRef.current !== session.user.id) {
+            signedInUserIdRef.current = session.user.id;
             identifyUser(session.user.id, { email: session.user.email });
             trackEvent("user_signed_in", { method: session.user.app_metadata?.provider || "email" });
           }
@@ -207,6 +217,7 @@ export default function DreamJournal() {
       } else if (event === "SIGNED_OUT") {
         setUser(null);
         onboardingChecked.current = false; // reset so next login re-checks
+        signedInUserIdRef.current = null;  // so a later re-login counts as a new sign-in
         resetUser();
       }
       // TOKEN_REFRESHED intentionally ignored — no state change needed
